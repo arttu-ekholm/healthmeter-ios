@@ -17,6 +17,8 @@
 		4BA14310279DA6B6008884F0 /* HealthMeterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA1430F279DA6B6008884F0 /* HealthMeterUITests.swift */; };
 		4BA14312279DA6B6008884F0 /* HealthMeterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA14311279DA6B6008884F0 /* HealthMeterUITestsLaunchTests.swift */; };
 		4BA14321279DA97D008884F0 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BA14320279DA97D008884F0 /* HealthKit.framework */; };
+		4BBE120027A9CDC200112638 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BBE11FF27A9CDC200112638 /* NotificationService.swift */; };
+		4BBE120427A9CF7500112638 /* RestingHeartRateUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,6 +54,8 @@
 		4BA1431E279DA97D008884F0 /* HealthMeter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HealthMeter.entitlements; sourceTree = "<group>"; };
 		4BA14320279DA97D008884F0 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		4BA14322279DEE85008884F0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4BBE11FF27A9CDC200112638 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
+		4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateUpdate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -109,6 +113,8 @@
 				4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */,
 				4BA142F6279DA6B5008884F0 /* ContentView.swift */,
 				4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */,
+				4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */,
+				4BBE11FF27A9CDC200112638 /* NotificationService.swift */,
 				4BA142F8279DA6B6008884F0 /* Assets.xcassets */,
 				4BA142FA279DA6B6008884F0 /* Preview Content */,
 			);
@@ -279,8 +285,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4BBE120027A9CDC200112638 /* NotificationService.swift in Sources */,
 				4B2091B327A156DE00CCFD70 /* RestingHeartRateService.swift in Sources */,
 				4BA142F7279DA6B5008884F0 /* ContentView.swift in Sources */,
+				4BBE120427A9CF7500112638 /* RestingHeartRateUpdate.swift in Sources */,
 				4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

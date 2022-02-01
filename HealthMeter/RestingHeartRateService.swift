@@ -32,9 +32,14 @@ class RestingHeartRateService {
 
     private let calendar: Calendar
 
+    var postDebugNotifications = true
+
+    let notificationService: NotificationService
+
     var averageHeartRate: Double? {
         get {
-            return userDefaults.double(forKey: averageRestingHeartRateKey)
+            guard let avg = userDefaults.object(forKey: averageRestingHeartRateKey) else { return nil }
+            return avg as? Double
         }
         set {
             userDefaults.set(newValue, forKey: averageRestingHeartRateKey)
@@ -63,9 +68,12 @@ class RestingHeartRateService {
         }
     }
 
-    init(userDefaults: UserDefaults = UserDefaults.standard, calendar: Calendar = Calendar.current) {
+    init(userDefaults: UserDefaults = UserDefaults.standard,
+         calendar: Calendar = Calendar.current,
+         notificationService: NotificationService = NotificationService()) {
         self.userDefaults = userDefaults
         self.calendar = calendar
+        self.notificationService = notificationService
 
         self.latestRestingHeartRateUpdate = decodeLatestRestingHeartRateUpdate()
     }
@@ -140,10 +148,7 @@ class RestingHeartRateService {
     }
     
 
-    func handleHeartRateUpdate(sample: HKQuantitySample) {
-        let newHeartRate = sample.quantity.doubleValue(for: HKUnit(from: "count/min"))
-        let update = RestingHeartRateUpdate(date: sample.endDate, value: newHeartRate)
-
+    func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
             postDebugNotification(message: "DEBUG MESSAGE: guard 1 fails")
@@ -152,7 +157,7 @@ class RestingHeartRateService {
 
         // Check if the date is later than the last saved rate update
         if let previousUpdate = latestRestingHeartRateUpdate {
-            guard sample.endDate > previousUpdate.date else {
+            guard update.date > previousUpdate.date else {
                 // The update is earlier than the latest, so no need to compare
                 // This can be ignored
                 postDebugNotification(message: "DEBUG MESSAGE: guard 1 fails")
@@ -171,18 +176,18 @@ class RestingHeartRateService {
         if isAboveAverageRHR {
             if !postedAboutRisingNotificationToday {
                 trend = .rising
-                message = notificationMessage(trend: .rising, heartRate: newHeartRate, averageHeartRate: averageHeartRate)
+                message = notificationMessage(trend: .rising, heartRate: update.value, averageHeartRate: averageHeartRate)
             }
         } else {
             // RHR has been high, now it's lowered.
             if !postedAboutLoweredNotificationToday, postedAboutRisingNotificationToday {
                 trend = .lowering
-                message = notificationMessage(trend: .lowering, heartRate: newHeartRate, averageHeartRate: averageHeartRate)
+                message = notificationMessage(trend: .lowering, heartRate: update.value, averageHeartRate: averageHeartRate)
             }
         }
 
         if trend != nil, let message = message {
-            postNotification(message: message)
+            notificationService.postNotification(message: message)
             if trend == .rising {
                 latestHighRHRNotificationPostDate = Date()
             } else if trend == .lowering {
@@ -190,45 +195,15 @@ class RestingHeartRateService {
             }
         } else {
             let debugTrend: Trend = isAboveAverageRHR ? .high2high : .low2low
-            let debugMessage = notificationMessage(trend: debugTrend, heartRate: newHeartRate, averageHeartRate: averageHeartRate)
-            postNotification(message: debugMessage)
+            let debugMessage = notificationMessage(trend: debugTrend, heartRate: update.value, averageHeartRate: averageHeartRate)
+            postDebugNotification(message: debugMessage)
         }
     }
 
     func postDebugNotification(message: String) {
-        postNotification(message: message)
-    }
+        guard postDebugNotifications else { return }
 
-    func postNotification(message: String) {
-
-
-
-        DispatchQueue.main.async {
-            print("posting notification with message: \(message)")
-            if UIApplication.shared.applicationState != .active {
-                UIApplication.shared.applicationIconBadgeNumber = 1
-            } else {
-                UIApplication.shared.applicationIconBadgeNumber = 0
-            }
-
-            let content = UNMutableNotificationContent()
-            content.title = message
-
-            content.sound = UNNotificationSound.default
-
-            // choose a random identifier
-            let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
-
-            // add our notification request
-           UNUserNotificationCenter.current().add(request) { error in
-               if let error = error {
-                   print("posting the notification failed with error: \(error)")
-                   UIApplication.shared.applicationIconBadgeNumber = 9
-               } else {
-                   print("notification posted successfully")
-               }
-           }
-        }
+        notificationService.postNotification(message: message)
     }
 
     func notificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String {
@@ -302,7 +277,8 @@ class RestingHeartRateService {
                 return
             }
 
-            self.handleHeartRateUpdate(sample: sample)
+            let heartRateUpdate = RestingHeartRateUpdate(sample: sample)
+            self.handleHeartRateUpdate(update: heartRateUpdate)
 
             completionHandler()
         })
@@ -310,9 +286,3 @@ class RestingHeartRateService {
         healthStore.execute(sampleQuery)
     }
 }
-
-struct RestingHeartRateUpdate: Codable {
-    let date: Date
-    let value: Double
-}
-
