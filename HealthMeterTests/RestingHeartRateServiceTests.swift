@@ -19,6 +19,12 @@ class RestingHeartRateServiceTests: XCTestCase {
         userDefaults.removePersistentDomain(forName: #file)
     }
 
+    override func tearDown() {
+        super.tearDown()
+
+        userDefaults.removePersistentDomain(forName: #file)
+    }
+
     func testAboveAverage() {
         let service = RestingHeartRateService()
 
