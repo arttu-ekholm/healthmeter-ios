@@ -14,9 +14,8 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-
+        userDefaults?.removePersistentDomain(forName: #file)
         userDefaults = UserDefaults(suiteName: #file)
-        userDefaults.removePersistentDomain(forName: #file)
     }
 
     override func tearDown() {
@@ -33,9 +32,8 @@ class RestingHeartRateServiceTests: XCTestCase {
     }
 
     func testUpdate_noNotificationIfAvgHRMissing() throws {
-        let testUserDefaults = try XCTUnwrap(UserDefaults(suiteName: "test"))
         let mockNotificationService = MockNotificationService()
-        let service = RestingHeartRateService(userDefaults: testUserDefaults, notificationService: mockNotificationService)
+        let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: mockNotificationService)
         service.postDebugNotifications = false
         let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
         service.handleHeartRateUpdate(update: update)
@@ -66,9 +64,8 @@ class RestingHeartRateServiceTests: XCTestCase {
     }
 
     func testPosted_risingToLowered() throws {
-        let testUserDefaults = try XCTUnwrap(UserDefaults(suiteName: "test"))
-        let service = RestingHeartRateService(userDefaults: testUserDefaults)
-        testUserDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        let service = RestingHeartRateService(userDefaults: userDefaults)
+        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
         let risingUpdate = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0)
         service.handleHeartRateUpdate(update: risingUpdate)
@@ -79,6 +76,9 @@ class RestingHeartRateServiceTests: XCTestCase {
         XCTAssertTrue(service.postedAboutLoweredNotificationToday)
     }
 
+    /**
+     Handling and update that == qvg RHR doesn't cause any notifications being posted
+     */
     func testPosting_averageRHR() throws {
         let service = RestingHeartRateService(userDefaults: userDefaults)
         service.postDebugNotifications = false
@@ -90,15 +90,37 @@ class RestingHeartRateServiceTests: XCTestCase {
         XCTAssertFalse(service.postedAboutRisingNotificationToday)
         XCTAssertFalse(service.postedAboutLoweredNotificationToday)
     }
-}
 
-func randomString() -> String {
-    return UUID().uuidString
+    /**
+     Service gets high, average, high average resting rate. The app should post notification about one about rising HRH, and one about lowered RHR.
+     */
+    func testPosted_multiple() throws {
+        let notificationService = MockNotificationService()
+        let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
+        service.postDebugNotifications = false
+        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+
+        let risingUpdate1 = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60*3), value: 100.0)
+        service.handleHeartRateUpdate(update: risingUpdate1)
+        let loweringUpdate1 = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60*2), value: 50.0)
+        service.handleHeartRateUpdate(update: loweringUpdate1)
+        let risingUpdate2 = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0)
+        service.handleHeartRateUpdate(update: risingUpdate2)
+        let loweringUpdate2 = RestingHeartRateUpdate(date: Date(), value: 50.0)
+        service.handleHeartRateUpdate(update: loweringUpdate2)
+        XCTAssertEqual(notificationService.postNotificationCalledCount, 2, "Only two notifications should be sent - one for high RHR and and another for lowered RRH")
+
+        XCTAssertTrue(service.postedAboutRisingNotificationToday)
+        XCTAssertTrue(service.postedAboutLoweredNotificationToday)
+    }
 }
 
 private class MockNotificationService: NotificationService {
-    var postNotificationCalled = false
+    var postNotificationCalledCount = 0
+    var postNotificationCalled: Bool {
+        return postNotificationCalledCount > 0
+    }
     override func postNotification(message: String) {
-        postNotificationCalled = true
+        postNotificationCalledCount += 1
     }
 }

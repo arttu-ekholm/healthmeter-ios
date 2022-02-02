@@ -32,6 +32,7 @@ class RestingHeartRateService {
 
     private let calendar: Calendar
 
+    // TODO: change this as it needs to be set to false on every test
     var postDebugNotifications = true
 
     let notificationService: NotificationService
