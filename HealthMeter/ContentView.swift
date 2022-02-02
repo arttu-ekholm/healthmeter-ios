@@ -15,13 +15,21 @@ let healthStore: HKHealthStore = HKHealthStore()
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @State var queryResult: Result<Double, Error>?
+    @State var shouldDisplayHealthKitAuthorisation = false
+
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
 
     var body: some View {
-        Text("TODO: display the correct authorization status here")
-        Button("Request authorization") {
-            requestHealthKitAuthorization(healthStore: healthStore)
+        if shouldDisplayHealthKitAuthorisation {
+            Button("Request authorization") {
+                heartRateService.requestAuthorisation { success, error in
+                    heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { needsAuthorisation in
+                        shouldDisplayHealthKitAuthorisation = needsAuthorisation
+                    })
+                }
+            }
         }
+
         Button("query") {
             heartRateService.queryRestingHeartRate() { result in
                 self.queryResult = result
@@ -32,6 +40,10 @@ struct ContentView: View {
                 if newValue == .inactive || newValue == .background {
                     UIApplication.shared.applicationIconBadgeNumber = 0
                 }
+            }.onAppear {
+                heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { needsAuthorisation in
+                    shouldDisplayHealthKitAuthorisation = needsAuthorisation
+                })
             }
         latestHighRHR(date: heartRateService.latestHighRHRNotificationPostDate)
         latestLowRHR(date: heartRateService.latestLoweredRHRNotificationPostDate)
@@ -60,26 +72,6 @@ struct ContentView: View {
             return Text("Your heart rate is \(avgHeartRate) bpm")
         case .failure(let error):
             return Text("Heart rate query failed with an error: \(error.localizedDescription)")
-        }
-    }
-
-    /**
-     Requests authorization from HealthKit store
-     */
-    private func requestHealthKitAuthorization(healthStore: HKHealthStore) {
-        // TODO: add completion handler to the func parameter
-
-        let allTypes = Set([
-            HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
-        healthStore.requestAuthorization(toShare: allTypes, read: allTypes) { (success, error) in
-            if let error = error {
-                print("HK authorisation failed with error: \(error.localizedDescription)")
-            }
-            if success {
-                print("HK authorized successfully")
-            } else {
-                print("HK failed to authorize")
-            }
         }
     }
 }
