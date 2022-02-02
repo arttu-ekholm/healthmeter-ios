@@ -108,50 +108,20 @@ class RestingHeartRateService {
         return update.value / average > threshold
     }
 
-    func queryRestingHeartRate(healthStore: HKHealthStore, averageRHRCallback: @escaping (Result<Double?, Error>) -> Void) {
+    func queryRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
         // TODO: Check if the user has enough HRV data to make the calculation feasible. If not, display something like "You need at least 2w of data to make this app work.
 
         let now = Date()
-        let queryStart = Date().addingTimeInterval(-60 * 60 * 24 * 180)
+        let queryStartDate = now.addingTimeInterval(-60 * 60 * 24 * 180)
+        let query = queryProvider.getAverageRestingHeartRateQuery(queryStartDate: queryStartDate)
 
-        let quantityType = queryProvider.sampleTypeForRestingHeartRate
-
-        let interval = NSDateComponents()
-        interval.month = 6
-
-        let query = HKStatisticsCollectionQuery(
-            quantityType: quantityType,
-            quantitySamplePredicate: nil,
-            options: .discreteAverage,
-            anchorDate: queryStart,
-            intervalComponents: interval as DateComponents
-        )
-        // TODO: add statisticsUpdateHandler
         query.initialResultsHandler = { query, results, error in
-            if let error = error {
-                averageRHRCallback(.failure(error))
-                return
-            }
-
-            guard let statsCollection = results else {
-                averageRHRCallback(.success(nil))
-                return
-            }
-
-            var avgValues = [Double]()
-            statsCollection.enumerateStatistics(from: queryStart, to: now) { statistics, stop in
-                if let quantity = statistics.averageQuantity() {
-                    let value = quantity.doubleValue(for: HKUnit(from: "count/min"))
-                    print(value)
-                    avgValues.append(value)
-                }
-            }
-            let avgRestingValue = avgValues.reduce(0.0, { partialResult, next in
-                return partialResult + next
-            }) / Double(avgValues.count)
-            print("AVERAGE RESTING HEART RATE IS = \(avgRestingValue)")
-            self.averageHeartRate = avgRestingValue
-            averageRHRCallback(.success(avgRestingValue))
+            self.queryParser.parseAverageRestingHeartRateQueryResults(startDate: queryStartDate,
+                                                                      endDate: now,
+                                                                      query: query,
+                                                                      result: results,
+                                                                      error: error,
+                                                                      callback: averageRHRCallback)
         }
         healthStore.execute(query)
     }

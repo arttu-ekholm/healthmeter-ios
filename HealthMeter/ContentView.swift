@@ -14,8 +14,8 @@ let healthStore: HKHealthStore = HKHealthStore()
 
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
-    @State var queryResult: Result<Double?, Error>?
-    let heartRateService: RestingHeartRateService
+    @State var queryResult: Result<Double, Error>?
+    let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
 
     var body: some View {
         Text("TODO: display the correct authorization status here")
@@ -23,7 +23,7 @@ struct ContentView: View {
             requestHealthKitAuthorization(healthStore: healthStore)
         }
         Button("query") {
-            heartRateService.queryRestingHeartRate(healthStore: healthStore) { result in
+            heartRateService.queryRestingHeartRate() { result in
                 self.queryResult = result
             }
         }
@@ -52,16 +52,12 @@ struct ContentView: View {
     }
     
 
-    func averageHeartRateText(result: Result<Double?, Error>?) -> Text? {
+    func averageHeartRateText(result: Result<Double, Error>?) -> Text? {
         guard let result = result else { return nil }
 
         switch result {
         case .success(let avgHeartRate):
-            if let avgHeartRate = avgHeartRate {
-                return Text("Your heart rate is \(avgHeartRate) bpm")
-            } else {
-                return Text("You don't have a heart rate ☠️")
-            }
+            return Text("Your heart rate is \(avgHeartRate) bpm")
         case .failure(let error):
             return Text("Heart rate query failed with an error: \(error.localizedDescription)")
         }
@@ -90,7 +86,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(queryResult: nil, heartRateService: RestingHeartRateService())
+        ContentView(queryResult: nil)
     }
 }
 

@@ -30,6 +30,23 @@ class QueryProvider {
         return observerQuery
     }
 
+    func getAverageRestingHeartRateQuery(queryStartDate: Date) -> HKStatisticsCollectionQuery {
+        let quantityType = sampleTypeForRestingHeartRate
+
+        let interval = NSDateComponents()
+        interval.month = 6
+
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .discreteAverage,
+            anchorDate: queryStartDate,
+            intervalComponents: interval as DateComponents
+        )
+
+        return query
+    }
+
     var sampleTypeForRestingHeartRate: HKQuantityType {
         return HKSampleType.quantityType(forIdentifier: HKQuantityTypeIdentifier.restingHeartRate)!
     }

@@ -242,6 +242,25 @@ class RestingHeartRateServiceTests: XCTestCase {
         }
         waitForExpectations(timeout: 2.0, handler: .none)
     }
+
+    func testQueryRestingHeartRate() throws {
+        let mockHealthStore = MockHealthStore()
+        let mockQueryProvider = MockQueryProvider()
+        let mockQueryParser = MockQueryParser()
+        let service = RestingHeartRateService(userDefaults: userDefaults,
+                                              healthStore: mockHealthStore,
+                                              queryProvider: mockQueryProvider,
+                                              queryParser: mockQueryParser)
+        let expectation = expectation(description: "RHR query should fail if there isn't any results")
+
+        service.queryRestingHeartRate() { result in
+            if case .failure = result {
+                expectation.fulfill()
+            }
+        }
+
+        waitForExpectations(timeout: 2.0, handler: .none)
+    }
 }
 
 // MARK: - Mock classes
@@ -261,6 +280,9 @@ private class MockHealthStore: HKHealthStore {
             mockQuery.mockResultHandler?(mockQuery, mockSamples, mockError)
         } else if let mockObserverQuery = query as? MockObserverQuery {
             mockObserverQuery.mockResultHandler?(mockObserverQuery, mockObserverQueryCompletionHandler, mockError)
+        } else if let mockStatisticQuery = query as? MockStatisticCollectionQuery {
+            // HKStatisticCollection cannot be subclassed
+            mockStatisticQuery.initialResultsHandler?(mockStatisticQuery, nil, mockError)
         }
     }
 
@@ -272,6 +294,8 @@ private class MockHealthStore: HKHealthStore {
 private class MockQueryProvider: QueryProvider {
     var getLatestRestingHeartRateQueryCalled = false
     var getObserverQueryCalled = false
+
+    var mockInitialResulstHandlerForStatisticQuery: ((HKStatisticsCollectionQuery, HKStatisticsCollection?, Error?) -> Void)?
 
     override func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
         getLatestRestingHeartRateQueryCalled = true
@@ -292,6 +316,25 @@ private class MockQueryProvider: QueryProvider {
         mockObserverQuery.mockResultHandler = updateHandler
         return mockObserverQuery
     }
+
+    override func getAverageRestingHeartRateQuery(queryStartDate: Date) -> HKStatisticsCollectionQuery {
+        let quantityType = sampleTypeForRestingHeartRate
+        let interval = NSDateComponents()
+        interval.month = 6
+
+        let query = MockStatisticCollectionQuery(quantityType: quantityType,
+                                                 quantitySamplePredicate: nil,
+                                                 options: .discreteAverage,
+                                                 anchorDate: queryStartDate,
+                                                 intervalComponents: interval as DateComponents)
+        query.mockInitialResulstHandler = mockInitialResulstHandlerForStatisticQuery
+        return query
+    }
+}
+
+private class MockStatisticCollectionQuery: HKStatisticsCollectionQuery {
+    var mockInitialResulstHandler: ((HKStatisticsCollectionQuery, HKStatisticsCollection?, Error?) -> Void)?
+
 }
 
 private class MockQueryParser: QueryParser {
