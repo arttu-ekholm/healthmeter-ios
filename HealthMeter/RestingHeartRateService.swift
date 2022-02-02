@@ -30,7 +30,11 @@ class RestingHeartRateService {
 
     private let threshold = 1.05
 
+    // Dependencies
     private let calendar: Calendar
+    private let healthStore: HKHealthStore
+    private let queryProvider: QueryProvider
+    private let queryParser: QueryParser
 
     // TODO: change this as it needs to be set to false on every test
     var postDebugNotifications = true
@@ -71,10 +75,16 @@ class RestingHeartRateService {
 
     init(userDefaults: UserDefaults = UserDefaults.standard,
          calendar: Calendar = Calendar.current,
-         notificationService: NotificationService = NotificationService()) {
+         notificationService: NotificationService = NotificationService(),
+         healthStore: HKHealthStore = HKHealthStore(),
+         queryProvider: QueryProvider = QueryProvider(),
+         queryParser: QueryParser = QueryParser()) {
         self.userDefaults = userDefaults
         self.calendar = calendar
         self.notificationService = notificationService
+        self.healthStore = healthStore
+        self.queryProvider = queryProvider
+        self.queryParser = queryParser
 
         self.latestRestingHeartRateUpdate = decodeLatestRestingHeartRateUpdate()
     }
@@ -248,8 +258,7 @@ class RestingHeartRateService {
                 print("Observing in the background")
 
                 // TODO: Do something here
-                self.queryLatestRestingHeartRate {
-                    print("Querying successful")
+                self.queryLatestRestingHeartRate { _ in
                     completionHandler()
                 }
             }
@@ -262,28 +271,57 @@ class RestingHeartRateService {
                }
     }
 
-    func queryLatestRestingHeartRate(completionHandler: @escaping (() -> Void)) {
-        let sampleType = HKSampleType.quantityType(forIdentifier: type)!
-        let sortDescriptor = NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+    func queryLatestRestingHeartRate(completionHandler: @escaping ((Result<RestingHeartRateUpdate, Error>) -> Void)) {
+        let sampleQuery = queryProvider.getLatestRestingHeartRateQuery { query, results, error in
+            self.queryParser.parseLatestRestingHeartRateQueryResults(query: query, results: results, error: error) { result in
+                completionHandler(result)
+            }
+        }
+
+        healthStore.execute(sampleQuery)
+    }
+}
+
+/**
+ Provides `HKQuery` objects
+ */
+class QueryProvider {
+    func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
+        let sampleType = sampleTypeForLatestRestingHeartRate
+        let sortDescriptor = sortDescriptorForLatestRestingHeartRate
         let sampleQuery = HKSampleQuery(sampleType: sampleType,
                                         predicate: nil,
                                         limit: 1,
                                         sortDescriptors: [sortDescriptor],
-                                        resultsHandler: { (query, results, error) in
-            // TODO: Implement
-            print("RESULTS are here")
+                                        resultsHandler: resultsHandler)
+        return sampleQuery
+    }
 
-            guard let sample = results?.last as? HKQuantitySample else {
-                print("FUCK")
-                return
-            }
+    var sampleTypeForLatestRestingHeartRate: HKQuantityType {
+        return HKSampleType.quantityType(forIdentifier: type)!
+    }
 
-            let heartRateUpdate = RestingHeartRateUpdate(sample: sample)
-            self.handleHeartRateUpdate(update: heartRateUpdate)
+    var sortDescriptorForLatestRestingHeartRate: NSSortDescriptor {
+        return NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+    }
+}
 
-            completionHandler()
-        })
+/**
+ Parses HKQuery results to non-HK data
+ */
+class QueryParser {
+    func parseLatestRestingHeartRateQueryResults(query: HKSampleQuery, results: [HKSample]?, error: Error?, completion: (Result<RestingHeartRateUpdate, Error>) -> Void) {
+        if let error = error {
+            completion(.failure(error))
+            return
+        }
 
-        healthStore.execute(sampleQuery)
+        guard let sample = results?.last as? HKQuantitySample else {
+            print("samples array is empty") // TODO: handle missing samples
+            return
+        }
+
+        let heartRateUpdate = RestingHeartRateUpdate(sample: sample)
+        completion(.success(heartRateUpdate))
     }
 }

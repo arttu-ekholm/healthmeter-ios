@@ -8,6 +8,7 @@
 import XCTest
 @testable import HealthMeter
 import HealthKit
+import SwiftUI
 
 class RestingHeartRateServiceTests: XCTestCase {
     var userDefaults: UserDefaults!
@@ -23,6 +24,8 @@ class RestingHeartRateServiceTests: XCTestCase {
 
         userDefaults.removePersistentDomain(forName: #file)
     }
+
+    // MARK: - Tests
 
     func testAboveAverage() {
         let service = RestingHeartRateService()
@@ -113,6 +116,178 @@ class RestingHeartRateServiceTests: XCTestCase {
         XCTAssertTrue(service.postedAboutRisingNotificationToday)
         XCTAssertTrue(service.postedAboutLoweredNotificationToday)
     }
+
+    // MARK: - Encoding and decoding latest resting heart rate
+    func testDecodeLatestRestingHeartRateUpdate_initial() {
+        let service = RestingHeartRateService(userDefaults: userDefaults)
+        XCTAssertNil(service.decodeLatestRestingHeartRateUpdate(), "Latest RHR should be initially nil")
+    }
+
+    func testDecodeLatestRestingHeartRateUpdate_encoding() throws {
+        let latest = RestingHeartRateUpdate(date: Date(), value: 50.0)
+        let data = try XCTUnwrap(JSONEncoder().encode(latest))
+        userDefaults.set(data, forKey: "LatestRestingHeartRateUpdate")
+        let service = RestingHeartRateService(userDefaults: userDefaults)
+        XCTAssertNotNil(service.decodeLatestRestingHeartRateUpdate(), "Latest RHR shouldn't be nil")
+    }
+
+    // MARK: - Debug notification
+    func testDebugNotification_enabled() {
+        let notificationService = MockNotificationService()
+        let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
+        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+
+        let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
+        service.handleHeartRateUpdate(update: update)
+
+        XCTAssertTrue(notificationService.postNotificationCalled, "Debug notification should be sent if the debug flag is enabled.")
+    }
+
+    func testDebugNotification_disabled() {
+        let notificationService = MockNotificationService()
+        let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
+        service.postDebugNotifications = false
+        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+
+        let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
+        service.handleHeartRateUpdate(update: update)
+
+        XCTAssertFalse(notificationService.postNotificationCalled, "Debug notification shuoldn't be sent if the debug flag is disabled.")
+    }
+
+    // MARK: - HealthStore queries
+
+    func testObserveInBacground_functionsCalled() {
+        let mockHealthStore = MockHealthStore()
+        let service = RestingHeartRateService(userDefaults: userDefaults, healthStore: mockHealthStore)
+        service.observeInBackground()
+        XCTAssertTrue(mockHealthStore.executeQueryCalled)
+        XCTAssertTrue(mockHealthStore.enableBackgroundDeliveryCalled)
+    }
+
+    func testQueryLatestRestingHeartRate_healthStoreCalled() {
+        let mockHealthStore = MockHealthStore()
+        let mockQueryProvider = MockQueryProvider()
+        let service = RestingHeartRateService(userDefaults: userDefaults, healthStore: mockHealthStore, queryProvider: mockQueryProvider)
+        service.queryLatestRestingHeartRate { _ in }
+        XCTAssertTrue(mockHealthStore.executeQueryCalled)
+    }
+
+    func testQueryLatestRestingHeartRate_completionBlock_emptySamples() {
+        let mockHealthStore = MockHealthStore()
+        let mockQueryProvider = MockQueryProvider()
+        let service = RestingHeartRateService(userDefaults: userDefaults,
+                                              healthStore: mockHealthStore,
+                                              queryProvider: mockQueryProvider)
+        let expectation = expectation(description: "Completion handler shouldn't be called if the samples are empty")
+        expectation.isInverted = true
+        service.queryLatestRestingHeartRate { _ in
+            expectation.fulfill()
+        }
+        waitForExpectations(timeout: 2.0, handler: .none)
+    }
+
+    func testQueryLatestRestingHeartRate_completionBlock_error() {
+        let mockHealthStore = MockHealthStore()
+        mockHealthStore.mockError = TestError.genericError
+        let mockQueryProvider = MockQueryProvider()
+        let service = RestingHeartRateService(userDefaults: userDefaults,
+                                              healthStore: mockHealthStore,
+                                              queryProvider: mockQueryProvider)
+        let expectation = expectation(description: "Query should fail with an error.")
+        service.queryLatestRestingHeartRate { result in
+            if case .failure(let error) = result, error is TestError {
+                expectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 2.0, handler: .none)
+    }
+
+    func testQueryLatestRestingHeartRate_completionBlock_samples() {
+        let mockHealthStore = MockHealthStore()
+        mockHealthStore.mockSamples = nil
+        let mockQueryProvider = MockQueryProvider()
+        let mockQueryParser = MockQueryParser()
+        let service = RestingHeartRateService(userDefaults: userDefaults,
+                                              healthStore: mockHealthStore,
+                                              queryProvider: mockQueryProvider,
+                                              queryParser: mockQueryParser)
+        mockQueryParser.update = RestingHeartRateUpdate(date: Date(), value: 50.0)
+        let expectation = expectation(description: "queryLatestRestingHeartRate's result should be success")
+        service.queryLatestRestingHeartRate { result in
+            if case .success = result {
+                expectation.fulfill()
+            }
+        }
+        waitForExpectations(timeout: 2.0, handler: .none)
+    }
+}
+
+// MARK: - Mock classes
+
+private class MockHealthStore: HKHealthStore {
+    var executeQueryCalled = false
+    var enableBackgroundDeliveryCalled = false
+
+    var mockSamples: [HKSample]?
+    var mockError: Error?
+    override func execute(_ query: HKQuery) {
+        executeQueryCalled = true
+        if let mockQuery = query as? MockSampleQuery {
+            mockQuery.mockResultHandler?(mockQuery, mockSamples, mockError)
+        }
+    }
+
+    override func enableBackgroundDelivery(for type: HKObjectType, frequency: HKUpdateFrequency, withCompletion completion: @escaping (Bool, Error?) -> Void) {
+        enableBackgroundDeliveryCalled = true
+    }
+}
+
+private class MockQueryProvider: QueryProvider {
+    override func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
+        let mockQuery = MockSampleQuery(sampleType: self.sampleTypeForLatestRestingHeartRate,
+                                        predicate: nil,
+                                        limit: 1,
+                                        sortDescriptors: [self.sortDescriptorForLatestRestingHeartRate],
+                                        resultsHandler: resultsHandler)
+        return mockQuery
+    }
+}
+
+private class MockQueryParser: QueryParser {
+    var update: RestingHeartRateUpdate?
+    var error: Error?
+
+    override func parseLatestRestingHeartRateQueryResults(query: HKSampleQuery, results: [HKSample]?, error: Error?, completion: (Result<RestingHeartRateUpdate, Error>) -> Void) {
+        if let error = error {
+            completion(.failure(error))
+        } else if let update = update {
+            completion(.success(update))
+        } else {
+            fatalError("Either error or update variable needs to be set in MockQueryParser")
+        }
+    }
+}
+
+private class MockSampleQuery: HKSampleQuery {
+    var mockResultHandler: ((HKSampleQuery, [HKSample]?, Error?) -> Void)?
+
+    // All the initialisers need to be overriden, otherwise the app crashes.
+
+    override init(sampleType: HKSampleType, predicate: NSPredicate?, limit: Int, sortDescriptors: [NSSortDescriptor]?, resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) {
+        self.mockResultHandler = resultsHandler
+        super.init(sampleType: sampleType, predicate: predicate, limit: limit, sortDescriptors: sortDescriptors, resultsHandler: resultsHandler)
+    }
+
+    override init(queryDescriptors: [HKQueryDescriptor], limit: Int, resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) {
+        self.mockResultHandler = resultsHandler
+        super.init(queryDescriptors: queryDescriptors, limit: limit, resultsHandler: resultsHandler)
+    }
+
+    override init(queryDescriptors: [HKQueryDescriptor], limit: Int, sortDescriptors: [NSSortDescriptor], resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) {
+        self.mockResultHandler = resultsHandler
+        super.init(queryDescriptors: queryDescriptors, limit: limit, sortDescriptors: sortDescriptors, resultsHandler: resultsHandler)
+    }
 }
 
 private class MockNotificationService: NotificationService {
@@ -123,4 +298,13 @@ private class MockNotificationService: NotificationService {
     override func postNotification(message: String) {
         postNotificationCalledCount += 1
     }
+}
+
+// MARK: - Helpers
+enum TestError: Error {
+    case genericError
+}
+
+func createLatestHeartRate() -> HKSample {
+    fatalError()
 }
