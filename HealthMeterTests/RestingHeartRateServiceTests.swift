@@ -198,10 +198,12 @@ class RestingHeartRateServiceTests: XCTestCase {
         let service = RestingHeartRateService(userDefaults: userDefaults,
                                               healthStore: mockHealthStore,
                                               queryProvider: mockQueryProvider)
-        let expectation = expectation(description: "Completion handler shouldn't be called if the samples are empty")
-        expectation.isInverted = true
-        service.queryLatestRestingHeartRate { _ in
-            expectation.fulfill()
+        let expectation = expectation(description: "No samples should result in an error.")
+        service.queryLatestRestingHeartRate { result in
+            if case .failure(let error) = result, error is QueryParserError {
+                expectation.fulfill()
+            }
+
         }
         waitForExpectations(timeout: 2.0, handler: .none)
     }

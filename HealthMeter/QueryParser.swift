@@ -8,6 +8,10 @@
 import Foundation
 import HealthKit
 
+enum QueryParserError: Error {
+    case noResults
+}
+
 /**
  Parses HKQuery results to non-HK data
  */
@@ -19,7 +23,7 @@ class QueryParser {
         }
 
         guard let sample = results?.last as? HKQuantitySample else {
-            print("samples array is empty") // TODO: handle missing samples
+            completion(.failure(QueryParserError.noResults))
             return
         }
 
