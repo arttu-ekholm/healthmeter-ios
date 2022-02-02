@@ -121,7 +121,12 @@ class RestingHeartRateService {
                                                                       query: query,
                                                                       result: results,
                                                                       error: error,
-                                                                      callback: averageRHRCallback)
+                                                                      callback: { result in
+                if case .success(let value) = result {
+                    self.averageHeartRate = value
+                }
+                averageRHRCallback(result)
+            })
         }
         healthStore.execute(query)
     }

@@ -49,8 +49,7 @@ class QueryParser {
         }
 
         let avgRestingValue = averageRestingHeartRateCalculator.averageRestingHeartRate(fromStatsCollection: statsCollection, startDate: startDate, endDate: endDate)
-
-        // self.averageHeartRate = avgRestingValue //TODO: set this somewhere
+        
         callback(.success(avgRestingValue))
     }
 }
