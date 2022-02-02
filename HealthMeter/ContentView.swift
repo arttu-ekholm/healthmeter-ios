@@ -11,7 +11,6 @@ import HealthKit
 //let type: HKQuantityTypeIdentifier = HKQuantityTypeIdentifier.heartRate
 
 let healthStore: HKHealthStore = HKHealthStore()
-let type: HKQuantityTypeIdentifier = HKQuantityTypeIdentifier.restingHeartRate
 
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
@@ -75,7 +74,7 @@ struct ContentView: View {
         // TODO: add completion handler to the func parameter
 
         let allTypes = Set([
-            HKObjectType.quantityType(forIdentifier: type)!])
+            HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
         healthStore.requestAuthorization(toShare: allTypes, read: allTypes) { (success, error) in
             if let error = error {
                 print("HK authorisation failed with error: \(error.localizedDescription)")

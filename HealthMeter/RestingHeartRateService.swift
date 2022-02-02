@@ -19,6 +19,8 @@ enum Trend {
 class RestingHeartRateService {
     static let shared = RestingHeartRateService()
 
+    typealias ObserverQueryHandler = (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void
+
     // UserDefaults and its keys
     private let userDefaults: UserDefaults
     private let averageRestingHeartRateKey = "AverageRestingHeartRate"
@@ -112,11 +114,7 @@ class RestingHeartRateService {
         let now = Date()
         let queryStart = Date().addingTimeInterval(-60 * 60 * 24 * 180)
 
-        guard
-            let quantityType = HKQuantityType.quantityType(forIdentifier: type)
-        else {
-            fatalError("Nil quantity type")
-        }
+        let quantityType = queryProvider.sampleTypeForRestingHeartRate
 
         let interval = NSDateComponents()
         interval.month = 6
@@ -246,32 +244,28 @@ class RestingHeartRateService {
     }
 
     func observeInBackground() {
-        let sampleType = HKObjectType.quantityType(forIdentifier: type)!
-        let query = HKObserverQuery(
-            sampleType: sampleType,
-            predicate: nil) { query, completionHandler, error in
+        let observerQuery = queryProvider.getObserverQuery { query, completionHandler, error in
+            print("OBSERVER QUERY CALLBACK \(Date())")
 
-                print("OBSERVER QUERY CALLBACK \(Date())")
+            guard error == nil else { return }
 
-                guard error == nil else { return }
+            print("Observing in the background")
 
-                print("Observing in the background")
-
-                // TODO: Do something here
-                self.queryLatestRestingHeartRate { _ in
-                    completionHandler()
-                }
+            // TODO: Do something here
+            self.queryLatestRestingHeartRate { _ in
+                completionHandler()
             }
-        healthStore.execute(query)
+        }
+        healthStore.execute(observerQuery)
 
         healthStore.enableBackgroundDelivery(
-            for: sampleType,
+            for: queryProvider.sampleTypeForRestingHeartRate,
                frequency: .hourly) { success, error in
                    print("Something happens here in HKObserverQuery. Success: \(success), error: \(String(describing: error?.localizedDescription))")
                }
     }
 
-    func queryLatestRestingHeartRate(completionHandler: @escaping ((Result<RestingHeartRateUpdate, Error>) -> Void)) {
+    func queryLatestRestingHeartRate(completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
         let sampleQuery = queryProvider.getLatestRestingHeartRateQuery { query, results, error in
             self.queryParser.parseLatestRestingHeartRateQueryResults(query: query, results: results, error: error) { result in
                 completionHandler(result)
@@ -279,49 +273,5 @@ class RestingHeartRateService {
         }
 
         healthStore.execute(sampleQuery)
-    }
-}
-
-/**
- Provides `HKQuery` objects
- */
-class QueryProvider {
-    func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
-        let sampleType = sampleTypeForLatestRestingHeartRate
-        let sortDescriptor = sortDescriptorForLatestRestingHeartRate
-        let sampleQuery = HKSampleQuery(sampleType: sampleType,
-                                        predicate: nil,
-                                        limit: 1,
-                                        sortDescriptors: [sortDescriptor],
-                                        resultsHandler: resultsHandler)
-        return sampleQuery
-    }
-
-    var sampleTypeForLatestRestingHeartRate: HKQuantityType {
-        return HKSampleType.quantityType(forIdentifier: type)!
-    }
-
-    var sortDescriptorForLatestRestingHeartRate: NSSortDescriptor {
-        return NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
-    }
-}
-
-/**
- Parses HKQuery results to non-HK data
- */
-class QueryParser {
-    func parseLatestRestingHeartRateQueryResults(query: HKSampleQuery, results: [HKSample]?, error: Error?, completion: (Result<RestingHeartRateUpdate, Error>) -> Void) {
-        if let error = error {
-            completion(.failure(error))
-            return
-        }
-
-        guard let sample = results?.last as? HKQuantitySample else {
-            print("samples array is empty") // TODO: handle missing samples
-            return
-        }
-
-        let heartRateUpdate = RestingHeartRateUpdate(sample: sample)
-        completion(.success(heartRateUpdate))
     }
 }

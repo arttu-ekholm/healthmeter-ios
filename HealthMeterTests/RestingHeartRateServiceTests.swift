@@ -165,6 +165,25 @@ class RestingHeartRateServiceTests: XCTestCase {
         XCTAssertTrue(mockHealthStore.enableBackgroundDeliveryCalled)
     }
 
+    func testObserveInBackground_latestQuerySuccessfullyCalled() {
+        let mockHealthStore = MockHealthStore()
+        let mockQueryProvider = MockQueryProvider()
+        let mockQueryParser = MockQueryParser()
+        mockQueryParser.update = RestingHeartRateUpdate(date: Date(), value: 50.0)
+        let service = RestingHeartRateService(userDefaults: userDefaults,
+                                              healthStore: mockHealthStore,
+                                              queryProvider: mockQueryProvider,
+                                              queryParser: mockQueryParser)
+        let predicate = NSPredicate { parser, _ in
+            guard let parser = parser as? MockQueryParser else { return false }
+            return parser.parseLatestRestingHeartRateQueryResultsCalled
+        }
+        _ = expectation(for: predicate, evaluatedWith: mockQueryParser, handler: .none)
+
+        service.observeInBackground()
+        waitForExpectations(timeout: 2.0, handler: .none)
+    }
+
     func testQueryLatestRestingHeartRate_healthStoreCalled() {
         let mockHealthStore = MockHealthStore()
         let mockQueryProvider = MockQueryProvider()
@@ -231,10 +250,15 @@ private class MockHealthStore: HKHealthStore {
 
     var mockSamples: [HKSample]?
     var mockError: Error?
+
+    var mockObserverQueryCompletionHandler: () -> Void = { }
+    
     override func execute(_ query: HKQuery) {
         executeQueryCalled = true
         if let mockQuery = query as? MockSampleQuery {
             mockQuery.mockResultHandler?(mockQuery, mockSamples, mockError)
+        } else if let mockObserverQuery = query as? MockObserverQuery {
+            mockObserverQuery.mockResultHandler?(mockObserverQuery, mockObserverQueryCompletionHandler, mockError)
         }
     }
 
@@ -244,21 +268,37 @@ private class MockHealthStore: HKHealthStore {
 }
 
 private class MockQueryProvider: QueryProvider {
+    var getLatestRestingHeartRateQueryCalled = false
+    var getObserverQueryCalled = false
+
     override func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
-        let mockQuery = MockSampleQuery(sampleType: self.sampleTypeForLatestRestingHeartRate,
+        getLatestRestingHeartRateQueryCalled = true
+        let mockQuery = MockSampleQuery(sampleType: self.sampleTypeForRestingHeartRate,
                                         predicate: nil,
                                         limit: 1,
                                         sortDescriptors: [self.sortDescriptorForLatestRestingHeartRate],
                                         resultsHandler: resultsHandler)
         return mockQuery
     }
+
+    override func getObserverQuery(updateHandler: @escaping (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void) -> HKObserverQuery {
+        getObserverQueryCalled = true
+        let mockObserverQuery = MockObserverQuery(sampleType: self.sampleTypeForRestingHeartRate,
+                                                  predicate: nil,
+                                                  updateHandler: updateHandler)
+        // This needs to be set here because variable is set to nil on the second init call.
+        mockObserverQuery.mockResultHandler = updateHandler
+        return mockObserverQuery
+    }
 }
 
 private class MockQueryParser: QueryParser {
     var update: RestingHeartRateUpdate?
     var error: Error?
+    var parseLatestRestingHeartRateQueryResultsCalled = false
 
-    override func parseLatestRestingHeartRateQueryResults(query: HKSampleQuery, results: [HKSample]?, error: Error?, completion: (Result<RestingHeartRateUpdate, Error>) -> Void) {
+    override func parseLatestRestingHeartRateQueryResults(query: HKSampleQuery, results: [HKSample]?, error: Error?, completion: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
+        parseLatestRestingHeartRateQueryResultsCalled = true
         if let error = error {
             completion(.failure(error))
         } else if let update = update {
@@ -266,6 +306,19 @@ private class MockQueryParser: QueryParser {
         } else {
             fatalError("Either error or update variable needs to be set in MockQueryParser")
         }
+    }
+}
+
+private class MockObserverQuery: HKObserverQuery {
+    var mockResultHandler: ((HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void)?
+
+    override init(sampleType: HKSampleType, predicate: NSPredicate?, updateHandler: @escaping (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void) {
+        self.mockResultHandler = updateHandler
+        super.init(sampleType: sampleType, predicate: predicate, updateHandler: updateHandler)
+    }
+
+    override init(queryDescriptors: [HKQueryDescriptor], updateHandler: @escaping (HKObserverQuery, Set<HKSampleType>?, @escaping HKObserverQueryCompletionHandler, Error?) -> Void) {
+        super.init(queryDescriptors: queryDescriptors, updateHandler: updateHandler)
     }
 }
 
