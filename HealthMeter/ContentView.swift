@@ -20,6 +20,8 @@ struct ContentView: View {
 
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
 
+    var showDebugView = true
+
     var body: some View {
         if settingsStore.tutorialShown {
             if !shouldDisplayHealthKitAuthorisation {
@@ -31,15 +33,18 @@ struct ContentView: View {
                         shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
                     })
                 }
-            VStack {
-                latestHighRHR(date: heartRateService.latestHighRHRNotificationPostDate)
-                latestLowRHR(date: heartRateService.latestLoweredRHRNotificationPostDate)
-                latestDebugDate(date: heartRateService.latestDebugNotificationDate)
+            if showDebugView {
+                VStack {
+                    Text("Debug view:")
+                    latestHighRHR(date: heartRateService.latestHighRHRNotificationPostDate)
+                    latestLowRHR(date: heartRateService.latestLoweredRHRNotificationPostDate)
+                    latestDebugDate(date: heartRateService.latestDebugNotificationDate)
 
-                averageHeartRateText(result: queryResult)
+                    averageHeartRateText(result: queryResult)
+                }
+                .border(.black, width: 1)
+                .padding()
             }
-            .border(.black, width: 1)
-
         } else {
             TutorialView(settingsStore: settingsStore)
         }
