@@ -16,7 +16,14 @@ enum Trend {
     case high2high
 }
 
+
+
 class RestingHeartRateService {
+    enum HealthKitAuthorisationStatus {
+        case unknown
+        case shouldRequest
+        case unnecessary
+    }
     static let shared = RestingHeartRateService()
 
     typealias ObserverQueryHandler = (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void
@@ -72,6 +79,17 @@ class RestingHeartRateService {
             return userDefaults.object(forKey: latestLoweredRHRNotificationPostDateKey) as? Date
         } set {
             userDefaults.set(newValue, forKey: latestLoweredRHRNotificationPostDateKey)
+        }
+    }
+
+    /**
+     The date when the last "You have a high RHR" notification is posted
+     */
+    var latestDebugNotificationDate: Date? {
+        get {
+            return userDefaults.object(forKey: "latestDebugNotificationDate") as? Date
+        } set {
+            userDefaults.set(newValue, forKey: "latestDebugNotificationDate")
         }
     }
 
@@ -258,13 +276,13 @@ class RestingHeartRateService {
         }
     }
 
-    func getAuthorisationStatusForRestingHeartRate(completion: @escaping (Bool) -> Void) {
+    func getAuthorisationStatusForRestingHeartRate(completion: @escaping (HealthKitAuthorisationStatus) -> Void) {
         let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
         healthStore.getRequestStatusForAuthorization(toShare: [], read: rhr) { status, error in
-            if status == .unnecessary {
-                completion(false)
-            } else {
-                completion(true)
+            switch status {
+            case .unnecessary: completion(.unnecessary)
+            case .shouldRequest: completion(.shouldRequest)
+            default: completion(.unknown)
             }
         }
     }

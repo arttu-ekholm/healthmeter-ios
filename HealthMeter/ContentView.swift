@@ -16,40 +16,33 @@ struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @State var queryResult: Result<Double, Error>?
     @State var shouldDisplayHealthKitAuthorisation = false
+    @ObservedObject var settingsStore = SettingsStore()
 
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
 
     var body: some View {
-        if shouldDisplayHealthKitAuthorisation {
-            Button("Request authorization") {
-                heartRateService.requestAuthorisation { success, error in
-                    heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { needsAuthorisation in
-                        shouldDisplayHealthKitAuthorisation = needsAuthorisation
+        if settingsStore.tutorialShown {
+            if !shouldDisplayHealthKitAuthorisation {
+                HeartView(restingHeartRateService: heartRateService)
+            }
+            Text("")
+                .onAppear {
+                    heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { status in
+                        shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
                     })
                 }
-            }
-        }
+            VStack {
+                latestHighRHR(date: heartRateService.latestHighRHRNotificationPostDate)
+                latestLowRHR(date: heartRateService.latestLoweredRHRNotificationPostDate)
+                latestDebugDate(date: heartRateService.latestDebugNotificationDate)
 
-        Button("query") {
-            heartRateService.queryRestingHeartRate() { result in
-                self.queryResult = result
+                averageHeartRateText(result: queryResult)
             }
-        }
-        HeartView()
-        Text("This app measures your average resting heart rate. You'll be alerted if it rises above your average.")
-            .padding().onChange(of: scenePhase) { newValue in
-                if newValue == .inactive || newValue == .background {
-                    UIApplication.shared.applicationIconBadgeNumber = 0
-                }
-            }.onAppear {
-                heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { needsAuthorisation in
-                    shouldDisplayHealthKitAuthorisation = needsAuthorisation
-                })
-            }
-        latestHighRHR(date: heartRateService.latestHighRHRNotificationPostDate)
-        latestLowRHR(date: heartRateService.latestLoweredRHRNotificationPostDate)
+            .border(.black, width: 1)
 
-        averageHeartRateText(result: queryResult)
+        } else {
+            TutorialView(settingsStore: settingsStore)
+        }
     }
 
     func latestHighRHR(date: Date?) -> Text {
@@ -62,6 +55,12 @@ struct ContentView: View {
         guard let date = date else { return Text("No low HRH notification") }
 
         return Text("Latest low HRH notification: \(date)")
+    }
+
+    func latestDebugDate(date: Date?) -> Text {
+        guard let date = date else { return Text("No debug HRH notification") }
+
+        return Text("Latest debug HRH notification: \(date)")
     }
     
 
@@ -79,7 +78,14 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(queryResult: nil)
+        ContentView(shouldDisplayHealthKitAuthorisation: false)
     }
 }
 
+class SettingsStore: ObservableObject {
+    @Published var tutorialShown: Bool = UserDefaults.standard.bool(forKey: "tutorialShown") {
+        didSet {
+            UserDefaults.standard.set(self.tutorialShown, forKey: "tutorialShown")
+        }
+    }
+}

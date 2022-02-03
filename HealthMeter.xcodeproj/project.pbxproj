@@ -22,6 +22,7 @@
 		4BACE5C327AAC3C4009068F9 /* RestingHeartRateUpdateTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BACE5C227AAC3C4009068F9 /* RestingHeartRateUpdateTests.swift */; };
 		4BACE5C527AACC3C009068F9 /* RestingHeartRateCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BACE5C427AACC3C009068F9 /* RestingHeartRateCalculator.swift */; };
 		4BACE5C727AAF0BF009068F9 /* HeartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BACE5C627AAF0BF009068F9 /* HeartView.swift */; };
+		4BACE5C927ABB8A6009068F9 /* TutorialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BACE5C827ABB8A6009068F9 /* TutorialView.swift */; };
 		4BBE120027A9CDC200112638 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BBE11FF27A9CDC200112638 /* NotificationService.swift */; };
 		4BBE120427A9CF7500112638 /* RestingHeartRateUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */; };
 /* End PBXBuildFile section */
@@ -64,6 +65,7 @@
 		4BACE5C227AAC3C4009068F9 /* RestingHeartRateUpdateTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateUpdateTests.swift; sourceTree = "<group>"; };
 		4BACE5C427AACC3C009068F9 /* RestingHeartRateCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateCalculator.swift; sourceTree = "<group>"; };
 		4BACE5C627AAF0BF009068F9 /* HeartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartView.swift; sourceTree = "<group>"; };
+		4BACE5C827ABB8A6009068F9 /* TutorialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialView.swift; sourceTree = "<group>"; };
 		4BBE11FF27A9CDC200112638 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateUpdate.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -124,6 +126,7 @@
 				4BA142F6279DA6B5008884F0 /* ContentView.swift */,
 				4BACE5C627AAF0BF009068F9 /* HeartView.swift */,
 				4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */,
+				4BACE5C827ABB8A6009068F9 /* TutorialView.swift */,
 				4BACE5C427AACC3C009068F9 /* RestingHeartRateCalculator.swift */,
 				4BACE5C027AAC349009068F9 /* QueryProvider.swift */,
 				4BACE5BE27AAC32A009068F9 /* QueryParser.swift */,
@@ -308,6 +311,7 @@
 				4BBE120427A9CF7500112638 /* RestingHeartRateUpdate.swift in Sources */,
 				4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */,
 				4BACE5C727AAF0BF009068F9 /* HeartView.swift in Sources */,
+				4BACE5C927ABB8A6009068F9 /* TutorialView.swift in Sources */,
 				4BACE5BF27AAC32A009068F9 /* QueryParser.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
