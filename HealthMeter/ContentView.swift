@@ -35,6 +35,7 @@ struct ContentView: View {
                 self.queryResult = result
             }
         }
+        HeartView()
         Text("This app measures your average resting heart rate. You'll be alerted if it rises above your average.")
             .padding().onChange(of: scenePhase) { newValue in
                 if newValue == .inactive || newValue == .background {

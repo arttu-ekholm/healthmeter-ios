@@ -252,16 +252,14 @@ class RestingHeartRateService {
 
     // MARK: - HealthKit permissions
     func requestAuthorisation(completion: @escaping (Bool, Error?) -> Void) {
-        let rhr = Set([
-            HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
+        let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
         healthStore.requestAuthorization(toShare: [], read: rhr) { (success, error) in
             completion(success, error)
         }
     }
 
     func getAuthorisationStatusForRestingHeartRate(completion: @escaping (Bool) -> Void) {
-        let rhr = Set([
-            HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
+        let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
         healthStore.getRequestStatusForAuthorization(toShare: [], read: rhr) { status, error in
             if status == .unnecessary {
                 completion(false)
