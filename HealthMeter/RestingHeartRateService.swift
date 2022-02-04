@@ -148,9 +148,17 @@ class RestingHeartRateService {
         }
         healthStore.execute(query)
     }
-    
 
+    func handleDebugUpdate(update: RestingHeartRateUpdate) {
+        let taskId =  UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
+            print("handling")
+            self.handleHeartRateUpdate(update: update)
+            UIApplication.shared.endBackgroundTask(taskId)
+        }
+    }
     func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
+        postDebugNotification(message: "DEBUG MSG:  handleHeartRateUpdate \(String(format: "%.0f", (update.value)))")
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
             postDebugNotification(message: "DEBUG MESSAGE: guard 1 fails")
@@ -205,6 +213,7 @@ class RestingHeartRateService {
     func postDebugNotification(message: String) {
         guard postDebugNotifications else { return }
 
+        latestDebugNotificationDate = Date()
         notificationService.postNotification(message: message)
     }
 

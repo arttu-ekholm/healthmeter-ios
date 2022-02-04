@@ -8,14 +8,27 @@
 import Foundation
 import HealthKit
 
-enum QueryParserError: Error {
-    case noResults
-}
-
 /**
  Parses HKQuery results to non-HK data
  */
 class QueryParser {
+    enum QueryParserError: LocalizedError {
+        case noLatestRestingHeartRateFound
+        case noRestingHeartRateStatisticsFound
+
+        var errorDescription: String? {
+            switch self {
+            case .noLatestRestingHeartRateFound:
+                return "No latest resting heart rate found."
+            case .noRestingHeartRateStatisticsFound:
+                return "No resting heart rate statistics found."
+            }
+        }
+
+        var recoverySuggestion: String? { "Get a heart rate." }
+        var failureReason: String? { "You don't have a heart or a heart rate." }
+    }
+
     let averageRestingHeartRateCalculator: RestingHeartRateCalculator
 
     init(averageRestingHeartRateCalculator: RestingHeartRateCalculator = RestingHeartRateCalculator()) {
@@ -29,7 +42,7 @@ class QueryParser {
         }
 
         guard let sample = results?.last as? HKQuantitySample else {
-            completion(.failure(QueryParserError.noResults))
+            completion(.failure(QueryParserError.noLatestRestingHeartRateFound))
             return
         }
 
@@ -44,7 +57,7 @@ class QueryParser {
         }
 
         guard let statsCollection = result else {
-            callback(.failure(QueryParserError.noResults))
+            callback(.failure(QueryParserError.noRestingHeartRateStatisticsFound))
             return
         }
 

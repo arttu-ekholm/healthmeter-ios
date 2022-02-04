@@ -22,6 +22,8 @@ struct ContentView: View {
 
     var showDebugView = true
 
+    @State var debugValue: Double = 50.0
+
     var body: some View {
         if settingsStore.tutorialShown {
             if !shouldDisplayHealthKitAuthorisation {
@@ -41,6 +43,13 @@ struct ContentView: View {
                     latestDebugDate(date: heartRateService.latestDebugNotificationDate)
 
                     averageHeartRateText(result: queryResult)
+                    TextField("", value: $debugValue, format: .number)
+                    .keyboardType(.numberPad)
+
+                    Button("Handle fake update") {
+                        heartRateService.handleDebugUpdate(update: RestingHeartRateUpdate(date: Date(), value: debugValue))
+
+                    }
                 }
                 .border(.black, width: 1)
                 .padding()
@@ -83,7 +92,7 @@ struct ContentView: View {
 
 struct ContentView_Previews: PreviewProvider {
     static var previews: some View {
-        ContentView(shouldDisplayHealthKitAuthorisation: false)
+        ContentView()
     }
 }
 
