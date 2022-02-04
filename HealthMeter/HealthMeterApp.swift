@@ -29,7 +29,7 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             }
         }
 
-        RestingHeartRateService.shared.observeInBackground()
+        RestingHeartRateService.shared.observeInBackground { _, _ in }
         return true
     }
 }

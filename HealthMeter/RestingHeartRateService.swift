@@ -16,17 +16,16 @@ enum Trend {
     case high2high
 }
 
-
-
 class RestingHeartRateService {
+    /**
+     These are mapped to `HKAuthorizationRequestStatus`
+     */
     enum HealthKitAuthorisationStatus {
         case unknown
         case shouldRequest
         case unnecessary
     }
     static let shared = RestingHeartRateService()
-
-    typealias ObserverQueryHandler = (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void
 
     // UserDefaults and its keys
     private let userDefaults: UserDefaults
@@ -37,17 +36,23 @@ class RestingHeartRateService {
 
     private var latestRestingHeartRateUpdate: RestingHeartRateUpdate?
 
+    // If the latest update is this much above the avg. RHR, the notification will be triggered.
     private let threshold = 1.05
 
     // Dependencies
     private let calendar: Calendar
     private let healthStore: HKHealthStore
+
+    ///  Provides the queries for the HKHealthStore to execute
     private let queryProvider: QueryProvider
+
+    /// Parses the query responses
     private let queryParser: QueryParser
 
     // TODO: change this as it needs to be set to false on every test
     var postDebugNotifications = true
 
+    /// Handles the sending of local push notifications
     let notificationService: NotificationService
 
     var averageHeartRate: Double? {
@@ -109,7 +114,9 @@ class RestingHeartRateService {
         self.latestRestingHeartRateUpdate = decodeLatestRestingHeartRateUpdate()
     }
 
-
+    /**
+     Decodes the latest RHR update from UserDefaults
+     */
     func decodeLatestRestingHeartRateUpdate() -> RestingHeartRateUpdate? {
         guard let data = userDefaults.data(forKey: latestRestingHeartRateUpdateKey) else { return nil }
 
@@ -157,7 +164,11 @@ class RestingHeartRateService {
             UIApplication.shared.endBackgroundTask(taskId)
         }
     }
+    
     func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
+        // TODO: Split this function to smaller parts so it's easier to test
+        // TODO: Separate the debug code
+
         postDebugNotification(message: "DEBUG MSG:  handleHeartRateUpdate \(String(format: "%.0f", (update.value)))")
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
@@ -173,24 +184,22 @@ class RestingHeartRateService {
                 postDebugNotification(message: "DEBUG MESSAGE: guard 1 fails")
                 return
             }
-        } else {
-            // No previous update. Notify about the rising heart rate
         }
 
         let isAboveAverageRHR = heartRateIsAboveAverage(update: update, average: averageHeartRate)
 
-        // check if it is -, _, / or \
+        // check if the trend is -, _, / or \
 
         var message: String?
         var trend: Trend?
         if isAboveAverageRHR {
-            if !postedAboutRisingNotificationToday {
+            if !hasPostedAboutRisingNotificationToday {
                 trend = .rising
                 message = notificationMessage(trend: .rising, heartRate: update.value, averageHeartRate: averageHeartRate)
             }
         } else {
             // RHR has been high, now it's lowered.
-            if !postedAboutLoweredNotificationToday, postedAboutRisingNotificationToday {
+            if !hasPostedAboutLoweredNotificationToday, hasPostedAboutRisingNotificationToday {
                 trend = .lowering
                 message = notificationMessage(trend: .lowering, heartRate: update.value, averageHeartRate: averageHeartRate)
             }
@@ -233,28 +242,31 @@ class RestingHeartRateService {
         return message
     }
 
-    var postedAboutRisingNotificationToday: Bool {
+    var hasPostedAboutRisingNotificationToday: Bool {
         guard let latestHighRHRNotificationPostDate = latestHighRHRNotificationPostDate else { return false }
 
         return calendar.isDateInToday(latestHighRHRNotificationPostDate)
     }
 
-    var postedAboutLoweredNotificationToday: Bool {
+    var hasPostedAboutLoweredNotificationToday: Bool {
         guard let latestLoweredRHRNotificationPostDate = latestLoweredRHRNotificationPostDate else { return false }
 
         return calendar.isDateInToday(latestLoweredRHRNotificationPostDate)
     }
 
-    func observeInBackground() {
+    /**
+     Sets the app to observe the changes in HealthKit and wake up when there are new RHR updates.
+     */
+    func observeInBackground(completionHandler: @escaping ((Bool, Error?) -> Void)) {
         let observerQuery = queryProvider.getObserverQuery { query, completionHandler, error in
-            print("OBSERVER QUERY CALLBACK \(Date())")
-
             guard error == nil else { return }
 
-            print("Observing in the background")
+            self.queryLatestRestingHeartRate { result in
 
-            // TODO: Do something here
-            self.queryLatestRestingHeartRate { _ in
+                if case .success(let update) = result {
+                    self.handleHeartRateUpdate(update: update)
+                }
+
                 completionHandler()
             }
         }
@@ -262,9 +274,8 @@ class RestingHeartRateService {
 
         healthStore.enableBackgroundDelivery(
             for: queryProvider.sampleTypeForRestingHeartRate,
-               frequency: .hourly) { success, error in
-                   print("Something happens here in HKObserverQuery. Success: \(success), error: \(String(describing: error?.localizedDescription))")
-               }
+               frequency: .hourly,
+               withCompletion: completionHandler)
     }
 
     func queryLatestRestingHeartRate(completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
@@ -278,6 +289,7 @@ class RestingHeartRateService {
     }
 
     // MARK: - HealthKit permissions
+
     func requestAuthorisation(completion: @escaping (Bool, Error?) -> Void) {
         let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
         healthStore.requestAuthorization(toShare: [], read: rhr) { (success, error) in

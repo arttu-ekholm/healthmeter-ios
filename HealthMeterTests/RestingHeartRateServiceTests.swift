@@ -63,7 +63,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         let update = RestingHeartRateUpdate(date: Date(), value: 100.0)
         service.handleHeartRateUpdate(update: update)
 
-        XCTAssertTrue(service.postedAboutRisingNotificationToday)
+        XCTAssertTrue(service.hasPostedAboutRisingNotificationToday)
     }
 
     func testPosted_risingToLowered() throws {
@@ -75,8 +75,8 @@ class RestingHeartRateServiceTests: XCTestCase {
         let loweringUpdate = RestingHeartRateUpdate(date: Date(), value: 50.0)
         service.handleHeartRateUpdate(update: loweringUpdate)
 
-        XCTAssertTrue(service.postedAboutRisingNotificationToday)
-        XCTAssertTrue(service.postedAboutLoweredNotificationToday)
+        XCTAssertTrue(service.hasPostedAboutRisingNotificationToday)
+        XCTAssertTrue(service.hasPostedAboutLoweredNotificationToday)
     }
 
     /**
@@ -90,8 +90,8 @@ class RestingHeartRateServiceTests: XCTestCase {
         let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
         service.handleHeartRateUpdate(update: update)
 
-        XCTAssertFalse(service.postedAboutRisingNotificationToday)
-        XCTAssertFalse(service.postedAboutLoweredNotificationToday)
+        XCTAssertFalse(service.hasPostedAboutRisingNotificationToday)
+        XCTAssertFalse(service.hasPostedAboutLoweredNotificationToday)
     }
 
     /**
@@ -113,8 +113,8 @@ class RestingHeartRateServiceTests: XCTestCase {
         service.handleHeartRateUpdate(update: loweringUpdate2)
         XCTAssertEqual(notificationService.postNotificationCalledCount, 2, "Only two notifications should be sent - one for high RHR and and another for lowered RRH")
 
-        XCTAssertTrue(service.postedAboutRisingNotificationToday)
-        XCTAssertTrue(service.postedAboutLoweredNotificationToday)
+        XCTAssertTrue(service.hasPostedAboutRisingNotificationToday)
+        XCTAssertTrue(service.hasPostedAboutLoweredNotificationToday)
     }
 
     // MARK: - Encoding and decoding latest resting heart rate
@@ -184,6 +184,32 @@ class RestingHeartRateServiceTests: XCTestCase {
         waitForExpectations(timeout: 2.0, handler: .none)
     }
 
+    /**
+     Test observeInBackground -> High RHR -> handleUpdate -> notification is posted pipeline works
+     */
+    func testObserveInBackground_successfulUpdateHandled() {
+        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        let mockHealthStore = MockHealthStore()
+        let mockQueryProvider = MockQueryProvider()
+        let mockQueryParser = MockQueryParser()
+        let mockNotificationService = MockNotificationService()
+        mockQueryParser.update = RestingHeartRateUpdate(date: Date(), value: 100.0)
+        let service = RestingHeartRateService(userDefaults: userDefaults,
+                                              notificationService: mockNotificationService,
+                                              healthStore: mockHealthStore,
+                                              queryProvider: mockQueryProvider,
+                                              queryParser: mockQueryParser)
+        service.postDebugNotifications = false
+        let predicate = NSPredicate { mockNotificationService, _ in
+            guard let mockNotificationService = mockNotificationService as? MockNotificationService else { return false }
+            return mockNotificationService.postNotificationCalled
+        }
+        _ = expectation(for: predicate, evaluatedWith: mockNotificationService, handler: .none)
+
+        service.observeInBackground()
+        waitForExpectations(timeout: 2.0, handler: .none)
+    }
+
     func testQueryLatestRestingHeartRate_healthStoreCalled() {
         let mockHealthStore = MockHealthStore()
         let mockQueryProvider = MockQueryProvider()
@@ -200,7 +226,7 @@ class RestingHeartRateServiceTests: XCTestCase {
                                               queryProvider: mockQueryProvider)
         let expectation = expectation(description: "No samples should result in an error.")
         service.queryLatestRestingHeartRate { result in
-            if case .failure(let error) = result, error is QueryParserError {
+            if case .failure(let error) = result, error is QueryParser.QueryParserError {
                 expectation.fulfill()
             }
 
