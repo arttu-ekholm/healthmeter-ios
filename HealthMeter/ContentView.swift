@@ -8,19 +8,14 @@
 import SwiftUI
 import HealthKit
 
-//let type: HKQuantityTypeIdentifier = HKQuantityTypeIdentifier.heartRate
-
 let healthStore: HKHealthStore = HKHealthStore()
 
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
-    @State var queryResult: Result<Double, Error>?
     @State var shouldDisplayHealthKitAuthorisation = false
     @ObservedObject var settingsStore = SettingsStore()
 
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
-
-    var showDebugView = true
 
     @State var debugValue: Double = 50.0
 
@@ -35,27 +30,25 @@ struct ContentView: View {
                         shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
                     })
                 }
-            if showDebugView {
+            if Config.shared.displayDebugView {
                 VStack {
                     Text("Debug view:")
                     latestHighRHR(date: heartRateService.latestHighRHRNotificationPostDate)
                     latestLowRHR(date: heartRateService.latestLoweredRHRNotificationPostDate)
                     latestDebugDate(date: heartRateService.latestDebugNotificationDate)
 
-                    averageHeartRateText(result: queryResult)
                     TextField("", value: $debugValue, format: .number)
-                    .keyboardType(.numberPad)
+                        .keyboardType(.numberPad)
 
                     Button("Handle fake update") {
                         heartRateService.handleDebugUpdate(update: RestingHeartRateUpdate(date: Date(), value: debugValue))
-
                     }
                 }
                 .border(.black, width: 1)
                 .padding()
             }
         } else {
-            TutorialView(settingsStore: settingsStore)
+            TutorialView(settingsStore: settingsStore, heartRateService: heartRateService)
         }
     }
 

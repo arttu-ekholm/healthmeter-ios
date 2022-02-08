@@ -9,7 +9,11 @@ import Foundation
 import HealthKit
 
 class RestingHeartRateCalculator {
-    func averageRestingHeartRate(fromStatsCollection statsCollection: HKStatisticsCollection, startDate: Date, endDate: Date) -> Double {
+    enum RestingHeartRateCalculatorError: Error {
+        case emptyCollection
+    }
+
+    func averageRestingHeartRate(fromStatsCollection statsCollection: HKStatisticsCollection, startDate: Date, endDate: Date) throws -> Double {
         var avgValues = [Double]()
         statsCollection.enumerateStatistics(from: startDate, to: endDate) { statistics, stop in
             if let quantity = statistics.averageQuantity() {
@@ -18,7 +22,7 @@ class RestingHeartRateCalculator {
             }
         }
 
-        guard !avgValues.isEmpty else { return 0.0 }
+        guard !avgValues.isEmpty else { throw RestingHeartRateCalculatorError.emptyCollection }
 
         let avgRestingValue = avgValues.reduce(0.0, { partialResult, next in
             return partialResult + next

@@ -15,6 +15,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
+        Config.shared.postDebugNotifications = false
         userDefaults?.removePersistentDomain(forName: #file)
         userDefaults = UserDefaults(suiteName: #file)
     }
@@ -37,7 +38,6 @@ class RestingHeartRateServiceTests: XCTestCase {
     func testUpdate_noNotificationIfAvgHRMissing() throws {
         let mockNotificationService = MockNotificationService()
         let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: mockNotificationService)
-        service.postDebugNotifications = false
         let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
         service.handleHeartRateUpdate(update: update)
 
@@ -84,7 +84,6 @@ class RestingHeartRateServiceTests: XCTestCase {
      */
     func testPosting_averageRHR() throws {
         let service = RestingHeartRateService(userDefaults: userDefaults)
-        service.postDebugNotifications = false
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
         let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
@@ -100,7 +99,6 @@ class RestingHeartRateServiceTests: XCTestCase {
     func testPosted_multiple() throws {
         let notificationService = MockNotificationService()
         let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
-        service.postDebugNotifications = false
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
         let risingUpdate1 = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60*3), value: 100.0)
@@ -133,6 +131,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     // MARK: - Debug notification
     func testDebugNotification_enabled() {
+        Config.shared.postDebugNotifications = true
         let notificationService = MockNotificationService()
         let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
@@ -146,7 +145,6 @@ class RestingHeartRateServiceTests: XCTestCase {
     func testDebugNotification_disabled() {
         let notificationService = MockNotificationService()
         let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
-        service.postDebugNotifications = false
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
         let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
@@ -160,7 +158,7 @@ class RestingHeartRateServiceTests: XCTestCase {
     func testObserveInBacground_functionsCalled() {
         let mockHealthStore = MockHealthStore()
         let service = RestingHeartRateService(userDefaults: userDefaults, healthStore: mockHealthStore)
-        service.observeInBackground()
+        service.observeInBackground { _, _ in }
         XCTAssertTrue(mockHealthStore.executeQueryCalled)
         XCTAssertTrue(mockHealthStore.enableBackgroundDeliveryCalled)
     }
@@ -180,7 +178,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         }
         _ = expectation(for: predicate, evaluatedWith: mockQueryParser, handler: .none)
 
-        service.observeInBackground()
+        service.observeInBackground(completionHandler: { _, _ in })
         waitForExpectations(timeout: 2.0, handler: .none)
     }
 
@@ -199,14 +197,13 @@ class RestingHeartRateServiceTests: XCTestCase {
                                               healthStore: mockHealthStore,
                                               queryProvider: mockQueryProvider,
                                               queryParser: mockQueryParser)
-        service.postDebugNotifications = false
         let predicate = NSPredicate { mockNotificationService, _ in
             guard let mockNotificationService = mockNotificationService as? MockNotificationService else { return false }
             return mockNotificationService.postNotificationCalled
         }
         _ = expectation(for: predicate, evaluatedWith: mockNotificationService, handler: .none)
 
-        service.observeInBackground()
+        service.observeInBackground(completionHandler: { _, _ in })
         waitForExpectations(timeout: 2.0, handler: .none)
     }
 
@@ -279,7 +276,7 @@ class RestingHeartRateServiceTests: XCTestCase {
                                               queryParser: mockQueryParser)
         let expectation = expectation(description: "RHR query should fail if there isn't any results")
 
-        service.queryRestingHeartRate() { result in
+        service.queryAverageRestingHeartRate() { result in
             if case .failure = result {
                 expectation.fulfill()
             }
@@ -419,7 +416,7 @@ private class MockNotificationService: NotificationService {
     var postNotificationCalled: Bool {
         return postNotificationCalledCount > 0
     }
-    override func postNotification(message: String) {
+    override func postNotification(title: String, body: String) {
         postNotificationCalledCount += 1
     }
 }

@@ -12,7 +12,7 @@ struct HealthMeterApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     var body: some Scene {
         WindowGroup {
-            ContentView(queryResult: nil)
+            ContentView()
         }
     }
 }
@@ -29,7 +29,13 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             }
         }
 
-        RestingHeartRateService.shared.observeInBackground { _, _ in }
+        RestingHeartRateService.shared.getAuthorisationStatusForRestingHeartRate { status in
+            if status == .unnecessary {
+                RestingHeartRateService.shared.observeInBackground { success, error in
+                    print("Observing updates in the background: \(success), error: \(error.debugDescription)")
+                }
+            }
+        }
         return true
     }
 }

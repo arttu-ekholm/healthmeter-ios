@@ -14,6 +14,15 @@ enum Trend {
     case lowering
     case low2low
     case high2high
+
+    var displayText: String {
+        switch self {
+        case .rising: return "High resting heart rate"
+        case .lowering: return "Resting heart rate back to normal"
+        case .low2low: return "Low resting heart rate"
+        case .high2high: return "Resting heart rate still high"
+        }
+    }
 }
 
 class RestingHeartRateService {
@@ -49,11 +58,14 @@ class RestingHeartRateService {
     /// Parses the query responses
     private let queryParser: QueryParser
 
-    // TODO: change this as it needs to be set to false on every test
-    var postDebugNotifications = true
-
     /// Handles the sending of local push notifications
     let notificationService: NotificationService
+
+    private var currentObserverQuery: HKObserverQuery?
+
+    var isObservingChanges: Bool {
+        return currentObserverQuery != nil
+    }
 
     var averageHeartRate: Double? {
         get {
@@ -133,7 +145,7 @@ class RestingHeartRateService {
         return update.value / average > threshold
     }
 
-    func queryRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
+    func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
         // TODO: Check if the user has enough HRV data to make the calculation feasible. If not, display something like "You need at least 2w of data to make this app work.
 
         let now = Date()
@@ -169,10 +181,10 @@ class RestingHeartRateService {
         // TODO: Split this function to smaller parts so it's easier to test
         // TODO: Separate the debug code
 
-        postDebugNotification(message: "DEBUG MSG:  handleHeartRateUpdate \(String(format: "%.0f", (update.value)))")
+        postDebugNotification(title: "Handling HR update", body: String(format: "%.0f", (update.value)))
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
-            postDebugNotification(message: "DEBUG MESSAGE: guard 1 fails")
+            postDebugNotification(title: "Guard fails", body: "guard 1 fails")
             return
         }
 
@@ -181,7 +193,7 @@ class RestingHeartRateService {
             guard update.date > previousUpdate.date else {
                 // The update is earlier than the latest, so no need to compare
                 // This can be ignored
-                postDebugNotification(message: "DEBUG MESSAGE: guard 1 fails")
+                postDebugNotification(title: "Guard fails", body: "Guard 2 fails")
                 return
             }
         }
@@ -205,8 +217,8 @@ class RestingHeartRateService {
             }
         }
 
-        if trend != nil, let message = message {
-            notificationService.postNotification(message: message)
+        if let trend = trend, let message = message {
+            notificationService.postNotification(title: trend.displayText, body: message)
             if trend == .rising {
                 latestHighRHRNotificationPostDate = Date()
             } else if trend == .lowering {
@@ -215,24 +227,25 @@ class RestingHeartRateService {
         } else {
             let debugTrend: Trend = isAboveAverageRHR ? .high2high : .low2low
             let debugMessage = notificationMessage(trend: debugTrend, heartRate: update.value, averageHeartRate: averageHeartRate)
-            postDebugNotification(message: debugMessage)
+            postDebugNotification(title: debugTrend.displayText, body: debugMessage)
         }
     }
 
-    func postDebugNotification(message: String) {
-        guard postDebugNotifications else { return }
+
+    func postDebugNotification(title: String, body: String) {
+        guard Config.shared.postDebugNotifications else { return }
 
         latestDebugNotificationDate = Date()
-        notificationService.postNotification(message: message)
+        notificationService.postNotification(title: "D: \(title)", body: body)
     }
 
     func notificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String {
         let message: String
-        let percentage: String = String(format: "%.0f", (heartRate / averageHeartRate) * 100.0)
+        let percentage = String(format: "%.0f", (heartRate / averageHeartRate) * 100.0 - 100.0)
         let debugString: String = "L RHR: \(String(format: "%.0f", heartRate)), avg: \(String(format: "%.0f", averageHeartRate))"
         switch trend {
         case .rising:
-            message = "Your heart rate is \(percentage) above your average heart rate. You need to slow down. (\(debugString))"
+            message = "Your heart rate is \(percentage) % above your average heart rate. You need to slow down. (\(debugString))"
         case .lowering:
             message = "Your heart rate returned back to normal. Well done! (\(debugString))"
         default:
@@ -258,6 +271,10 @@ class RestingHeartRateService {
      Sets the app to observe the changes in HealthKit and wake up when there are new RHR updates.
      */
     func observeInBackground(completionHandler: @escaping ((Bool, Error?) -> Void)) {
+        guard currentObserverQuery == nil else {
+            fatalError("App is currently observing")
+        }
+
         let observerQuery = queryProvider.getObserverQuery { query, completionHandler, error in
             guard error == nil else { return }
 
@@ -274,8 +291,16 @@ class RestingHeartRateService {
 
         healthStore.enableBackgroundDelivery(
             for: queryProvider.sampleTypeForRestingHeartRate,
-               frequency: .hourly,
-               withCompletion: completionHandler)
+               frequency: .hourly) { success, error in
+                   if success {
+                       print("BG observation successful")
+                       self.currentObserverQuery = observerQuery
+                   }
+                   if let error = error {
+                       print("BG observation failed with error: \(error)")
+                   }
+                   completionHandler(success, error)
+               }
     }
 
     func queryLatestRestingHeartRate(completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {

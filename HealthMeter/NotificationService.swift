@@ -18,9 +18,9 @@ class NotificationService {
         self.notificationCenter = notificationCenter
     }
 
-    func postNotification(message: String) {
+    func postNotification(title: String, body: String) {
         DispatchQueue.main.async {
-            print("posting notification with message: \(message)")
+            print("posting notification with title: \(title), message: \(body)")
             if self.application.applicationState != .active {
                 self.application.applicationIconBadgeNumber = 1
             } else {
@@ -28,7 +28,8 @@ class NotificationService {
             }
 
             let content = UNMutableNotificationContent()
-            content.title = message
+            content.title = title
+            content.body = body
             content.sound = UNNotificationSound.default
 
             // choose a random identifier

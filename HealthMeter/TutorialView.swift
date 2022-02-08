@@ -9,6 +9,7 @@ import SwiftUI
 
 struct TutorialView: View {
     @ObservedObject var settingsStore: SettingsStore
+    let heartRateService: RestingHeartRateService
 
     var body: some View {
         VStack(alignment: .center, spacing: 12.0) {
@@ -20,7 +21,13 @@ struct TutorialView: View {
     2. a device that provides resting heart rate values, such as Apple Watch
     """)
             Button("Authorise HealthKit") {
-                settingsStore.tutorialShown = true
+                heartRateService.requestAuthorisation { success, error in
+                    if success {
+                        DispatchQueue.main.async {
+                            self.settingsStore.tutorialShown = true
+                        }
+                    }
+                }
             }
             .font(.title2)
             .padding()
@@ -34,6 +41,6 @@ struct TutorialView: View {
 
 struct TutorialView_Previews: PreviewProvider {
     static var previews: some View {
-        TutorialView(settingsStore: SettingsStore())
+        TutorialView(settingsStore: SettingsStore(), heartRateService: RestingHeartRateService.shared)
     }
 }

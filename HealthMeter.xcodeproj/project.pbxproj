@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		4B2091B327A156DE00CCFD70 /* RestingHeartRateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */; };
 		4B2091B527A1571100CCFD70 /* RestingHeartRateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */; };
+		4B684D7B27B1382700C4C76E /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B684D7A27B1382700C4C76E /* Config.swift */; };
 		4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */; };
 		4BA142F7279DA6B5008884F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F6279DA6B5008884F0 /* ContentView.swift */; };
 		4BA142F9279DA6B6008884F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BA142F8279DA6B6008884F0 /* Assets.xcassets */; };
@@ -47,6 +48,7 @@
 /* Begin PBXFileReference section */
 		4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateService.swift; sourceTree = "<group>"; };
 		4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateServiceTests.swift; sourceTree = "<group>"; };
+		4B684D7A27B1382700C4C76E /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		4BA142F1279DA6B5008884F0 /* HealthMeter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthMeter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMeterApp.swift; sourceTree = "<group>"; };
 		4BA142F6279DA6B5008884F0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -123,6 +125,7 @@
 				4BA14322279DEE85008884F0 /* Info.plist */,
 				4BA1431E279DA97D008884F0 /* HealthMeter.entitlements */,
 				4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */,
+				4B684D7A27B1382700C4C76E /* Config.swift */,
 				4BA142F6279DA6B5008884F0 /* ContentView.swift */,
 				4BACE5C627AAF0BF009068F9 /* HeartView.swift */,
 				4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */,
@@ -307,6 +310,7 @@
 				4B2091B327A156DE00CCFD70 /* RestingHeartRateService.swift in Sources */,
 				4BACE5C527AACC3C009068F9 /* RestingHeartRateCalculator.swift in Sources */,
 				4BA142F7279DA6B5008884F0 /* ContentView.swift in Sources */,
+				4B684D7B27B1382700C4C76E /* Config.swift in Sources */,
 				4BACE5C127AAC349009068F9 /* QueryProvider.swift in Sources */,
 				4BBE120427A9CF7500112638 /* RestingHeartRateUpdate.swift in Sources */,
 				4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */,

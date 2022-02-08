@@ -7,16 +7,38 @@
 
 import SwiftUI
 
-enum ViewState<T> {
-    case loading
-    case success(T)
-    case error(Error)
-}
-
 struct HeartView: View {
-    @State var viewState: ViewState<RestingHeartRateUpdate> = .loading
+    enum ViewState<T, S> {
+        case loading
+        case success(T, S)
+        case error(Error)
+    }
+
+    enum HeartViewError: LocalizedError {
+        case missingLatestHeartRate
+        case missingAverageHeartRate
+        case missingBoth
+        case other(Error)
+
+        var errorDescription: String? {
+            switch self {
+            case .missingBoth: return "You don't have any resting heart rate data saved to your device."
+            case .missingLatestHeartRate: return "TODO: implement this"
+            case .missingAverageHeartRate: return "You don't have enough resting heart rate data collected. HeartRate app starts to work when your devices have collected enough data."
+            case .other(let error):
+                if let error = error as? LocalizedError {
+                    return error.localizedDescription
+                } else {
+                    return nil
+                }
+            }
+        }
+    }
+
+    @State var viewState: ViewState<RestingHeartRateUpdate, Double> = .loading
     let restingHeartRateService: RestingHeartRateService
     @State private var animationAmount: CGFloat = 1
+    @Environment(\.scenePhase) var scenePhase
 
     var body: some View {
         VStack {
@@ -33,7 +55,7 @@ struct HeartView: View {
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(.red)
                 Text("Failed to load. \(error.localizedDescription)")
-            case .success(let update):
+            case .success(let update, let average):
                 Image(systemName: "heart")
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
@@ -53,6 +75,10 @@ struct HeartView: View {
             }
         }.onAppear {
             requestLatestRestingHeartRate()
+        }.onChange(of: scenePhase) { newPhase in
+            if newPhase == .active {
+                requestLatestRestingHeartRate()
+            }
         }
     }
 
@@ -71,13 +97,18 @@ struct HeartView: View {
     }
 
     func requestLatestRestingHeartRate() {
-        restingHeartRateService.queryLatestRestingHeartRate { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let update):
-                    viewState = .success(update)
-                case .failure(let error):
-                    viewState = .error(error)
+        restingHeartRateService.queryLatestRestingHeartRate { latestResult in
+            self.restingHeartRateService.queryAverageRestingHeartRate { averageResult in
+                DispatchQueue.main.async {
+                    if case .success(let update) = latestResult, case .success(let average) = averageResult {
+                        viewState = .success(update, average)
+                    } else if case .failure = averageResult, case .failure = latestResult {
+                        viewState = .error(HeartViewError.missingBoth)
+                    } else if case .failure = averageResult {
+                        viewState = .error(HeartViewError.missingLatestHeartRate)
+                    } else if case .failure = latestResult {
+                        viewState = .error(HeartViewError.missingLatestHeartRate)
+                    }
                 }
             }
         }
@@ -86,7 +117,7 @@ struct HeartView: View {
 
 struct HeartView_Previews: PreviewProvider {
     static var previews: some View {
-        HeartView(viewState: .success(RestingHeartRateUpdate(date: Date(), value: 60.0)), restingHeartRateService: RestingHeartRateService.shared)
+        HeartView(viewState: .success(RestingHeartRateUpdate(date: Date(), value: 60.0), 60.0), restingHeartRateService: RestingHeartRateService.shared)
     }
 }
 
