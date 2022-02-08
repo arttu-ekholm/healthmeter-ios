@@ -33,6 +33,13 @@ struct HeartView: View {
                 }
             }
         }
+
+        var recoverySuggestion: String? {
+            switch self {
+            case .missingBoth, .missingAverageHeartRate: return "Please try again when you have collected more resting heart rate data."
+            default: return nil
+            }
+        }
     }
 
     @State var viewState: ViewState<RestingHeartRateUpdate, Double> = .loading
@@ -41,7 +48,7 @@ struct HeartView: View {
     @Environment(\.scenePhase) var scenePhase
 
     var body: some View {
-        VStack {
+        VStack(alignment: .center, spacing: 12, content: {
             switch viewState {
             case .loading:
                 Image(systemName: "heart.text.square")
@@ -54,7 +61,13 @@ struct HeartView: View {
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(.red)
-                Text("Failed to load. \(error.localizedDescription)")
+                Text(error.localizedDescription)
+                    .bold()
+                    .font(.headline)
+                    .padding()
+                if let error = error as? LocalizedError, let recoverySuggestion = error.recoverySuggestion {
+                    Text(recoverySuggestion)
+                }
             case .success(let update, let average):
                 Image(systemName: "heart")
                     .resizable()
@@ -70,16 +83,53 @@ struct HeartView: View {
                     .onAppear {
                         animationAmount = 1.08
                     }
-                Text("Latest resting heart rate is \(String(format: "%.0f", update.value)).")
-                Text("Fetched \(update.date.timeAgoDisplay())")
+                heartRateAnalysisText(current: update.value, average: average)
+                    .padding(.bottom)
+                VStack {
+                    Text("Your latest resting heart rate is \(String(format: "%.0f", update.value)) bpm.")
+                    Text("Your average resting heart rate is \(String(format: "%.0f", average)) bpm.")
+                    Text("(Fetched \(update.date.timeAgoDisplay()))").font(.footnote)
+                }
+
             }
-        }.onAppear {
-            requestLatestRestingHeartRate()
-        }.onChange(of: scenePhase) { newPhase in
-            if newPhase == .active {
+        })
+            .onAppear {
                 requestLatestRestingHeartRate()
             }
+            .onChange(of: scenePhase) { newPhase in
+                if newPhase == .active {
+                    requestLatestRestingHeartRate()
+                }
+            }
+    }
+
+    func heartRateAnalysisText(current: Double, average: Double) -> Text {
+        // TODO: Move this func to a separate class. Make this testable
+        let difference = current - average
+        let string: String
+        let adjective: String
+        let multiplier = current > average ? current / average : average / current
+
+        switch multiplier {
+        case let x where x > 20: adjective = "very"
+        case 10...20: adjective = "quite"
+        case 5...10: adjective = "a bit"
+        default: adjective = "slighty"
         }
+
+        switch difference {
+        case let x where x - difference == 0:
+            string = "Your resting heart rate is normal"
+        case let x where x - difference > 0:
+            string = "Your resting heart rate is \(adjective) above your average."
+        case let x where x - difference < 0:
+            string = "Your resting heart rate is \(adjective) below your average."
+        default: string = "Keep going"
+        }
+
+        return Text(string)
+            .bold()
+            .font(.headline)
     }
 
     func heartRateText(restingHeartRateResult: Result<RestingHeartRateUpdate, Error>?) -> Text? {
@@ -93,6 +143,8 @@ struct HeartView: View {
             return Text(String(update.value))
         case .failure(let error):
             return Text(error.localizedDescription)
+                .bold()
+                .font(.headline)
         }
     }
 
