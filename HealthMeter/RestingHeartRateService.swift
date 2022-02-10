@@ -245,7 +245,7 @@ class RestingHeartRateService {
         let debugString: String = "L RHR: \(String(format: "%.0f", heartRate)), avg: \(String(format: "%.0f", averageHeartRate))"
         switch trend {
         case .rising:
-            message = "Your heart rate is \(percentage) % above your average heart rate. You need to slow down. (\(debugString))"
+            message = "Your heart rate is \(percentage) % above your average heart rate. You should slow down. (\(debugString))"
         case .lowering:
             message = "Your heart rate returned back to normal. Well done! (\(debugString))"
         default:
