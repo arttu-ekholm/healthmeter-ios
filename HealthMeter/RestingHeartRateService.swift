@@ -340,7 +340,7 @@ class RestingHeartRateService {
 
         if abs(multiplier) > 0.05 {
             if multiplier > 0.2 {
-                adjective = "very much"
+                adjective = "way"
             } else if multiplier > 0.1 {
                 adjective = "noticeably"
             } else {
