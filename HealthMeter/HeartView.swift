@@ -23,7 +23,7 @@ struct HeartView: View {
         var errorDescription: String? {
             switch self {
             case .missingBoth: return "You don't have any resting heart rate data saved to your device."
-            case .missingLatestHeartRate: return "TODO: implement this"
+            case .missingLatestHeartRate: return "HeartRate couldn't read your latest resting heart rate."
             case .missingAverageHeartRate: return "You don't have enough resting heart rate data collected. HeartRate app starts to work when your devices have collected enough data."
             case .other(let error):
                 if let error = error as? LocalizedError {
@@ -37,6 +37,8 @@ struct HeartView: View {
         var recoverySuggestion: String? {
             switch self {
             case .missingBoth, .missingAverageHeartRate: return "Please try again when you have collected more resting heart rate data."
+            case .missingLatestHeartRate:
+                return "Make sure your health devices record your resting heart rate."
             default: return nil
             }
         }
@@ -57,18 +59,16 @@ struct HeartView: View {
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(.red)
-                Text("Loading…")
+                DescriptionTextView(title: "Loading…", subtitle: nil)
             case .error(let error):
                 Image(systemName: "heart.slash.fill")
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(.red)
-                Text(error.localizedDescription)
-                    .bold()
-                    .font(.headline)
-                    .padding()
                 if let error = error as? LocalizedError, let recoverySuggestion = error.recoverySuggestion {
-                    Text(recoverySuggestion)
+                    DescriptionTextView(title: error.localizedDescription, subtitle: recoverySuggestion)
+                } else {
+                    DescriptionTextView(title: error.localizedDescription, subtitle: nil)
                 }
             case .success(let update, let average):
                 Image(systemName: "heart.fill")
@@ -89,12 +89,23 @@ struct HeartView: View {
                 Text(restingHeartRateService.heartRateAnalysisText(current: update.value, average: average))
                     .font(.headline)
                     .padding(.bottom)
-                VStack {
-                    Text("Your latest resting heart rate is \(String(format: "%.0f", update.value)) bpm.")
-                    Text("Your average resting heart rate is \(String(format: "%.0f", average)) bpm.")
-                    Text("(Fetched \(update.date.timeAgoDisplay()))").font(.footnote)
-                }
 
+                VStack {
+                    Text("Your latest resting heart rate is ") +
+                    Text(String(format: "%.0f", update.value))
+                        .font(.title2)
+                        .bold() +
+                    Text(" bpm.")
+
+                    Text("Updated \(update.date.timeAgoDisplay())").font(.footnote)
+                        .padding(.bottom)
+
+                    Text("Your average resting heart rate is ") +
+                    Text(String(format: "%.0f", average))
+                        .font(.title2)
+                        .bold() +
+                    Text(" bpm.")
+                }
             }
         })
             .onAppear {
@@ -109,36 +120,7 @@ struct HeartView: View {
             }
     }
 
-    func heartRateAnalysisText(current: Double, average: Double) -> Text {
-        let difference = current - average
-        let string: String
-        let adjective: String
-        let multiplier = current > average ? current / average : average / current
-
-        switch multiplier {
-        case let x where x > 20: adjective = "very"
-        case 10...20: adjective = "quite"
-        case 5...10: adjective = "a bit"
-        default: adjective = "slighty"
-        }
-
-        switch difference {
-        case let x where x - difference == 0:
-            string = "Your resting heart rate is normal"
-        case let x where x - difference > 0:
-            string = "Your resting heart rate is \(adjective) above your average."
-        case let x where x - difference < 0:
-            string = "Your resting heart rate is \(adjective) below your average."
-        default: string = "Keep going"
-        }
-
-        return Text(string)
-            .bold()
-            .font(.headline)
-    }
-
     func heartRateText(restingHeartRateResult: Result<RestingHeartRateUpdate, Error>?) -> Text? {
-        print("heartRateText render called \(restingHeartRateResult.debugDescription)")
         guard let result = restingHeartRateResult else {
             return nil
         }
@@ -172,9 +154,51 @@ struct HeartView: View {
     }
 }
 
+struct DescriptionTextView: View {
+    let title: String
+    let subtitle: String?
+    var body: some View {
+        VStack(alignment: .center, spacing: 12.0) {
+            Text(title)
+                .bold()
+                .font(.headline)
+            if let subtitle = subtitle {
+                Text(subtitle)
+            }
+        }
+        .padding()
+
+    }
+}
+
 struct HeartView_Previews: PreviewProvider {
     static var previews: some View {
-        HeartView(shouldReloadContents: false, viewState: .success(RestingHeartRateUpdate(date: Date(), value: 90.0), 60.0), restingHeartRateService: RestingHeartRateService.shared)
+        Group {
+            HeartView(
+                shouldReloadContents: false,
+                viewState: .success(RestingHeartRateUpdate(date: Date(), value: 90.0), 60.0),
+                restingHeartRateService: RestingHeartRateService.shared)
+            HeartView(
+                shouldReloadContents: false,
+                viewState: .success(RestingHeartRateUpdate(date: Date(), value: 60.0), 60.0),
+                restingHeartRateService: RestingHeartRateService.shared)
+            HeartView(
+                shouldReloadContents: false,
+                viewState: .error(HeartView.HeartViewError.missingLatestHeartRate),
+                restingHeartRateService: RestingHeartRateService.shared)
+            HeartView(
+                shouldReloadContents: false,
+                viewState: .error(HeartView.HeartViewError.missingAverageHeartRate),
+                restingHeartRateService: RestingHeartRateService.shared)
+            HeartView(
+                shouldReloadContents: false,
+                viewState: .error(HeartView.HeartViewError.missingBoth),
+                restingHeartRateService: RestingHeartRateService.shared)
+            HeartView(
+                shouldReloadContents: false,
+                viewState: .loading,
+                restingHeartRateService: RestingHeartRateService.shared)
+        }
     }
 }
 
