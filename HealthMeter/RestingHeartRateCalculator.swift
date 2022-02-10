@@ -15,9 +15,10 @@ class RestingHeartRateCalculator {
 
     func averageRestingHeartRate(fromStatsCollection statsCollection: HKStatisticsCollection, startDate: Date, endDate: Date) throws -> Double {
         var avgValues = [Double]()
+        let unit = HKUnit(from: "count/min")
         statsCollection.enumerateStatistics(from: startDate, to: endDate) { statistics, stop in
             if let quantity = statistics.averageQuantity() {
-                let value = quantity.doubleValue(for: HKUnit(from: "count/min"))
+                let value = quantity.doubleValue(for: unit)
                 avgValues.append(value)
             }
         }
