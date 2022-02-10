@@ -332,4 +332,27 @@ class RestingHeartRateService {
             }
         }
     }
+
+    func heartRateAnalysisText(current: Double, average: Double) -> String {
+        let difference = current - average
+        let adjective: String
+        let multiplier = (current > average ? current / average : average / current) - 1.0
+
+        if abs(multiplier) > 0.05 {
+            if multiplier > 0.2 {
+                adjective = "very much"
+            } else if multiplier > 0.1 {
+                adjective = "noticeably"
+            } else {
+                adjective = "slightly"
+            }
+            if difference > 0 {
+                return "Your resting heart rate is \(adjective) above your average."
+            } else {
+                return "Your resting heart rate is \(adjective) below your average."
+            }
+        } else {
+            return "Your resting heart rate is normal."
+        }
+    }
 }

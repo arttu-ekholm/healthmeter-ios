@@ -42,6 +42,8 @@ struct HeartView: View {
         }
     }
 
+    var shouldReloadContents: Bool = true
+
     @State var viewState: ViewState<RestingHeartRateUpdate, Double> = .loading
     let restingHeartRateService: RestingHeartRateService
     @State private var animationAmount: CGFloat = 1
@@ -51,13 +53,13 @@ struct HeartView: View {
         VStack(alignment: .center, spacing: 12, content: {
             switch viewState {
             case .loading:
-                Image(systemName: "heart.text.square")
+                Image(systemName: "heart.text.square.fill")
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(.red)
                 Text("Loading…")
             case .error(let error):
-                Image(systemName: "heart.slash")
+                Image(systemName: "heart.slash.fill")
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(.red)
@@ -69,7 +71,7 @@ struct HeartView: View {
                     Text(recoverySuggestion)
                 }
             case .success(let update, let average):
-                Image(systemName: "heart")
+                Image(systemName: "heart.fill")
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(.red)
@@ -80,10 +82,12 @@ struct HeartView: View {
                             .repeatForever(autoreverses: true),
                         value: animationAmount
                     )
+                    .padding()
                     .onAppear {
                         animationAmount = 1.08
                     }
-                heartRateAnalysisText(current: update.value, average: average)
+                Text(restingHeartRateService.heartRateAnalysisText(current: update.value, average: average))
+                    .font(.headline)
                     .padding(.bottom)
                 VStack {
                     Text("Your latest resting heart rate is \(String(format: "%.0f", update.value)) bpm.")
@@ -94,17 +98,18 @@ struct HeartView: View {
             }
         })
             .onAppear {
-                requestLatestRestingHeartRate()
+                if shouldReloadContents {
+                    requestLatestRestingHeartRate()
+                }
             }
             .onChange(of: scenePhase) { newPhase in
-                if newPhase == .active {
+                if newPhase == .active, shouldReloadContents {
                     requestLatestRestingHeartRate()
                 }
             }
     }
 
     func heartRateAnalysisText(current: Double, average: Double) -> Text {
-        // TODO: Move this func to a separate class. Make this testable
         let difference = current - average
         let string: String
         let adjective: String
@@ -169,7 +174,7 @@ struct HeartView: View {
 
 struct HeartView_Previews: PreviewProvider {
     static var previews: some View {
-        HeartView(viewState: .success(RestingHeartRateUpdate(date: Date(), value: 60.0), 60.0), restingHeartRateService: RestingHeartRateService.shared)
+        HeartView(shouldReloadContents: false, viewState: .success(RestingHeartRateUpdate(date: Date(), value: 90.0), 60.0), restingHeartRateService: RestingHeartRateService.shared)
     }
 }
 

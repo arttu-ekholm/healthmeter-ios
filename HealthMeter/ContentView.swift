@@ -20,6 +20,11 @@ struct ContentView: View {
     @State var debugValue: Double = 50.0
 
     var body: some View {
+        Text("HealthMeter")
+            .font(.title)
+            .bold()
+            .padding()
+        Spacer()
         if settingsStore.tutorialShown {
             if !shouldDisplayHealthKitAuthorisation {
                 HeartView(restingHeartRateService: heartRateService)
@@ -50,6 +55,7 @@ struct ContentView: View {
         } else {
             TutorialView(settingsStore: settingsStore, heartRateService: heartRateService)
         }
+        Spacer()
     }
 
     func latestHighRHR(date: Date?) -> Text {
@@ -90,9 +96,10 @@ struct ContentView_Previews: PreviewProvider {
 }
 
 class SettingsStore: ObservableObject {
-    @Published var tutorialShown: Bool = UserDefaults.standard.bool(forKey: "tutorialShown") {
+    static let tutorialShownKey = "tutorialShown"
+    @Published var tutorialShown: Bool = UserDefaults.standard.bool(forKey: SettingsStore.tutorialShownKey) {
         didSet {
-            UserDefaults.standard.set(self.tutorialShown, forKey: "tutorialShown")
+            UserDefaults.standard.set(self.tutorialShown, forKey: SettingsStore.tutorialShownKey)
         }
     }
 }

@@ -284,6 +284,72 @@ class RestingHeartRateServiceTests: XCTestCase {
 
         waitForExpectations(timeout: 2.0, handler: .none)
     }
+
+    // MARK: - Analysis text
+
+    func testAnalysisText_normal() {
+        let service = RestingHeartRateService()
+        let normalRestingHeartRateText = "Your resting heart rate is normal."
+        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 50, average: 50))
+        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 52, average: 50))
+        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 51, average: 50))
+        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 49, average: 50))
+        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 48, average: 50))
+    }
+
+    func testAnalysisText_slightlyAbove() {
+        let service = RestingHeartRateService()
+        let text = "Your resting heart rate is slightly above your average."
+        XCTAssertEqual(text, service.heartRateAnalysisText(current: 60, average: 57))
+        XCTAssertEqual(text, service.heartRateAnalysisText(current: 61, average: 57))
+        XCTAssertEqual(text, service.heartRateAnalysisText(current: 62, average: 57))
+    }
+
+    func testAnalysisText_slightlyBelow() {
+        let service = RestingHeartRateService()
+        let text = "Your resting heart rate is slightly below your average."
+        XCTAssertEqual(text, service.heartRateAnalysisText(current: 54, average: 57))
+        XCTAssertEqual(text, service.heartRateAnalysisText(current: 53, average: 57))
+        XCTAssertEqual(text, service.heartRateAnalysisText(current: 52, average: 57))
+    }
+
+    func testAnalysisText_noticeablyHigher() {
+        let service = RestingHeartRateService()
+        let string = "Your resting heart rate is noticeably above your average."        
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 55, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 56, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 58, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 59, average: 50))
+    }
+
+    func testAnalysisText_noticeablyLower() {
+        let service = RestingHeartRateService()
+        let string = "Your resting heart rate is noticeably below your average."
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 45, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 44, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 43, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 42, average: 50))
+    }
+
+    func testAnalysisText_muchHigher() {
+        let service = RestingHeartRateService()
+        let string = "Your resting heart rate is very much above your average."
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 65, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 70, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 90, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 100, average: 50))
+    }
+
+    func testAnalysisText_muchLower() {
+        let service = RestingHeartRateService()
+        let string = "Your resting heart rate is very much below your average."
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 40, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 30, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 20, average: 50))
+        XCTAssertEqual(string, service.heartRateAnalysisText(current: 1, average: 50))
+    }
+
+
 }
 
 // MARK: - Mock classes
