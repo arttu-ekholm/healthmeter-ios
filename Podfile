@@ -6,6 +6,7 @@ target 'HealthMeter' do
   use_frameworks!
 
   # Pods for HealthMeter
+pod 'SwiftLint', '0.45.1'
 
   target 'HealthMeterTests' do
     inherit! :search_paths
