@@ -45,6 +45,7 @@ struct HeartView: View {
     }
 
     var shouldReloadContents: Bool = true
+    var calendar: Calendar = Calendar.current
 
     @State var viewState: ViewState<RestingHeartRateUpdate, Double> = .loading
     let restingHeartRateService: RestingHeartRateService
@@ -74,7 +75,7 @@ struct HeartView: View {
                 Image(systemName: "heart.fill")
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
-                    .foregroundColor(.red)
+                    .foregroundColor(.green)
                     .scaleEffect(animationAmount)
                     .animation(
                         .spring(response: 0.3, dampingFraction: 0.4, blendDuration: 0.0)
@@ -86,25 +87,36 @@ struct HeartView: View {
                     .onAppear {
                         animationAmount = 1.08
                     }
-                Text(restingHeartRateService.heartRateAnalysisText(current: update.value, average: average))
-                    .font(.headline)
-                    .padding(.bottom)
+
+                if calendar.isDateInToday(update.date) {
+                    Text(restingHeartRateService.heartRateAnalysisText(current: update.value, average: average))
+                        .font(.headline)
+                        .padding(.bottom)
+                } else {
+                    Text("Today's resting heart rate hasn't been calculated yet.")
+                        .font(.headline)
+                        .padding()
+                }
 
                 VStack {
-                    Text("Your latest resting heart rate is ") +
+                    Text(getLatestRestingHeartRateDisplayString(update:update)) + Text(" ") +
                     Text(String(format: "%.0f", update.value))
                         .font(.title2)
                         .bold() +
                     Text(" bpm.")
+                        .bold()
 
+                    /*
                     Text("Updated \(update.date.timeAgoDisplay())").font(.footnote)
                         .padding(.bottom)
+                     */
 
                     Text("Your average resting heart rate is ") +
                     Text(String(format: "%.0f", average))
                         .font(.title2)
                         .bold() +
                     Text(" bpm.")
+                        .bold()
                 }
             }
         })
@@ -118,6 +130,16 @@ struct HeartView: View {
                     requestLatestRestingHeartRate()
                 }
             }
+    }
+
+    func getLatestRestingHeartRateDisplayString(update: RestingHeartRateUpdate) -> String {
+        if calendar.isDateInToday(update.date) {
+            return "Your resting heart rate today is"
+        } else if calendar.isDateInYesterday(update.date) {
+            return "Yesteday, your resting heart rate was"
+        } else { // past
+            return "Earlier, your resting heart rate was"
+        }
     }
 
     func heartRateText(restingHeartRateResult: Result<RestingHeartRateUpdate, Error>?) -> Text? {

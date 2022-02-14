@@ -9,6 +9,10 @@ import Foundation
 import UIKit
 
 class NotificationService {
+    enum NotificationServiceError: Error {
+        case appIsActive
+    }
+
     let application: UIApplication
     let notificationCenter: UNUserNotificationCenter
 
@@ -18,11 +22,12 @@ class NotificationService {
         self.notificationCenter = notificationCenter
     }
 
-    func postNotification(title: String, body: String) {
+    func postNotification(title: String, body: String, completion: ((Result<Void, Error>) -> Void)? = nil) {
         DispatchQueue.main.async {
             print("posting notification with title: \(title), message: \(body)")
             if self.application.applicationState != .active {
                 self.application.applicationIconBadgeNumber = 1
+                completion?(.failure(NotificationServiceError.appIsActive))
             } else {
                 self.application.applicationIconBadgeNumber = 0
             }
@@ -39,9 +44,11 @@ class NotificationService {
             self.notificationCenter.add(request) { error in
                if let error = error {
                    print("posting the notification failed with error: \(error)")
+                   completion?(.failure(error))
                    UIApplication.shared.applicationIconBadgeNumber = 9
                } else {
                    print("notification posted successfully")
+                   completion?(.success(()))
                }
            }
         }

@@ -149,7 +149,7 @@ class RestingHeartRateService {
         // TODO: Check if the user has enough HRV data to make the calculation feasible. If not, display something like "You need at least 2w of data to make this app work.
 
         let now = Date()
-        let queryStartDate = now.addingTimeInterval(-60 * 60 * 24 * 180)
+        let queryStartDate = now.addingTimeInterval(-60 * 60 * 24 * 60)
         let query = queryProvider.getAverageRestingHeartRateQuery(queryStartDate: queryStartDate)
 
         query.initialResultsHandler = { query, results, error in
@@ -218,11 +218,14 @@ class RestingHeartRateService {
         }
 
         if let trend = trend, let message = message {
-            notificationService.postNotification(title: trend.displayText, body: message)
-            if trend == .rising {
-                latestHighRHRNotificationPostDate = Date()
-            } else if trend == .lowering {
-                latestLoweredRHRNotificationPostDate = Date()
+            notificationService.postNotification(title: trend.displayText, body: message) { result in
+                if case .success = result {
+                    if trend == .rising {
+                        self.latestHighRHRNotificationPostDate = Date()
+                    } else if trend == .lowering {
+                        self.latestLoweredRHRNotificationPostDate = Date()
+                    }
+                }
             }
         } else {
             let debugTrend: Trend = isAboveAverageRHR ? .high2high : .low2low
@@ -236,7 +239,12 @@ class RestingHeartRateService {
         guard Config.shared.postDebugNotifications else { return }
 
         latestDebugNotificationDate = Date()
-        notificationService.postNotification(title: "D: \(title)", body: body)
+        notificationService.postNotification(title: "D: \(title)", body: body) { result in
+            switch result {
+            case .success: print("Debug notification posted successfully")
+            case .failure(let error): print("Debug notification posting failed with error: \(error.localizedDescription)")
+            }
+        }
     }
 
     func notificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String {

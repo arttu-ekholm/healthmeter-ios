@@ -8,16 +8,13 @@
 import SwiftUI
 import HealthKit
 
-let healthStore: HKHealthStore = HKHealthStore()
-
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @State var shouldDisplayHealthKitAuthorisation = false
     @ObservedObject var settingsStore = SettingsStore()
+    var config: Config = Config.shared
 
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
-
-    @State var debugValue: Double = 50.0
 
     var body: some View {
         Text("HealthMeter")
@@ -35,20 +32,9 @@ struct ContentView: View {
                         shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
                     })
                 }
-            if Config.shared.displayDebugView {
-                VStack {
-                    Text("Debug view:")
-                    latestHighRHR(date: heartRateService.latestHighRHRNotificationPostDate)
-                    latestLowRHR(date: heartRateService.latestLoweredRHRNotificationPostDate)
-                    latestDebugDate(date: heartRateService.latestDebugNotificationDate)
+            if config.displayDebugView {
+                DebugView(heartRateService: heartRateService)
 
-                    TextField("", value: $debugValue, format: .number)
-                        .keyboardType(.numberPad)
-
-                    Button("Handle fake update") {
-                        heartRateService.handleDebugUpdate(update: RestingHeartRateUpdate(date: Date(), value: debugValue))
-                    }
-                }
                 .border(.black, width: 1)
                 .padding()
             }
@@ -57,25 +43,6 @@ struct ContentView: View {
         }
         Spacer()
     }
-
-    func latestHighRHR(date: Date?) -> Text {
-        guard let date = date else { return Text("No high HRH notification") }
-
-        return Text("Latest high HRH notification: \(date)")
-    }
-
-    func latestLowRHR(date: Date?) -> Text {
-        guard let date = date else { return Text("No low HRH notification") }
-
-        return Text("Latest low HRH notification: \(date)")
-    }
-
-    func latestDebugDate(date: Date?) -> Text {
-        guard let date = date else { return Text("No debug HRH notification") }
-
-        return Text("Latest debug HRH notification: \(date)")
-    }
-    
 
     func averageHeartRateText(result: Result<Double, Error>?) -> Text? {
         guard let result = result else { return nil }
