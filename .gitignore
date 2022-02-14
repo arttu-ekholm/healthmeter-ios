@@ -34,3 +34,9 @@ CVS
 Backup[ ]of[ ]*.pages/
 Backup[ ]of[ ]*.key/
 Backup[ ]of[ ]*.numbers/
+HealthMeter.xcworkspace/contents.xcworkspacedata
+HealthMeter.xcworkspace/xcshareddata/IDEWorkspaceChecks.plist
+HealthMeterTests/RestingHeartRateServiceTests.swift.plist
+
+# Cocoapods
+Pods/
