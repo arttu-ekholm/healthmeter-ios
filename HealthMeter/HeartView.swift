@@ -99,7 +99,7 @@ struct HeartView: View {
                 }
 
                 VStack {
-                    Text(getLatestRestingHeartRateDisplayString(update:update)) + Text(" ") +
+                    Text(getLatestRestingHeartRateDisplayString(update: update)) + Text(" ") +
                     Text(String(format: "%.0f", update.value))
                         .font(.title2)
                         .bold() +

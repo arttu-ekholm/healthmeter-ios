@@ -16,9 +16,6 @@
 		4BA142F7279DA6B5008884F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F6279DA6B5008884F0 /* ContentView.swift */; };
 		4BA142F9279DA6B6008884F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BA142F8279DA6B6008884F0 /* Assets.xcassets */; };
 		4BA142FC279DA6B6008884F0 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BA142FB279DA6B6008884F0 /* Preview Assets.xcassets */; };
-		4BA14306279DA6B6008884F0 /* HealthMeterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA14305279DA6B6008884F0 /* HealthMeterTests.swift */; };
-		4BA14310279DA6B6008884F0 /* HealthMeterUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA1430F279DA6B6008884F0 /* HealthMeterUITests.swift */; };
-		4BA14312279DA6B6008884F0 /* HealthMeterUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA14311279DA6B6008884F0 /* HealthMeterUITestsLaunchTests.swift */; };
 		4BA14321279DA97D008884F0 /* HealthKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BA14320279DA97D008884F0 /* HealthKit.framework */; };
 		4BACE5BF27AAC32A009068F9 /* QueryParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BACE5BE27AAC32A009068F9 /* QueryParser.swift */; };
 		4BACE5C127AAC349009068F9 /* QueryProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BACE5C027AAC349009068F9 /* QueryProvider.swift */; };
@@ -65,10 +62,7 @@
 		4BA142F8279DA6B6008884F0 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4BA142FB279DA6B6008884F0 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		4BA14301279DA6B6008884F0 /* HealthMeterTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthMeterTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4BA14305279DA6B6008884F0 /* HealthMeterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMeterTests.swift; sourceTree = "<group>"; };
 		4BA1430B279DA6B6008884F0 /* HealthMeterUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HealthMeterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		4BA1430F279DA6B6008884F0 /* HealthMeterUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMeterUITests.swift; sourceTree = "<group>"; };
-		4BA14311279DA6B6008884F0 /* HealthMeterUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMeterUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		4BA1431E279DA97D008884F0 /* HealthMeter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = HealthMeter.entitlements; sourceTree = "<group>"; };
 		4BA14320279DA97D008884F0 /* HealthKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = HealthKit.framework; path = System/Library/Frameworks/HealthKit.framework; sourceTree = SDKROOT; };
 		4BA14322279DEE85008884F0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -125,7 +119,6 @@
 				2EE37A75F98BB7BA2697C88F /* Pods-HealthMeterTests.debug.xcconfig */,
 				214549E2381A2ABB61B8521B /* Pods-HealthMeterTests.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -134,7 +127,6 @@
 			children = (
 				4BA142F3279DA6B5008884F0 /* HealthMeter */,
 				4BA14304279DA6B6008884F0 /* HealthMeterTests */,
-				4BA1430E279DA6B6008884F0 /* HealthMeterUITests */,
 				4BA142F2279DA6B5008884F0 /* Products */,
 				4BA1431F279DA97D008884F0 /* Frameworks */,
 				43DA5DDFBD92BD39CE21B7C3 /* Pods */,
@@ -185,20 +177,10 @@
 		4BA14304279DA6B6008884F0 /* HealthMeterTests */ = {
 			isa = PBXGroup;
 			children = (
-				4BA14305279DA6B6008884F0 /* HealthMeterTests.swift */,
 				4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */,
 				4BACE5C227AAC3C4009068F9 /* RestingHeartRateUpdateTests.swift */,
 			);
 			path = HealthMeterTests;
-			sourceTree = "<group>";
-		};
-		4BA1430E279DA6B6008884F0 /* HealthMeterUITests */ = {
-			isa = PBXGroup;
-			children = (
-				4BA1430F279DA6B6008884F0 /* HealthMeterUITests.swift */,
-				4BA14311279DA6B6008884F0 /* HealthMeterUITestsLaunchTests.swift */,
-			);
-			path = HealthMeterUITests;
 			sourceTree = "<group>";
 		};
 		4BA1431F279DA97D008884F0 /* Frameworks */ = {
@@ -220,6 +202,7 @@
 			buildConfigurationList = 4BA14315279DA6B6008884F0 /* Build configuration list for PBXNativeTarget "HealthMeter" */;
 			buildPhases = (
 				105610C03F6C7E51271693F6 /* [CP] Check Pods Manifest.lock */,
+				4BA9503C27BA853F00B9D591 /* Run SwiftLint */,
 				4BA142ED279DA6B5008884F0 /* Sources */,
 				4BA142EE279DA6B5008884F0 /* Frameworks */,
 				4BA142EF279DA6B5008884F0 /* Resources */,
@@ -407,6 +390,24 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
+		4BA9503C27BA853F00B9D591 /* Run SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Run SwiftLint";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
+		};
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -433,7 +434,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4BA14306279DA6B6008884F0 /* HealthMeterTests.swift in Sources */,
 				4B2091B527A1571100CCFD70 /* RestingHeartRateServiceTests.swift in Sources */,
 				4BACE5C327AAC3C4009068F9 /* RestingHeartRateUpdateTests.swift in Sources */,
 			);
@@ -443,8 +443,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4BA14312279DA6B6008884F0 /* HealthMeterUITestsLaunchTests.swift in Sources */,
-				4BA14310279DA6B6008884F0 /* HealthMeterUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

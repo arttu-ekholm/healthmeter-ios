@@ -146,8 +146,6 @@ class RestingHeartRateService {
     }
 
     func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
-        // TODO: Check if the user has enough HRV data to make the calculation feasible. If not, display something like "You need at least 2w of data to make this app work.
-
         let now = Date()
         let queryStartDate = now.addingTimeInterval(-60 * 60 * 24 * 60)
         let query = queryProvider.getAverageRestingHeartRateQuery(queryStartDate: queryStartDate)
@@ -176,11 +174,8 @@ class RestingHeartRateService {
             UIApplication.shared.endBackgroundTask(taskId)
         }
     }
-    
-    func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
-        // TODO: Split this function to smaller parts so it's easier to test
-        // TODO: Separate the debug code
 
+    func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
         postDebugNotification(title: "Handling HR update", body: String(format: "%.0f", (update.value)))
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
@@ -207,13 +202,17 @@ class RestingHeartRateService {
         if isAboveAverageRHR {
             if !hasPostedAboutRisingNotificationToday {
                 trend = .rising
-                message = notificationMessage(trend: .rising, heartRate: update.value, averageHeartRate: averageHeartRate)
+                message = notificationMessage(trend: .rising,
+                                              heartRate: update.value,
+                                              averageHeartRate: averageHeartRate)
             }
         } else {
             // RHR has been high, now it's lowered.
             if !hasPostedAboutLoweredNotificationToday, hasPostedAboutRisingNotificationToday {
                 trend = .lowering
-                message = notificationMessage(trend: .lowering, heartRate: update.value, averageHeartRate: averageHeartRate)
+                message = notificationMessage(trend: .lowering,
+                                              heartRate: update.value,
+                                              averageHeartRate: averageHeartRate)
             }
         }
 
@@ -233,7 +232,6 @@ class RestingHeartRateService {
             postDebugNotification(title: debugTrend.displayText, body: debugMessage)
         }
     }
-
 
     func postDebugNotification(title: String, body: String) {
         guard Config.shared.postDebugNotifications else { return }
@@ -283,7 +281,7 @@ class RestingHeartRateService {
             fatalError("App is currently observing")
         }
 
-        let observerQuery = queryProvider.getObserverQuery { query, completionHandler, error in
+        let observerQuery = queryProvider.getObserverQuery { _, completionHandler, error in
             guard error == nil else { return }
 
             self.queryLatestRestingHeartRate { result in
@@ -313,8 +311,11 @@ class RestingHeartRateService {
 
     func queryLatestRestingHeartRate(completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
         let sampleQuery = queryProvider.getLatestRestingHeartRateQuery { query, results, error in
-            self.queryParser.parseLatestRestingHeartRateQueryResults(query: query, results: results, error: error) { result in
-                completionHandler(result)
+            self.queryParser.parseLatestRestingHeartRateQueryResults(
+                query: query,
+                results: results,
+                error: error) { result in
+                    completionHandler(result)
             }
         }
 
@@ -332,7 +333,7 @@ class RestingHeartRateService {
 
     func getAuthorisationStatusForRestingHeartRate(completion: @escaping (HealthKitAuthorisationStatus) -> Void) {
         let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
-        healthStore.getRequestStatusForAuthorization(toShare: [], read: rhr) { status, error in
+        healthStore.getRequestStatusForAuthorization(toShare: [], read: rhr) { status, _ in
             switch status {
             case .unnecessary: completion(.unnecessary)
             case .shouldRequest: completion(.shouldRequest)

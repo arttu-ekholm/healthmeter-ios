@@ -35,7 +35,10 @@ class QueryParser {
         self.averageRestingHeartRateCalculator = averageRestingHeartRateCalculator
     }
 
-    func parseLatestRestingHeartRateQueryResults(query: HKSampleQuery, results: [HKSample]?, error: Error?, completion: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
+    func parseLatestRestingHeartRateQueryResults(query: HKSampleQuery,
+                                                 results: [HKSample]?,
+                                                 error: Error?,
+                                                 completion: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
         if let error = error {
             completion(.failure(error))
             return
@@ -50,7 +53,12 @@ class QueryParser {
         completion(.success(heartRateUpdate))
     }
 
-    func parseAverageRestingHeartRateQueryResults(startDate: Date, endDate: Date, query: HKStatisticsCollectionQuery, result: HKStatisticsCollection?, error: Error?, callback: (Result<Double, Error>) -> Void) {
+    func parseAverageRestingHeartRateQueryResults(startDate: Date,
+                                                  endDate: Date,
+                                                  query: HKStatisticsCollectionQuery,
+                                                  result: HKStatisticsCollection?,
+                                                  error: Error?,
+                                                  callback: (Result<Double, Error>) -> Void) {
         if let error = error {
             callback(.failure(error))
             return
@@ -62,7 +70,10 @@ class QueryParser {
         }
 
         do {
-            let avgRestingValue = try averageRestingHeartRateCalculator.averageRestingHeartRate(fromStatsCollection: statsCollection, startDate: startDate, endDate: endDate)
+            let avgRestingValue = try averageRestingHeartRateCalculator.averageRestingHeartRate(
+                fromStatsCollection: statsCollection,
+                startDate: startDate,
+                endDate: endDate)
 
             callback(.success(avgRestingValue))
         } catch {

@@ -39,16 +39,6 @@
                ReferencedContainer = "container:HealthMeter.xcodeproj">
             </BuildableReference>
          </TestableReference>
-         <TestableReference
-            skipped = "YES">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "4BA1430A279DA6B6008884F0"
-               BuildableName = "HealthMeterUITests.xctest"
-               BlueprintName = "HealthMeterUITests"
-               ReferencedContainer = "container:HealthMeter.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

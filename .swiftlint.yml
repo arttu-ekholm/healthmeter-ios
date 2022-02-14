@@ -1,0 +1,4 @@
+disabled_rules:
+ - function_parameter_count
+ - line_length
+ - file_length

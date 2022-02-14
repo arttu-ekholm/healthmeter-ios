@@ -21,7 +21,7 @@ struct TutorialView: View {
     2. a device that provides resting heart rate values, such as Apple Watch
     """)
             Button("Authorise HealthKit") {
-                heartRateService.requestAuthorisation { success, error in
+                heartRateService.requestAuthorisation { success, _ in
                     if success {
                         DispatchQueue.main.async {
                             self.settingsStore.tutorialShown = true
