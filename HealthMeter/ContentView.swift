@@ -13,6 +13,7 @@ struct ContentView: View {
     @State var shouldDisplayHealthKitAuthorisation = false
     @ObservedObject var settingsStore = SettingsStore()
     @State private var showingDebugMenu = false
+    @State private var showingTutorialMenu = !SettingsStore().tutorialShown
 
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
 
@@ -38,10 +39,14 @@ struct ContentView: View {
                         shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
                     })
                 }
-        } else {
-            TutorialView(settingsStore: settingsStore, heartRateService: heartRateService)
         }
         Spacer()
+            .sheet(isPresented: $showingTutorialMenu) {
+                settingsStore.tutorialShown = true
+            } content: {
+                TutorialView(settingsStore: settingsStore, heartRateService: heartRateService, viewModel: TutorialView.ViewModel())
+            }
+
     }
 
     func averageHeartRateText(result: Result<Double, Error>?) -> Text? {

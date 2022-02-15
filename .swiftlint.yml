@@ -2,3 +2,4 @@ disabled_rules:
  - function_parameter_count
  - line_length
  - file_length
+ - multiple_closures_with_trailing_closure
