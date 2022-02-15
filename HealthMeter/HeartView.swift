@@ -167,11 +167,6 @@ struct HeartView: View {
             }
     }
 
-    func getViewStateText(_ viewState: ViewState<Any, Any>) -> Text? {
-        print(viewState)
-        return nil
-    }
-
     func getLatestRestingHeartRateDisplayString(update: RestingHeartRateUpdate) -> String {
         if viewModel.calendar.isDateInToday(update.date) {
             return "Your resting heart rate today is"
