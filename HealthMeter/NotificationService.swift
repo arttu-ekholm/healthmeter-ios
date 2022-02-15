@@ -25,7 +25,7 @@ class NotificationService {
     func postNotification(title: String, body: String, completion: ((Result<Void, Error>) -> Void)? = nil) {
         DispatchQueue.main.async {
             print("posting notification with title: \(title), message: \(body)")
-            guard self.applicationProxy.applicationState != .active else {
+            guard self.applicationProxy.applicationState == .background else {
                 completion?(.failure(NotificationServiceError.appIsActive))
                 return
             }
