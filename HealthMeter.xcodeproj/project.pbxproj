@@ -13,6 +13,7 @@
 		4B3946C927BB95CE004135CB /* Date+utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946C827BB95CE004135CB /* Date+utils.swift */; };
 		4B3946CD27BB9C13004135CB /* NotificationCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946CC27BB9C13004135CB /* NotificationCenterTests.swift */; };
 		4B3946CF27BBA0DB004135CB /* HeartViewViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946CE27BBA0DB004135CB /* HeartViewViewModelTests.swift */; };
+		4B3946D127BBA7C1004135CB /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 4B3946D027BBA7C1004135CB /* README.md */; };
 		4B3E19B827BA8039001F3989 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3E19B727BA8039001F3989 /* DebugView.swift */; };
 		4B684D7B27B1382700C4C76E /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B684D7A27B1382700C4C76E /* Config.swift */; };
 		4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */; };
@@ -60,6 +61,7 @@
 		4B3946C827BB95CE004135CB /* Date+utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+utils.swift"; sourceTree = "<group>"; };
 		4B3946CC27BB9C13004135CB /* NotificationCenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterTests.swift; sourceTree = "<group>"; };
 		4B3946CE27BBA0DB004135CB /* HeartViewViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartViewViewModelTests.swift; sourceTree = "<group>"; };
+		4B3946D027BBA7C1004135CB /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		4B3E19B727BA8039001F3989 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		4B684D7A27B1382700C4C76E /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		4BA142F1279DA6B5008884F0 /* HealthMeter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthMeter.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -152,6 +154,7 @@
 		4BA142F3279DA6B5008884F0 /* HealthMeter */ = {
 			isa = PBXGroup;
 			children = (
+				4B3946D027BBA7C1004135CB /* README.md */,
 				4BA14322279DEE85008884F0 /* Info.plist */,
 				4BA1431E279DA97D008884F0 /* HealthMeter.entitlements */,
 				4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */,
@@ -311,6 +314,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B3946D127BBA7C1004135CB /* README.md in Resources */,
 				4BA142FC279DA6B6008884F0 /* Preview Assets.xcassets in Resources */,
 				4BA142F9279DA6B6008884F0 /* Assets.xcassets in Resources */,
 			);
