@@ -40,7 +40,6 @@ class NotificationService {
                if let error = error {
                    print("posting the notification failed with error: \(error)")
                    completion?(.failure(error))
-                   self.applicationProxy.applicationIconBadgeNumber = 9
                } else {
                    print("notification posted successfully")
                    completion?(.success(()))
