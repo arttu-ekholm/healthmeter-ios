@@ -46,7 +46,7 @@ struct HeartView: View {
 
     class ViewModel: ObservableObject {
         let restingHeartRateService: RestingHeartRateService
-        let calendar: Calendar
+        private let calendar: Calendar
         var shouldReloadContents: Bool
         @Published var viewState: ViewState<RestingHeartRateUpdate, Double>
 
@@ -80,6 +80,14 @@ struct HeartView: View {
                     }
                 }
             }
+        }
+
+        func isDateInToday(_ date: Date) -> Bool {
+            return calendar.isDateInToday(date)
+        }
+
+        func isDateInYesterday(_ date: Date) -> Bool {
+            return calendar.isDateInYesterday(date)
         }
     }
 
@@ -123,7 +131,7 @@ struct HeartView: View {
                         animationAmount = 1.08
                     }
 
-                if viewModel.calendar.isDateInToday(update.date) {
+                if viewModel.isDateInToday(update.date) {
                     Text(viewModel.restingHeartRateService.heartRateAnalysisText(current: update.value, average: average))
                         .font(.headline)
                         .padding(.bottom)
@@ -168,9 +176,9 @@ struct HeartView: View {
     }
 
     func getLatestRestingHeartRateDisplayString(update: RestingHeartRateUpdate) -> String {
-        if viewModel.calendar.isDateInToday(update.date) {
+        if viewModel.isDateInToday(update.date) {
             return "Your resting heart rate today is"
-        } else if viewModel.calendar.isDateInYesterday(update.date) {
+        } else if viewModel.isDateInYesterday(update.date) {
             return "Yesteday, your resting heart rate was"
         } else { // past
             return "Earlier, your resting heart rate was"
