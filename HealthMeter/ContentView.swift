@@ -12,7 +12,8 @@ struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
     @State var shouldDisplayHealthKitAuthorisation = false
     @ObservedObject var settingsStore = SettingsStore()
-    var config: Config = Config.shared
+    @State private var showingDebugMenu = false
+
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
 
     var body: some View {
@@ -20,6 +21,12 @@ struct ContentView: View {
             .font(.title)
             .bold()
             .padding()
+        Button("Show debug menu") {
+            showingDebugMenu.toggle()
+        }
+        .sheet(isPresented: $showingDebugMenu) {
+            DebugView(heartRateService: heartRateService)
+        }
         Spacer()
         if settingsStore.tutorialShown {
             if !shouldDisplayHealthKitAuthorisation {
@@ -31,12 +38,6 @@ struct ContentView: View {
                         shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
                     })
                 }
-            if config.displayDebugView {
-                DebugView(heartRateService: heartRateService)
-
-                .border(.black, width: 1)
-                .padding()
-            }
         } else {
             TutorialView(settingsStore: settingsStore, heartRateService: heartRateService)
         }

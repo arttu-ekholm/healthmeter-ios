@@ -11,9 +11,19 @@ struct DebugView: View {
     let heartRateService: RestingHeartRateService
     /// Value for mock update text field
     @State var debugValue: Double = 50.0
+    @Environment(\.dismiss) var dismiss
 
     var body: some View {
         VStack {
+
+            HStack {
+                Spacer()
+                Button("Dismiss") {
+                    dismiss()
+                }
+                .padding()
+            }
+            Spacer()
             Text("Debug view:")
             latestHighRHR(date: heartRateService.latestHighRHRNotificationPostDate)
             latestLowRHR(date: heartRateService.latestLoweredRHRNotificationPostDate)
@@ -25,6 +35,7 @@ struct DebugView: View {
             Button("Handle fake update") {
                 heartRateService.handleDebugUpdate(update: RestingHeartRateUpdate(date: Date(), value: debugValue))
             }
+            Spacer()
         }
     }
 
@@ -44,5 +55,11 @@ struct DebugView: View {
         guard let date = date else { return Text("No debug HRH notification") }
 
         return Text("Latest debug HRH notification: \(date)")
+    }
+}
+
+struct DebugView_Previews: PreviewProvider {
+    static var previews: some View {
+        DebugView(heartRateService: RestingHeartRateService.shared)
     }
 }
