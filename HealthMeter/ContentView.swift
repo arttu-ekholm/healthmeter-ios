@@ -13,7 +13,6 @@ struct ContentView: View {
     @State var shouldDisplayHealthKitAuthorisation = false
     @ObservedObject var settingsStore = SettingsStore()
     var config: Config = Config.shared
-
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
 
     var body: some View {
@@ -24,7 +23,7 @@ struct ContentView: View {
         Spacer()
         if settingsStore.tutorialShown {
             if !shouldDisplayHealthKitAuthorisation {
-                HeartView(restingHeartRateService: heartRateService)
+                HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
             }
             Text("")
                 .onAppear {

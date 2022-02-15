@@ -13,14 +13,23 @@ struct TutorialView: View {
 
     var body: some View {
         VStack(alignment: .center, spacing: 12.0) {
-            Text("HealthMeter").font(.title)
-            Text("HealthMeter tracks your resting heart rate and notifies you if it rises above normal level. Higher than usual resting heart rate might be sign of an illness.")
-            Text("""
-    To make HealthMeter work, you need two things:
-    1. your permission to read thee resting heart rate from HealthKit.
-    2. a device that provides resting heart rate values, such as Apple Watch
-    """)
-            Button("Authorise HealthKit") {
+            Text("HealthMeter tracks your resting heart rate and notifies you if it rises above normal level. Higher than usual resting heart rate might be a sign of an illness.")
+            Text("To make HealthMeter app work, you need two things:")
+                .padding()
+
+            HStack {
+                Image(systemName: "lock.open.fill")
+                    .foregroundColor(.blue)
+                Text("Allow HealthMeter to read resting heart rate from HealthKit.")
+            }
+
+            HStack {
+                Image(systemName: "heart.square")
+                    .foregroundColor(.blue)
+                Text("A device that records resting heart rate, such as Apple Watch.")
+            }
+            .padding(.bottom)
+            Button {
                 heartRateService.requestAuthorisation { success, _ in
                     if success {
                         DispatchQueue.main.async {
@@ -28,6 +37,8 @@ struct TutorialView: View {
                         }
                     }
                 }
+            } label: {
+                Text("Authorise HealthKit").bold()
             }
             .font(.title2)
             .padding()

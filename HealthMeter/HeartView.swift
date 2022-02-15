@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct HeartView: View {
-    enum ViewState<T, S> {
+    enum ViewState<T, E> {
         case loading
-        case success(T, S)
+        case success(T, E)
         case error(Error)
     }
 
@@ -36,7 +36,7 @@ struct HeartView: View {
 
         var recoverySuggestion: String? {
             switch self {
-            case .missingBoth, .missingAverageHeartRate: return "Please try again when you have collected more resting heart rate data."
+            case .missingBoth, .missingAverageHeartRate: return "Please try again when you have collected more resting heart rate data. Also, check if you have authorised HealthKit."
             case .missingLatestHeartRate:
                 return "Make sure your health devices record your resting heart rate."
             default: return nil
@@ -44,17 +44,52 @@ struct HeartView: View {
         }
     }
 
-    var shouldReloadContents: Bool = true
-    var calendar: Calendar = Calendar.current
+    class ViewModel: ObservableObject {
+        let restingHeartRateService: RestingHeartRateService
+        let calendar: Calendar
+        var shouldReloadContents: Bool
+        @Published var viewState: ViewState<RestingHeartRateUpdate, Double>
 
-    @State var viewState: ViewState<RestingHeartRateUpdate, Double> = .loading
-    let restingHeartRateService: RestingHeartRateService
+        init(
+            heartRateService: RestingHeartRateService = RestingHeartRateService.shared,
+            calendar: Calendar = Calendar.current,
+            shouldReloadContents: Bool = true,
+            viewState: ViewState<RestingHeartRateUpdate, Double> = .loading) {
+                self.restingHeartRateService = heartRateService
+                self.calendar = calendar
+                self.shouldReloadContents = shouldReloadContents
+                self.viewState = viewState
+        }
+
+        func requestLatestRestingHeartRate() {
+            restingHeartRateService.queryLatestRestingHeartRate { [weak self] latestResult in
+                guard let self = self else { return }
+
+                self.restingHeartRateService.queryAverageRestingHeartRate { [weak self] averageResult in
+                    guard let self = self else { return }
+                    DispatchQueue.main.async {
+                        if case .success(let update) = latestResult, case .success(let average) = averageResult {
+                            self.viewState = .success(update, average)
+                        } else if case .failure = averageResult, case .failure = latestResult {
+                            self.viewState = .error(HeartViewError.missingBoth)
+                        } else if case .failure = averageResult {
+                            self.viewState = .error(HeartViewError.missingLatestHeartRate)
+                        } else if case .failure = latestResult {
+                            self.viewState = .error(HeartViewError.missingLatestHeartRate)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     @State private var animationAmount: CGFloat = 1
+    @StateObject var viewModel: ViewModel
     @Environment(\.scenePhase) var scenePhase
 
     var body: some View {
         VStack(alignment: .center, spacing: 12, content: {
-            switch viewState {
+            switch viewModel.viewState {
             case .loading:
                 Image(systemName: "heart.text.square.fill")
                     .resizable()
@@ -88,8 +123,8 @@ struct HeartView: View {
                         animationAmount = 1.08
                     }
 
-                if calendar.isDateInToday(update.date) {
-                    Text(restingHeartRateService.heartRateAnalysisText(current: update.value, average: average))
+                if viewModel.calendar.isDateInToday(update.date) {
+                    Text(viewModel.restingHeartRateService.heartRateAnalysisText(current: update.value, average: average))
                         .font(.headline)
                         .padding(.bottom)
                 } else {
@@ -121,21 +156,26 @@ struct HeartView: View {
             }
         })
             .onAppear {
-                if shouldReloadContents {
-                    requestLatestRestingHeartRate()
+                if viewModel.shouldReloadContents {
+                    viewModel.requestLatestRestingHeartRate()
                 }
             }
             .onChange(of: scenePhase) { newPhase in
-                if newPhase == .active, shouldReloadContents {
-                    requestLatestRestingHeartRate()
+                if newPhase == .active, viewModel.shouldReloadContents {
+                    viewModel.requestLatestRestingHeartRate()
                 }
             }
     }
 
+    func getViewStateText(_ viewState: ViewState<Any, Any>) -> Text? {
+        print(viewState)
+        return nil
+    }
+
     func getLatestRestingHeartRateDisplayString(update: RestingHeartRateUpdate) -> String {
-        if calendar.isDateInToday(update.date) {
+        if viewModel.calendar.isDateInToday(update.date) {
             return "Your resting heart rate today is"
-        } else if calendar.isDateInYesterday(update.date) {
+        } else if viewModel.calendar.isDateInYesterday(update.date) {
             return "Yesteday, your resting heart rate was"
         } else { // past
             return "Earlier, your resting heart rate was"
@@ -156,24 +196,6 @@ struct HeartView: View {
                 .font(.headline)
         }
     }
-
-    func requestLatestRestingHeartRate() {
-        restingHeartRateService.queryLatestRestingHeartRate { latestResult in
-            self.restingHeartRateService.queryAverageRestingHeartRate { averageResult in
-                DispatchQueue.main.async {
-                    if case .success(let update) = latestResult, case .success(let average) = averageResult {
-                        viewState = .success(update, average)
-                    } else if case .failure = averageResult, case .failure = latestResult {
-                        viewState = .error(HeartViewError.missingBoth)
-                    } else if case .failure = averageResult {
-                        viewState = .error(HeartViewError.missingLatestHeartRate)
-                    } else if case .failure = latestResult {
-                        viewState = .error(HeartViewError.missingLatestHeartRate)
-                    }
-                }
-            }
-        }
-    }
 }
 
 struct DescriptionTextView: View {
@@ -189,7 +211,6 @@ struct DescriptionTextView: View {
             }
         }
         .padding()
-
     }
 }
 
@@ -197,29 +218,35 @@ struct HeartView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             HeartView(
-                shouldReloadContents: false,
-                viewState: .success(RestingHeartRateUpdate(date: Date(), value: 90.0), 60.0),
-                restingHeartRateService: RestingHeartRateService.shared)
+                viewModel: HeartView.ViewModel(
+                    heartRateService: RestingHeartRateService.shared,
+                    shouldReloadContents: false,
+                viewState: .success(RestingHeartRateUpdate(date: Date(), value: 90.0), 60.0)))
             HeartView(
-                shouldReloadContents: false,
-                viewState: .success(RestingHeartRateUpdate(date: Date(), value: 60.0), 60.0),
-                restingHeartRateService: RestingHeartRateService.shared)
+                viewModel: HeartView.ViewModel(
+                    heartRateService: RestingHeartRateService.shared,
+                    shouldReloadContents: false,
+                    viewState: .success(RestingHeartRateUpdate(date: Date(), value: 60.0), 60.0)))
             HeartView(
-                shouldReloadContents: false,
-                viewState: .error(HeartView.HeartViewError.missingLatestHeartRate),
-                restingHeartRateService: RestingHeartRateService.shared)
+                viewModel: HeartView.ViewModel(
+                    heartRateService: RestingHeartRateService.shared,
+                    shouldReloadContents: false,
+                    viewState: .error(HeartView.HeartViewError.missingLatestHeartRate)))
             HeartView(
-                shouldReloadContents: false,
-                viewState: .error(HeartView.HeartViewError.missingAverageHeartRate),
-                restingHeartRateService: RestingHeartRateService.shared)
+                viewModel: HeartView.ViewModel(
+                    heartRateService: RestingHeartRateService.shared,
+                    shouldReloadContents: false,
+                    viewState: .error(HeartView.HeartViewError.missingAverageHeartRate)))
             HeartView(
-                shouldReloadContents: false,
-                viewState: .error(HeartView.HeartViewError.missingBoth),
-                restingHeartRateService: RestingHeartRateService.shared)
+                viewModel: HeartView.ViewModel(
+                    heartRateService: RestingHeartRateService.shared,
+                    shouldReloadContents: false,
+                    viewState: .error(HeartView.HeartViewError.missingBoth)))
             HeartView(
-                shouldReloadContents: false,
-                viewState: .loading,
-                restingHeartRateService: RestingHeartRateService.shared)
+                viewModel: HeartView.ViewModel(
+                    heartRateService: RestingHeartRateService.shared,
+                    shouldReloadContents: false,
+                    viewState: .loading))
         }
     }
 }
