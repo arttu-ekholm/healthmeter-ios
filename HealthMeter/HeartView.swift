@@ -61,6 +61,28 @@ struct HeartView: View {
                 self.viewState = viewState
         }
 
+        var heartColor: Color {
+            switch viewState {
+            case .success(let latest, let average):
+                let current = latest.value
+                let multiplier = (current > average ? current / average : average / current) - 1.0
+                if multiplier > 0 {
+                    if multiplier > 0.2 {
+                        return .red
+                    } else if multiplier > 0.1 {
+                        return .orange
+                    } else if multiplier > 0.05 {
+                        return .yellow
+                    } else {
+                        return .green
+                    }
+                } else {
+                    return .blue
+                }
+            default: return .green
+            }
+        }
+
         func requestLatestRestingHeartRate() {
             restingHeartRateService.queryLatestRestingHeartRate { [weak self] latestResult in
                 guard let self = self else { return }
@@ -118,7 +140,7 @@ struct HeartView: View {
                 Image(systemName: "heart.fill")
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
-                    .foregroundColor(.green)
+                    .foregroundColor(viewModel.heartColor)
                     .scaleEffect(animationAmount)
                     .animation(
                         .spring(response: 0.3, dampingFraction: 0.4, blendDuration: 0.0)
