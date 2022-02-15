@@ -44,9 +44,11 @@ struct ContentView: View {
             .sheet(isPresented: $showingTutorialMenu) {
                 settingsStore.tutorialShown = true
             } content: {
-                TutorialView(settingsStore: settingsStore, heartRateService: heartRateService, viewModel: TutorialView.ViewModel())
+                TutorialView(settingsStore: settingsStore,
+                             heartRateService: heartRateService,
+                             viewModel: TutorialView.ViewModel())
+                    .interactiveDismissDisabled(true)
             }
-
     }
 
     func averageHeartRateText(result: Result<Double, Error>?) -> Text? {
