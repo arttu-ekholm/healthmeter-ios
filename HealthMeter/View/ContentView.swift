@@ -18,37 +18,51 @@ struct ContentView: View {
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
 
     var body: some View {
-        Text("HealthMeter")
-            .font(.title)
-            .bold()
-            .padding()
-        Button("Show debug menu") {
-            showingDebugMenu.toggle()
-        }
-        .sheet(isPresented: $showingDebugMenu) {
-            InfoView(viewModel: InfoView.ViewModel(heartRateService: heartRateService))
-        }
-        Spacer()
-        if settingsStore.tutorialShown {
-            if !shouldDisplayHealthKitAuthorisation {
-                HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
+        VStack {
+            ZStack {
+                HStack {
+                    Text("HealthMeter")
+                        .font(.title)
+                        .bold()
+                        .padding()
+
+                }
+                HStack {
+                    Spacer()
+                    Button {
+                        showingDebugMenu.toggle()
+                    } label: {
+                        Image(systemName: "info.circle")
+                    }
+                    .padding(.trailing)
+                    .sheet(isPresented: $showingDebugMenu) {
+                        InfoView(viewModel: InfoView.ViewModel(heartRateService: heartRateService))
+                    }
+                }
             }
-            Text("") // TODO: remove this
-                .onAppear {
-                    heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { status in
-                        shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
-                    })
+
+            Spacer()
+            if settingsStore.tutorialShown {
+                if !shouldDisplayHealthKitAuthorisation {
+                    HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
+                }
+
+            }
+            Spacer()
+                .sheet(isPresented: $showingTutorialMenu) {
+                    settingsStore.tutorialShown = true
+                } content: {
+                    TutorialView(settingsStore: settingsStore,
+                                 heartRateService: heartRateService,
+                                 viewModel: TutorialView.ViewModel())
+                        .interactiveDismissDisabled(true)
                 }
         }
-        Spacer()
-            .sheet(isPresented: $showingTutorialMenu) {
-                settingsStore.tutorialShown = true
-            } content: {
-                TutorialView(settingsStore: settingsStore,
-                             heartRateService: heartRateService,
-                             viewModel: TutorialView.ViewModel())
-                    .interactiveDismissDisabled(true)
-            }
+        .onAppear {
+            heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { status in
+                shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
+            })
+        }
     }
 }
 
