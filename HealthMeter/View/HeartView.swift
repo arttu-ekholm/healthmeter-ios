@@ -38,7 +38,7 @@ struct HeartView: View {
             switch self {
             case .missingBoth, .missingAverageHeartRate: return
                 """
-            Please try again when you have collected more resting heart rate data. Go to the Health app and authorise HealthMeter to read your resting heart rate.
+            Please try again when you have collected more resting heart rate data. Go to the Health app and authorise Restful to read your resting heart rate.
             """
             case .missingLatestHeartRate:
                 return "Make sure your health devices record your resting heart rate."

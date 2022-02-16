@@ -21,7 +21,7 @@ struct ContentView: View {
         VStack {
             ZStack {
                 HStack {
-                    Text("HealthMeter")
+                    Text("Restful")
                         .font(.title)
                         .bold()
                         .padding()

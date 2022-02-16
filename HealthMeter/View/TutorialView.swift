@@ -55,7 +55,7 @@ struct TutorialView: View {
         VStack(alignment: .leading, spacing: 12.0) {
             HStack {
                 Spacer()
-                Text("HealthMeter")
+                Text("Restful")
                     .font(.title)
                     .bold()
                     .padding()
@@ -63,8 +63,8 @@ struct TutorialView: View {
             }
             Spacer()
 
-            Text("HealthMeter tracks your resting heart rate and notifies you if it rises above normal level. Higher than usual resting heart rate might be a sign of an illness.")
-            Text("To make HealthMeter app work, you need three things:")
+            Text("Restful tracks your resting heart rate and notifies you if it rises above normal level. Higher than usual resting heart rate might be a sign of an illness.")
+            Text("To make Restful work, you need three things:")
                 .bold()
                 .padding()
 
@@ -72,7 +72,7 @@ struct TutorialView: View {
                 Image(systemName: viewModel.authorized ? "checkmark.square" : "square")
                     .foregroundColor(.blue)
                     .padding()
-                Text("Allow HealthMeter to read resting heart rate from HealthKit.")
+                Text("Allow Restful to read resting heart rate from HealthKit.")
                     .fontWeight(viewModel.currentPhase == .authorizeHealthKit ? .bold : .regular)
             }
             HStack {

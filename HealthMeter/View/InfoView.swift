@@ -40,7 +40,7 @@ struct InfoView: View {
             return """
             Tapping the button will make the app to process a fake resting heart rate update with a resting heart rate of \(String(format: "%.0f", (fakeHeartRateValue))) bpm.
 
-            The value won't be saved to the HealthKit database and it won't affect the notifications you'd receive from HealthMeter normally, so it's safe to test the update.
+            The value won't be saved to the HealthKit database and it won't affect the notifications you'd receive from Restful normally, so it's safe to test the update.
             """
         }
 
@@ -53,13 +53,13 @@ struct InfoView: View {
             }
 
             return """
-            If HealthMeter detects an elevated resting heart rate\(thresholdRestingHeartRate), you'll receive a push notification. You'll be notified only once per day about elevated resting heart rate.
+            If Restful detects an elevated resting heart rate\(thresholdRestingHeartRate), you'll receive a push notification. You'll be notified only once per day about elevated resting heart rate.
             """
         }
 
         var latestHighRHRNotificationDisplayString: String {
             if let date = latestHighRHRNotificationPostDate {
-                return "HealthMeter has notified you about elevated resting heart rate \(date.timeAgoDisplay())"
+                return "Restful has notified you about elevated resting heart rate \(date.timeAgoDisplay())"
             } else {
                 return "No elevated resting heart levels detected."
             }
@@ -81,7 +81,7 @@ struct InfoView: View {
             }
             Spacer()
 
-            Text("How does HealthMeter work?")
+            Text("How does Restful work?")
                 .font(.title2)
                 .bold()
 
