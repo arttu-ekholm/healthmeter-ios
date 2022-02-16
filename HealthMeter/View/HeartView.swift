@@ -50,8 +50,11 @@ struct HeartView: View {
     class ViewModel: ObservableObject {
         private let restingHeartRateService: RestingHeartRateService
         private let calendar: Calendar
+        let notificationCenter = UNUserNotificationCenter.current()
+
         var shouldReloadContents: Bool
         @Published var viewState: ViewState<RestingHeartRateUpdate, Double>
+        @Published var notificationsDenied = false
 
         init(
             heartRateService: RestingHeartRateService = RestingHeartRateService.shared,
@@ -131,6 +134,18 @@ struct HeartView: View {
                 return "Today's resting heart rate hasn't been calculated yet."
             }
         }
+
+        func checkNotificationStatus() {
+            notificationCenter.getNotificationSettings { settings in
+                DispatchQueue.main.async {
+                    if case .denied = settings.authorizationStatus {
+                        self.notificationsDenied = true
+                    } else {
+                        self.notificationsDenied = false
+                    }
+                }
+            }
+        }
     }
 
     @State private var animationAmount: CGFloat = 1
@@ -195,6 +210,27 @@ struct HeartView: View {
                         .bold() +
                     Text(" bpm.")
                         .bold()
+
+                    if viewModel.notificationsDenied {
+                        VStack(spacing: 12) {
+                            HStack(spacing: 12) {
+                                Image(systemName: "exclamationmark.triangle")
+                                    .foregroundColor(.orange)
+                                    .font(.system(size: 36, weight: .medium))
+                                VStack(alignment: .leading, spacing: 10) {
+                                    Text("Notifications are disabled")
+                                    .bold()
+                                    Text("To get notifications about elevated resting heart rate, go to the Settings app and enable them.")
+                                    .font(.footnote)
+                                }
+                            }
+
+                            Link("Settings app", destination: URL(string: UIApplication.openSettingsURLString)!)
+                        }
+                        .padding()
+                        .border(.orange, width: 2)
+                        .padding()
+                    }
                 }
             }
         })
@@ -202,11 +238,13 @@ struct HeartView: View {
                 if viewModel.shouldReloadContents {
                     viewModel.requestLatestRestingHeartRate()
                 }
+                viewModel.checkNotificationStatus()
             }
             .onChange(of: scenePhase) { newPhase in
                 if newPhase == .active, viewModel.shouldReloadContents {
                     viewModel.requestLatestRestingHeartRate()
                 }
+                viewModel.checkNotificationStatus()
             }
     }
 
