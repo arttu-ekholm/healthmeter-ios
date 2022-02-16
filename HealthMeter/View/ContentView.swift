@@ -33,7 +33,7 @@ struct ContentView: View {
             if !shouldDisplayHealthKitAuthorisation {
                 HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
             }
-            Text("")
+            Text("") // TODO: remove this
                 .onAppear {
                     heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { status in
                         shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
@@ -49,17 +49,6 @@ struct ContentView: View {
                              viewModel: TutorialView.ViewModel())
                     .interactiveDismissDisabled(true)
             }
-    }
-
-    func averageHeartRateText(result: Result<Double, Error>?) -> Text? {
-        guard let result = result else { return nil }
-
-        switch result {
-        case .success(let avgHeartRate):
-            return Text("Your heart rate is \(avgHeartRate) bpm")
-        case .failure(let error):
-            return Text("Heart rate query failed with an error: \(error.localizedDescription)")
-        }
     }
 }
 
