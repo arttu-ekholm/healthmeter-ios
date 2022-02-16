@@ -59,7 +59,7 @@ struct HeartView: View {
                 self.calendar = calendar
                 self.shouldReloadContents = shouldReloadContents
                 self.viewState = viewState
-        }
+            }
 
         var heartColor: Color {
             switch viewState {
@@ -102,6 +102,20 @@ struct HeartView: View {
                     }
                 }
             }
+        }
+
+        func getLatestRestingHeartRateDisplayString(update: RestingHeartRateUpdate) -> String {
+            if isDateInToday(update.date) {
+                return "Your resting heart rate today is"
+            } else if isDateInYesterday(update.date) {
+                return "Yesteday, your resting heart rate was"
+            } else { // past
+                return "Earlier, your resting heart rate was"
+            }
+        }
+
+        var restingHeartRateNotCalculatedTodayString: String {
+            return "Today's resting heart rate hasn't been calculated yet."
         }
 
         func isDateInToday(_ date: Date) -> Bool {
@@ -158,13 +172,13 @@ struct HeartView: View {
                         .font(.headline)
                         .padding(.bottom)
                 } else {
-                    Text("Today's resting heart rate hasn't been calculated yet.")
+                    Text(viewModel.restingHeartRateNotCalculatedTodayString)
                         .font(.headline)
                         .padding()
                 }
 
                 VStack {
-                    Text(getLatestRestingHeartRateDisplayString(update: update)) + Text(" ") +
+                    Text(viewModel.getLatestRestingHeartRateDisplayString(update: update)) + Text(" ") +
                     Text(String(format: "%.0f", update.value))
                         .font(.title2)
                         .bold() +
@@ -172,8 +186,8 @@ struct HeartView: View {
                         .bold()
 
                     /*
-                    Text("Updated \(update.date.timeAgoDisplay())").font(.footnote)
-                        .padding(.bottom)
+                     Text("Updated \(update.date.timeAgoDisplay())").font(.footnote)
+                     .padding(.bottom)
                      */
 
                     Text("Your average resting heart rate is ") +
@@ -195,16 +209,6 @@ struct HeartView: View {
                     viewModel.requestLatestRestingHeartRate()
                 }
             }
-    }
-
-    func getLatestRestingHeartRateDisplayString(update: RestingHeartRateUpdate) -> String {
-        if viewModel.isDateInToday(update.date) {
-            return "Your resting heart rate today is"
-        } else if viewModel.isDateInYesterday(update.date) {
-            return "Yesteday, your resting heart rate was"
-        } else { // past
-            return "Earlier, your resting heart rate was"
-        }
     }
 
     func heartRateText(restingHeartRateResult: Result<RestingHeartRateUpdate, Error>?) -> Text? {
@@ -246,7 +250,7 @@ struct HeartView_Previews: PreviewProvider {
                 viewModel: HeartView.ViewModel(
                     heartRateService: RestingHeartRateService.shared,
                     shouldReloadContents: false,
-                viewState: .success(RestingHeartRateUpdate(date: Date(), value: 90.0), 60.0)))
+                    viewState: .success(RestingHeartRateUpdate(date: Date(), value: 90.0), 60.0)))
             HeartView(
                 viewModel: HeartView.ViewModel(
                     heartRateService: RestingHeartRateService.shared,

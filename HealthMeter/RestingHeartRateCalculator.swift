@@ -8,6 +8,9 @@
 import Foundation
 import HealthKit
 
+/**
+ Calcluates average RHR from a collection of HKStatistics
+ */
 class RestingHeartRateCalculator {
     enum RestingHeartRateCalculatorError: Error {
         case emptyCollection

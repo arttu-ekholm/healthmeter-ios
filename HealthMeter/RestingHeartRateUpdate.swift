@@ -8,6 +8,9 @@
 import Foundation
 import HealthKit
 
+/**
+ Wraps the relevant fields of `HKQuantitySample` object
+ */
 struct RestingHeartRateUpdate: Codable {
     let date: Date
     let value: Double

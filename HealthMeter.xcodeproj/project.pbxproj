@@ -130,6 +130,26 @@
 			path = Pods;
 			sourceTree = "<group>";
 		};
+		4B3946D527BBE45D004135CB /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */,
+				4BBE11FF27A9CDC200112638 /* NotificationService.swift */,
+			);
+			path = Service;
+			sourceTree = "<group>";
+		};
+		4B3946D627BBE471004135CB /* View */ = {
+			isa = PBXGroup;
+			children = (
+				4BA142F6279DA6B5008884F0 /* ContentView.swift */,
+				4B3E19B727BA8039001F3989 /* DebugView.swift */,
+				4BACE5C627AAF0BF009068F9 /* HeartView.swift */,
+				4BACE5C827ABB8A6009068F9 /* TutorialView.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
 		4BA142E8279DA6B5008884F0 = {
 			isa = PBXGroup;
 			children = (
@@ -154,22 +174,18 @@
 		4BA142F3279DA6B5008884F0 /* HealthMeter */ = {
 			isa = PBXGroup;
 			children = (
+				4B3946D627BBE471004135CB /* View */,
+				4B3946D527BBE45D004135CB /* Service */,
 				4B3946D027BBA7C1004135CB /* README.md */,
 				4BA14322279DEE85008884F0 /* Info.plist */,
 				4BA1431E279DA97D008884F0 /* HealthMeter.entitlements */,
 				4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */,
 				4B684D7A27B1382700C4C76E /* Config.swift */,
-				4BA142F6279DA6B5008884F0 /* ContentView.swift */,
-				4B3E19B727BA8039001F3989 /* DebugView.swift */,
-				4BACE5C627AAF0BF009068F9 /* HeartView.swift */,
 				4B3946C827BB95CE004135CB /* Date+utils.swift */,
-				4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */,
-				4BACE5C827ABB8A6009068F9 /* TutorialView.swift */,
 				4BACE5C427AACC3C009068F9 /* RestingHeartRateCalculator.swift */,
 				4BACE5C027AAC349009068F9 /* QueryProvider.swift */,
 				4BACE5BE27AAC32A009068F9 /* QueryParser.swift */,
 				4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */,
-				4BBE11FF27A9CDC200112638 /* NotificationService.swift */,
 				4BA142F8279DA6B6008884F0 /* Assets.xcassets */,
 				4BA142FA279DA6B6008884F0 /* Preview Content */,
 			);
