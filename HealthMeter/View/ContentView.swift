@@ -10,7 +10,6 @@ import HealthKit
 
 struct ContentView: View {
     @Environment(\.scenePhase) var scenePhase
-    @State var shouldDisplayHealthKitAuthorisation = false
     @ObservedObject var settingsStore = SettingsStore()
     @State private var showingDebugMenu = false
     @State private var showingTutorialMenu = !SettingsStore().tutorialShown
@@ -25,7 +24,6 @@ struct ContentView: View {
                         .font(.title)
                         .bold()
                         .padding()
-
                 }
                 HStack {
                     Spacer()
@@ -44,10 +42,8 @@ struct ContentView: View {
 
             Spacer()
             if settingsStore.tutorialShown {
-                if !shouldDisplayHealthKitAuthorisation {
-                    HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
-                }
-
+                HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
+                //HeartView(viewModel: HeartView.ViewModel(heartRateService: MockHeartRateService()))
             }
             Spacer()
                 .sheet(isPresented: $showingTutorialMenu) {
@@ -57,11 +53,6 @@ struct ContentView: View {
                                  viewModel: TutorialView.ViewModel(heartRateService: heartRateService))
                         .interactiveDismissDisabled(true)
                 }
-        }
-        .onAppear {
-            heartRateService.getAuthorisationStatusForRestingHeartRate(completion: { status in
-                shouldDisplayHealthKitAuthorisation = (status == .unknown || status == .shouldRequest)
-            })
         }
     }
 }
