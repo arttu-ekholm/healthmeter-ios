@@ -1,5 +1,5 @@
 //
-//  DebugView.swift
+//  InfoView.swift
 //  HealthMeter
 //
 //  Created by Arttu Ekholm on 14.2.2022.
@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct DebugView: View {
+struct InfoView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var viewModel: ViewModel
 
@@ -135,6 +135,6 @@ struct DebugView: View {
 
 struct DebugView_Previews: PreviewProvider {
     static var previews: some View {
-        DebugView(viewModel: DebugView.ViewModel(heartRateService: RestingHeartRateService.shared))
+        InfoView(viewModel: InfoView.ViewModel(heartRateService: RestingHeartRateService.shared))
     }
 }
