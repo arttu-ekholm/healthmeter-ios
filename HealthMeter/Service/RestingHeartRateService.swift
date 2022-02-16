@@ -42,7 +42,9 @@ class RestingHeartRateService {
     private var latestRestingHeartRateUpdate: RestingHeartRateUpdate?
 
     // If the latest update is this much above the avg. RHR, the notification will be triggered.
-    private let threshold = 1.05
+    var threshold: Double {
+        return 1.05
+    }
 
     // Dependencies
     private let calendar: Calendar

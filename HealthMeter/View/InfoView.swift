@@ -19,7 +19,7 @@ struct InfoView: View {
             self.heartRateService = heartRateService
 
             if let averageHeartRate = heartRateService.averageHeartRate {
-                fakeHeartRateValue = averageHeartRate * 1.1
+                fakeHeartRateValue = averageHeartRate * heartRateService.threshold + 1
             }
         }
 
@@ -47,7 +47,7 @@ struct InfoView: View {
         var notificationFootnoteString: String {
             let thresholdRestingHeartRate: String
             if let averageHeartRate = averageHeartRate {
-                thresholdRestingHeartRate = String(format: " (above %.0f bpm)", averageHeartRate * 1.05)
+                thresholdRestingHeartRate = String(format: " (above %.0f bpm)", averageHeartRate * heartRateService.threshold)
             } else {
                 thresholdRestingHeartRate = ""
             }
