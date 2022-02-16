@@ -33,6 +33,7 @@ struct ContentView: View {
                         showingDebugMenu.toggle()
                     } label: {
                         Image(systemName: "info.circle")
+                            .font(.system(size: 24, weight: .medium))
                     }
                     .padding(.trailing)
                     .sheet(isPresented: $showingDebugMenu) {
