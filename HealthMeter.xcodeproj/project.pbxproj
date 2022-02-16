@@ -624,6 +624,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HealthMeter/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Restful;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Restful reads your resting heart rate to detect if it is elevated";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Restful reads your resting heart rate to detect if it is elevated";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -659,6 +660,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HealthMeter/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = Restful;
 				INFOPLIST_KEY_NSHealthShareUsageDescription = "Restful reads your resting heart rate to detect if it is elevated";
 				INFOPLIST_KEY_NSHealthUpdateUsageDescription = "Restful reads your resting heart rate to detect if it is elevated";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
