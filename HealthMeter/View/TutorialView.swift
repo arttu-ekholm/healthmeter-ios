@@ -155,7 +155,8 @@ struct TutorialView: View {
                     viewModel.currentPhase = .allDone
                 })
                 Button("Settings", action: {
-                    UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
+                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                    UIApplication.shared.open(url)
                 })
             }) {
                 Text("To receive push notifications about elevated resting heart rate, go to the Settings app.")

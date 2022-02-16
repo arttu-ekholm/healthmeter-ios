@@ -36,7 +36,10 @@ struct HeartView: View {
 
         var recoverySuggestion: String? {
             switch self {
-            case .missingBoth, .missingAverageHeartRate: return "Please try again when you have collected more resting heart rate data. Also, check if you have authorised HealthKit."
+            case .missingBoth, .missingAverageHeartRate: return
+                """
+            Please try again when you have collected more resting heart rate data. Go to the Health app and authorise HealthMeter to read your resting heart rate.
+            """
             case .missingLatestHeartRate:
                 return "Make sure your health devices record your resting heart rate."
             default: return nil
@@ -87,6 +90,13 @@ struct HeartView: View {
             restingHeartRateService.queryLatestRestingHeartRate { [weak self] latestResult in
                 guard let self = self else { return }
 
+                if case .failure(let error) = latestResult {
+                    DispatchQueue.main.async {
+                        self.viewState = .error(error)
+                        return
+                    }
+                }
+
                 self.restingHeartRateService.queryAverageRestingHeartRate { [weak self] averageResult in
                     guard let self = self else { return }
                     DispatchQueue.main.async {
@@ -131,10 +141,6 @@ struct HeartView: View {
         VStack(alignment: .center, spacing: 12, content: {
             switch viewModel.viewState {
             case .loading:
-                Image(systemName: "heart.text.square.fill")
-                    .resizable()
-                    .frame(width: 100, height: 100, alignment: .center)
-                    .foregroundColor(.red)
                 DescriptionTextView(title: "Loading…", subtitle: nil)
             case .error(let error):
                 Image(systemName: "heart.slash.fill")
@@ -146,6 +152,9 @@ struct HeartView: View {
                 } else {
                     DescriptionTextView(title: error.localizedDescription, subtitle: nil)
                 }
+                Link("Health app", destination: URL(string: "x-apple-health://")!)
+                    .font(.title2)
+
             case .success(let update, let average):
                 Image(systemName: "heart.fill")
                     .resizable()
