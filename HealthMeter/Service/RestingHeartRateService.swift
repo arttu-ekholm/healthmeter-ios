@@ -226,6 +226,7 @@ class RestingHeartRateService {
             return heartRateAnalysisText(current: heartRate, average: averageHeartRate) + " " + "You should slow down."
         case .lowering:
             return "Your resting heart rate returned back to normal. Well done!"
+        }
     }
 
     var hasPostedAboutRisingNotificationToday: Bool {
