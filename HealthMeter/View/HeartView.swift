@@ -45,7 +45,7 @@ struct HeartView: View {
     }
 
     class ViewModel: ObservableObject {
-        let restingHeartRateService: RestingHeartRateService
+        private let restingHeartRateService: RestingHeartRateService
         private let calendar: Calendar
         var shouldReloadContents: Bool
         @Published var viewState: ViewState<RestingHeartRateUpdate, Double>
@@ -105,25 +105,21 @@ struct HeartView: View {
         }
 
         func getLatestRestingHeartRateDisplayString(update: RestingHeartRateUpdate) -> String {
-            if isDateInToday(update.date) {
+            if calendar.isDateInToday(update.date) {
                 return "Your resting heart rate today is"
-            } else if isDateInYesterday(update.date) {
+            } else if calendar.isDateInYesterday(update.date) {
                 return "Yesteday, your resting heart rate was"
             } else { // past
                 return "Earlier, your resting heart rate was"
             }
         }
 
-        var restingHeartRateNotCalculatedTodayString: String {
-            return "Today's resting heart rate hasn't been calculated yet."
-        }
-
-        func isDateInToday(_ date: Date) -> Bool {
-            return calendar.isDateInToday(date)
-        }
-
-        func isDateInYesterday(_ date: Date) -> Bool {
-            return calendar.isDateInYesterday(date)
+        func heartRateAnalysisText(update: RestingHeartRateUpdate, average: Double) -> String {
+            if calendar.isDateInToday(update.date) {
+                return restingHeartRateService.heartRateAnalysisText(current: update.value, average: average)
+            } else {
+                return "Today's resting heart rate hasn't been calculated yet."
+            }
         }
     }
 
@@ -167,15 +163,9 @@ struct HeartView: View {
                         animationAmount = 1.08
                     }
 
-                if viewModel.isDateInToday(update.date) {
-                    Text(viewModel.restingHeartRateService.heartRateAnalysisText(current: update.value, average: average))
-                        .font(.headline)
-                        .padding(.bottom)
-                } else {
-                    Text(viewModel.restingHeartRateNotCalculatedTodayString)
-                        .font(.headline)
-                        .padding()
-                }
+                Text(viewModel.heartRateAnalysisText(update: update, average: average))
+                    .font(.headline)
+                    .padding(.bottom)
 
                 VStack {
                     Text(viewModel.getLatestRestingHeartRateDisplayString(update: update)) + Text(" ") +

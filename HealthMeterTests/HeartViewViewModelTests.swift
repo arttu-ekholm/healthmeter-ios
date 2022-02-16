@@ -107,25 +107,6 @@ class HeartViewViewModelTests: XCTestCase {
 
         waitForExpectations(timeout: 2.0, handler: .none)
     }
-
-    func testIsDateInToday() {
-        let calendar = Calendar.current
-        let viewModel = HeartView.ViewModel(heartRateService: RestingHeartRateService.shared, calendar: calendar)
-
-        let now = Date()
-        let notToday = Date().addingTimeInterval(-60*60*1000)
-        XCTAssertTrue(calendar.isDateInToday(now))
-        XCTAssertTrue(viewModel.isDateInToday(now))
-
-        XCTAssertEqual(viewModel.isDateInToday(now), calendar.isDateInToday(now))
-        XCTAssertEqual(viewModel.isDateInYesterday(now), calendar.isDateInYesterday(now))
-
-        XCTAssertFalse(calendar.isDateInToday(notToday))
-        XCTAssertFalse(viewModel.isDateInToday(notToday))
-        XCTAssertEqual(viewModel.isDateInToday(notToday), calendar.isDateInToday(notToday))
-        XCTAssertEqual(viewModel.isDateInYesterday(notToday), calendar.isDateInYesterday(notToday))
-
-    }
 }
 
 private class MockRestingHeartRateService: RestingHeartRateService {

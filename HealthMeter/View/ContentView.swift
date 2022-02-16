@@ -53,8 +53,7 @@ struct ContentView: View {
                     settingsStore.tutorialShown = true
                 } content: {
                     TutorialView(settingsStore: settingsStore,
-                                 heartRateService: heartRateService,
-                                 viewModel: TutorialView.ViewModel())
+                                 viewModel: TutorialView.ViewModel(heartRateService: heartRateService))
                         .interactiveDismissDisabled(true)
                 }
         }

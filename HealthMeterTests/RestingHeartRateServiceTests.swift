@@ -8,7 +8,6 @@
 import XCTest
 @testable import HealthMeter
 import HealthKit
-import SwiftUI
 
 // swiftlint:disable:next type_body_length
 class RestingHeartRateServiceTests: XCTestCase {

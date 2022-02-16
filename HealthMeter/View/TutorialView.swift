@@ -9,7 +9,6 @@ import SwiftUI
 
 struct TutorialView: View {
     @ObservedObject var settingsStore: SettingsStore
-    let heartRateService: RestingHeartRateService
     @Environment(\.dismiss) var dismiss
     @StateObject var viewModel: ViewModel
 
@@ -34,6 +33,22 @@ struct TutorialView: View {
 
         @Published var presentHealthKitAlert = false
         @Published var presentNotificationsAlert = false
+
+        private let heartRateService: RestingHeartRateService
+
+        init(heartRateService: RestingHeartRateService = RestingHeartRateService.shared) {
+            self.heartRateService = heartRateService
+        }
+
+        func authorizeHealthKit() {
+            heartRateService.requestAuthorisation { [weak self] _, _ in
+                guard let self = self else { return }
+
+                DispatchQueue.main.async {
+                    self.authorized = true
+                }
+            }
+        }
     }
 
     var body: some View {
@@ -83,11 +98,7 @@ struct TutorialView: View {
                 switch viewModel.currentPhase {
                 case .authorizeHealthKit:
                     Button {
-                        heartRateService.requestAuthorisation { _, _ in
-                            DispatchQueue.main.async {
-                                viewModel.authorized = true
-                            }
-                        }
+                        viewModel.authorizeHealthKit()
                     } label: {
                         Text("Authorise HealthKit")
                             .bold()
@@ -156,6 +167,8 @@ struct TutorialView: View {
 
 struct TutorialView_Previews: PreviewProvider {
     static var previews: some View {
-        TutorialView(settingsStore: SettingsStore(), heartRateService: RestingHeartRateService.shared, viewModel: TutorialView.ViewModel())
+        TutorialView(
+            settingsStore: SettingsStore(),
+            viewModel: TutorialView.ViewModel(heartRateService: RestingHeartRateService.shared))
     }
 }
