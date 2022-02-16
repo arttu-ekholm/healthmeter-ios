@@ -16,7 +16,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        Config.shared.postDebugNotifications = false
+        
         userDefaults?.removePersistentDomain(forName: #file)
         userDefaults = UserDefaults(suiteName: #file)
     }
@@ -78,6 +78,25 @@ class RestingHeartRateServiceTests: XCTestCase {
         let predicate = NSPredicate { service, _ in
             guard let service = service as? RestingHeartRateService else { return false }
             return service.hasPostedAboutRisingNotificationToday
+        }
+        _ = expectation(for: predicate, evaluatedWith: service, handler: .none)
+
+        waitForExpectations(timeout: 2.0, handler: .none)
+    }
+
+    func testPosted_rising_debug() throws {
+        let mockNotificationService = MockNotificationService()
+        let service = RestingHeartRateService(
+            userDefaults: userDefaults,
+            notificationService: mockNotificationService)
+        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+
+        let update = RestingHeartRateUpdate(date: Date(), value: 100.0)
+        service.handleHeartRateUpdate(update: update, isRealUpdate: false)
+
+        let predicate = NSPredicate { service, _ in
+            guard let service = service as? RestingHeartRateService else { return false }
+            return !service.hasPostedAboutRisingNotificationToday
         }
         _ = expectation(for: predicate, evaluatedWith: service, handler: .none)
 
@@ -159,30 +178,6 @@ class RestingHeartRateServiceTests: XCTestCase {
         userDefaults.set(data, forKey: "LatestRestingHeartRateUpdate")
         let service = RestingHeartRateService(userDefaults: userDefaults)
         XCTAssertNotNil(service.decodeLatestRestingHeartRateUpdate(), "Latest RHR shouldn't be nil")
-    }
-
-    // MARK: - Debug notification
-    func testDebugNotification_enabled() {
-        Config.shared.postDebugNotifications = true
-        let notificationService = MockNotificationService()
-        let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
-
-        let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
-        service.handleHeartRateUpdate(update: update)
-
-        XCTAssertTrue(notificationService.postNotificationCalled, "Debug notification should be sent if the debug flag is enabled.")
-    }
-
-    func testDebugNotification_disabled() {
-        let notificationService = MockNotificationService()
-        let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
-
-        let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
-        service.handleHeartRateUpdate(update: update)
-
-        XCTAssertFalse(notificationService.postNotificationCalled, "Debug notification shuoldn't be sent if the debug flag is disabled.")
     }
 
     // MARK: - HealthStore queries

@@ -42,7 +42,7 @@ struct DebugView: View {
                 Text("The last time HealthMeter notified you about elevated resting heart rate was \(date.timeAgoDisplay())")
                     .padding()
             } else {
-                Text("HealthMeter hasn't detected elevated resting heart rate levels yet.")
+                Text("No elevated resting heart levels detected.")
                     .padding()
             }
 

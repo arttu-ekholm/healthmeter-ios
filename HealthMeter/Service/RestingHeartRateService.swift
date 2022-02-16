@@ -12,15 +12,11 @@ import UIKit
 enum Trend {
     case rising
     case lowering
-    case low2low
-    case high2high
 
     var displayText: String {
         switch self {
-        case .rising: return "High resting heart rate"
+        case .rising: return "Elevated resting heart rate"
         case .lowering: return "Resting heart rate back to normal"
-        case .low2low: return "Low resting heart rate"
-        case .high2high: return "Resting heart rate still high"
         }
     }
 }
@@ -99,17 +95,6 @@ class RestingHeartRateService {
         }
     }
 
-    /**
-     The date when the last "You have a high RHR" notification is posted
-     */
-    var latestDebugNotificationDate: Date? {
-        get {
-            return userDefaults.object(forKey: "latestDebugNotificationDate") as? Date
-        } set {
-            userDefaults.set(newValue, forKey: "latestDebugNotificationDate")
-        }
-    }
-
     init(userDefaults: UserDefaults = UserDefaults.standard,
          calendar: Calendar = Calendar.current,
          notificationService: NotificationService = NotificationService(),
@@ -170,16 +155,14 @@ class RestingHeartRateService {
         let taskId =  UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
             print("handling")
-            self.handleHeartRateUpdate(update: update)
+            self.handleHeartRateUpdate(update: update, isRealUpdate: false)
             UIApplication.shared.endBackgroundTask(taskId)
         }
     }
 
-    func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
-        postDebugNotification(title: "Handling HR update", body: String(format: "%.0f", (update.value)))
+    func handleHeartRateUpdate(update: RestingHeartRateUpdate, isRealUpdate: Bool = true) {
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
-            postDebugNotification(title: "Guard fails", body: "guard 1 fails")
             return
         }
 
@@ -188,7 +171,6 @@ class RestingHeartRateService {
             guard update.date > previousUpdate.date else {
                 // The update is earlier than the latest, so no need to compare
                 // This can be ignored
-                postDebugNotification(title: "Guard fails", body: "Guard 2 fails")
                 return
             }
         }
@@ -217,8 +199,11 @@ class RestingHeartRateService {
         }
 
         if let trend = trend, let message = message {
-            notificationService.postNotification(title: trend.displayText, body: message) { result in
-                if case .success = result {
+            notificationService.postNotification(title: notificationTitle(trend: trend,
+                                                                          heartRate: update.value,
+                                                                          averageHeartRate: averageHeartRate),
+                                                 body: message) { result in
+                if case .success = result, isRealUpdate { // The dates for test notifications aren't saved
                     if trend == .rising {
                         self.latestHighRHRNotificationPostDate = Date()
                     } else if trend == .lowering {
@@ -226,39 +211,22 @@ class RestingHeartRateService {
                     }
                 }
             }
-        } else {
-            let debugTrend: Trend = isAboveAverageRHR ? .high2high : .low2low
-            let debugMessage = notificationMessage(trend: debugTrend, heartRate: update.value, averageHeartRate: averageHeartRate)
-            postDebugNotification(title: debugTrend.displayText, body: debugMessage)
         }
     }
 
-    func postDebugNotification(title: String, body: String) {
-        guard Config.shared.postDebugNotifications else { return }
-
-        latestDebugNotificationDate = Date()
-        notificationService.postNotification(title: "D: \(title)", body: body) { result in
-            switch result {
-            case .success: print("Debug notification posted successfully")
-            case .failure(let error): print("Debug notification posting failed with error: \(error.localizedDescription)")
-            }
-        }
+    func notificationTitle(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String {
+        return trend.displayText
     }
 
-    func notificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String {
-        let message: String
-        let percentage = String(format: "%.0f", (heartRate / averageHeartRate) * 100.0 - 100.0)
-        let debugString: String = "L RHR: \(String(format: "%.0f", heartRate)), avg: \(String(format: "%.0f", averageHeartRate))"
+    func notificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String? {
         switch trend {
         case .rising:
-            message = "Your heart rate is \(percentage) % above your average heart rate. You should slow down. (\(debugString))"
+            return heartRateAnalysisText(current: heartRate, average: averageHeartRate) + " " + "You should slow down."
         case .lowering:
-            message = "Your heart rate returned back to normal. Well done! (\(debugString))"
+            return "Your resting heart rate returned back to normal. Well done!"
         default:
-            message = "Debug: \(debugString)"
+            return nil
         }
-
-        return message
     }
 
     var hasPostedAboutRisingNotificationToday: Bool {
