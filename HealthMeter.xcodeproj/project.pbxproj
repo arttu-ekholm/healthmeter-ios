@@ -14,6 +14,7 @@
 		4B3946CD27BB9C13004135CB /* NotificationCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946CC27BB9C13004135CB /* NotificationCenterTests.swift */; };
 		4B3946CF27BBA0DB004135CB /* HeartViewViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946CE27BBA0DB004135CB /* HeartViewViewModelTests.swift */; };
 		4B3946D127BBA7C1004135CB /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 4B3946D027BBA7C1004135CB /* README.md */; };
+		4B3946D827BCDCDD004135CB /* SetttingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946D727BCDCDD004135CB /* SetttingsStore.swift */; };
 		4B3E19B827BA8039001F3989 /* DebugView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3E19B727BA8039001F3989 /* DebugView.swift */; };
 		4B684D7B27B1382700C4C76E /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B684D7A27B1382700C4C76E /* Config.swift */; };
 		4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */; };
@@ -62,6 +63,7 @@
 		4B3946CC27BB9C13004135CB /* NotificationCenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCenterTests.swift; sourceTree = "<group>"; };
 		4B3946CE27BBA0DB004135CB /* HeartViewViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartViewViewModelTests.swift; sourceTree = "<group>"; };
 		4B3946D027BBA7C1004135CB /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
+		4B3946D727BCDCDD004135CB /* SetttingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetttingsStore.swift; sourceTree = "<group>"; };
 		4B3E19B727BA8039001F3989 /* DebugView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugView.swift; sourceTree = "<group>"; };
 		4B684D7A27B1382700C4C76E /* Config.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		4BA142F1279DA6B5008884F0 /* HealthMeter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthMeter.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -188,6 +190,7 @@
 				4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */,
 				4BA142F8279DA6B6008884F0 /* Assets.xcassets */,
 				4BA142FA279DA6B6008884F0 /* Preview Content */,
+				4B3946D727BCDCDD004135CB /* SetttingsStore.swift */,
 			);
 			path = HealthMeter;
 			sourceTree = "<group>";
@@ -457,6 +460,7 @@
 				4BACE5C727AAF0BF009068F9 /* HeartView.swift in Sources */,
 				4BACE5C927ABB8A6009068F9 /* TutorialView.swift in Sources */,
 				4BACE5BF27AAC32A009068F9 /* QueryParser.swift in Sources */,
+				4B3946D827BCDCDD004135CB /* SetttingsStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -68,12 +68,3 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
     }
 }
-
-class SettingsStore: ObservableObject {
-    static let tutorialShownKey = "tutorialShown"
-    @Published var tutorialShown: Bool = UserDefaults.standard.bool(forKey: SettingsStore.tutorialShownKey) {
-        didSet {
-            UserDefaults.standard.set(self.tutorialShown, forKey: SettingsStore.tutorialShownKey)
-        }
-    }
-}
