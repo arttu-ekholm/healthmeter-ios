@@ -26,7 +26,7 @@ struct ContentView: View {
             showingDebugMenu.toggle()
         }
         .sheet(isPresented: $showingDebugMenu) {
-            DebugView(heartRateService: heartRateService)
+            DebugView(viewModel: DebugView.ViewModel(heartRateService: heartRateService))
         }
         Spacer()
         if settingsStore.tutorialShown {
