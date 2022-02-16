@@ -1,4 +1,4 @@
-#Restful Privacy Policy
+# Restful Privacy Policy
 
 Restful app doesn't send or modify user data. 
 
