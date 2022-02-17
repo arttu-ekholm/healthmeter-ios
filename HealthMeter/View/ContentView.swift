@@ -9,9 +9,8 @@ import SwiftUI
 import HealthKit
 
 struct ContentView: View {
-    @Environment(\.scenePhase) var scenePhase
     @ObservedObject var settingsStore = SettingsStore()
-    @State private var showingDebugMenu = false
+    @State private var showingInfoMenu = false
     @State private var showingTutorialMenu = !SettingsStore().tutorialShown
 
     let heartRateService: RestingHeartRateService = RestingHeartRateService.shared
@@ -28,13 +27,13 @@ struct ContentView: View {
                 HStack {
                     Spacer()
                     Button {
-                        showingDebugMenu.toggle()
+                        showingInfoMenu.toggle()
                     } label: {
                         Image(systemName: "info.circle")
                             .font(.system(size: 24, weight: .medium))
                     }
                     .padding(.trailing)
-                    .sheet(isPresented: $showingDebugMenu) {
+                    .sheet(isPresented: $showingInfoMenu) {
                         InfoView(viewModel: InfoView.ViewModel(heartRateService: heartRateService))
                     }
                 }
@@ -42,18 +41,40 @@ struct ContentView: View {
 
             Spacer()
             if settingsStore.tutorialShown {
-                HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
-                // HeartView(viewModel: HeartView.ViewModel(heartRateService: MockHeartRateService())) // uncomment this for App Store screenshots
+                if heartRateService.isHealthDataAvailable {
+                    HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
+                    // HeartView(viewModel: HeartView.ViewModel(heartRateService: MockHeartRateService())) // uncomment this for App Store screenshots
+                } else {
+                    NoHealthKitView()
+                }
             }
             Spacer()
                 .sheet(isPresented: $showingTutorialMenu) {
                     settingsStore.tutorialShown = true
                 } content: {
-                    TutorialView(settingsStore: settingsStore,
-                                 viewModel: TutorialView.ViewModel(heartRateService: heartRateService))
-                        .interactiveDismissDisabled(true)
+                    if heartRateService.isHealthDataAvailable {
+                        TutorialView(settingsStore: settingsStore,
+                                     viewModel: TutorialView.ViewModel(heartRateService: heartRateService))
+                            .interactiveDismissDisabled(true)
+                    } else {
+                        NoHealthKitView()
+                            .interactiveDismissDisabled(true)
+                    }
                 }
         }
+    }
+}
+
+/**
+ Shown when the device doesn't have the HealthKit available.
+ */
+struct NoHealthKitView: View {
+    var body: some View {
+        Text("Your device doesn't have access to HealthKit. Restful requires access to HealthKit")
+            .font(.title2)
+            .bold()
+            .padding()
+        Spacer()
     }
 }
 

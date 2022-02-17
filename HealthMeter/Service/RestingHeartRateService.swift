@@ -310,6 +310,12 @@ class RestingHeartRateService {
         }
     }
 
+    var isHealthDataAvailable: Bool {
+        return HKHealthStore.isHealthDataAvailable()
+    }
+
+    // MARK: - Strings
+
     func heartRateAnalysisText(current: Double, average: Double) -> String {
         let difference = current - average
         let adjective: String
