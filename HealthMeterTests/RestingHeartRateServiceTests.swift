@@ -89,8 +89,8 @@ class RestingHeartRateServiceTests: XCTestCase {
             notificationService: mockNotificationService)
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
-        let update = RestingHeartRateUpdate(date: Date(), value: 100.0)
-        service.handleHeartRateUpdate(update: update, isRealUpdate: false)
+        let update = RestingHeartRateUpdate(date: Date(), value: 100.0, isRealUpdate: false)
+        service.handleHeartRateUpdate(update: update)
 
         let predicate = NSPredicate { service, _ in
             guard let service = service as? RestingHeartRateService else { return false }
@@ -373,6 +373,39 @@ class RestingHeartRateServiceTests: XCTestCase {
         XCTAssertEqual(string, service.heartRateAnalysisText(current: 20, average: 50))
         XCTAssertEqual(string, service.heartRateAnalysisText(current: 1, average: 50))
     }
+
+    func testMultipleObserverQueryCallbacks() {
+        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        let mockHealthStore = MockHealthStore()
+        let mockQueryProvider = MockQueryProvider()
+        let mockQueryParser = MockQueryParser()
+        let mockNotificationService = MockNotificationService()
+        mockNotificationService.delay = 2.0
+
+        let service = RestingHeartRateService(userDefaults: userDefaults,
+                                              notificationService: mockNotificationService,
+                                              healthStore: mockHealthStore,
+                                              queryProvider: mockQueryProvider,
+                                              queryParser: mockQueryParser)
+
+        let now = Date()
+        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
+        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
+        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
+        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
+        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
+        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
+
+        let predicate = NSPredicate { mockNotificationService, _ in
+            guard let mockNotificationService = mockNotificationService as? MockNotificationService else { return false }
+
+            return mockNotificationService.postNotificationCalledCount == 1
+        }
+
+        _ = expectation(for: predicate, evaluatedWith: mockNotificationService, handler: .none)
+
+        waitForExpectations(timeout: 3.0, handler: .none)
+    }
 }
 
 // MARK: - Mock classes
@@ -538,10 +571,21 @@ private class MockNotificationService: NotificationService {
     var postNotificationCalled: Bool {
         return postNotificationCalledCount > 0
     }
-    override func postNotification(title: String, body: String, completion: ((Result<Void, Error>) -> Void)? = nil) {
-        postNotificationCalledCount += 1
+    var delay: TimeInterval?
 
-        completion?(.success(()))
+    override func postNotification(title: String, body: String, completion: ((Result<Void, Error>) -> Void)? = nil) {
+
+
+        if let delay = delay {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                self.postNotificationCalledCount += 1
+                print("postNotificationCalledCount = \(self.postNotificationCalledCount)")
+                completion?(.success(()))
+            }
+        } else {
+            postNotificationCalledCount += 1
+            completion?(.success(()))
+        }
     }
 }
 

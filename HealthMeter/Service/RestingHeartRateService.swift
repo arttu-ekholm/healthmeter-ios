@@ -46,6 +46,9 @@ class RestingHeartRateService {
         return 1.05
     }
 
+    private var isHandlingUpdate = false
+    private var updateQueue: [RestingHeartRateUpdate] = []
+
     // Dependencies
     private let calendar: Calendar
     private let healthStore: HKHealthStore
@@ -157,29 +160,48 @@ class RestingHeartRateService {
         let taskId =  UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
             print("handling")
-            self.handleHeartRateUpdate(update: update, isRealUpdate: false)
+            self.handleHeartRateUpdate(update: update)
             UIApplication.shared.endBackgroundTask(taskId)
         }
     }
 
-    func handleHeartRateUpdate(update: RestingHeartRateUpdate, isRealUpdate: Bool = true) {
+    /**
+     Decides if a notification needs to be sent about the update. If the update isn't above the average, the update will be ignored.
+     */
+    func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
             return
         }
+
+        /* It's possible that the HKObserverQuery sends multiple callback simultaneously. Posting notifications is asynchronous,
+         which causes the notification sent timestamp to be updated after multiple notifications are sent. To prevent this,
+         `isHandlingUpdate` flag is raised while this function handles the notification. The pending updates are added to the
+         `updateQueue` array.
+         */
+
+        if update.isRealUpdate, isHandlingUpdate {
+            print("Is already handling an update, adding it to the queue")
+            updateQueue.append(update)
+            return
+        }
+
+        isHandlingUpdate = true
 
         // Check if the date is later than the last saved rate update
         if let previousUpdate = latestRestingHeartRateUpdate {
             guard update.date > previousUpdate.date else {
                 // The update is earlier than the latest, so no need to compare
                 // This can be ignored
+                isHandlingUpdate = false
+                handleNextItemFromQueueIfNeeded()
                 return
             }
         }
 
         let isAboveAverageRHR = heartRateIsAboveAverage(update: update, average: averageHeartRate)
 
-        // check if the trend is -, _, / or \
+        // check if the trend is rising or lowering
 
         var message: String?
         var trend: Trend?
@@ -200,19 +222,38 @@ class RestingHeartRateService {
             }
         }
 
-        if let trend = trend, let message = message {
-            notificationService.postNotification(title: notificationTitle(trend: trend,
-                                                                          heartRate: update.value,
-                                                                          averageHeartRate: averageHeartRate),
-                                                 body: message) { result in
-                if case .success = result, isRealUpdate { // The dates for test notifications aren't saved
-                    if trend == .rising {
-                        self.latestHighRHRNotificationPostDate = Date()
-                    } else if trend == .lowering {
-                        self.latestLoweredRHRNotificationPostDate = Date()
-                    }
-                }
+        guard let trend = trend, let message = message else {
+            isHandlingUpdate = false
+            handleNextItemFromQueueIfNeeded()
+            return
+        }
+
+        notificationService.postNotification(title: notificationTitle(trend: trend,
+                                                                      heartRate: update.value,
+                                                                      averageHeartRate: averageHeartRate),
+                                             body: message) { result in
+            self.isHandlingUpdate = false
+            if case .success = result, update.isRealUpdate { // The dates for test notifications aren't saved
+                self.saveNotificationPostDate(forTrend: trend)
             }
+            // If the pending updates queue has more items, process them
+            self.handleNextItemFromQueueIfNeeded()
+        }
+    }
+
+    private func handleNextItemFromQueueIfNeeded() {
+        guard !updateQueue.isEmpty else { return }
+
+        print("Handling pending update")
+        let update = updateQueue.removeFirst()
+        handleHeartRateUpdate(update: update)
+    }
+
+    private func saveNotificationPostDate(forTrend trend: Trend) {
+        if trend == .rising {
+            latestHighRHRNotificationPostDate = Date()
+        } else if trend == .lowering {
+            latestLoweredRHRNotificationPostDate = Date()
         }
     }
 
