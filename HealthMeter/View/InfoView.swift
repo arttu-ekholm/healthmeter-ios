@@ -38,7 +38,7 @@ struct InfoView: View {
 
         var fakeUpdateDescriptionText: String {
             return """
-            Tapping the button will make the app to process a fake resting heart rate update with a resting heart rate of \(String(format: "%.0f", (fakeHeartRateValue))) bpm.
+            Tapping the button will make the app to process a fake resting heart rate update with a resting heart rate of \(String(format: "%.0f", (fakeHeartRateValue))) bpm. It will be posted after a short delay.
 
             The value won't be saved to the HealthKit database and it won't affect the notifications you'd receive from Restful normally, so it's safe to test the update.
             """

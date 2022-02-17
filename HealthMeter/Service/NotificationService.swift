@@ -25,10 +25,6 @@ class NotificationService {
     func postNotification(title: String, body: String, completion: ((Result<Void, Error>) -> Void)? = nil) {
         DispatchQueue.main.async {
             print("posting notification with title: \(title), message: \(body)")
-            guard self.applicationProxy.applicationState == .background else {
-                completion?(.failure(NotificationServiceError.appIsActive))
-                return
-            }
 
             let content = UNMutableNotificationContent()
             content.title = title
@@ -50,21 +46,37 @@ class NotificationService {
 }
 
 class ApplicationProxy {
+    private let application = UIApplication.shared
     var applicationState: UIApplication.State {
-        return UIApplication.shared.applicationState
+        return application.applicationState
     }
 
     var applicationIconBadgeNumber: Int {
         get {
-            return UIApplication.shared.applicationIconBadgeNumber
+            return application.applicationIconBadgeNumber
         } set {
-            UIApplication.shared.applicationIconBadgeNumber = newValue
+            application.applicationIconBadgeNumber = newValue
         }
     }
 }
 
-class NotificationCenterProxy {
+class NotificationCenterProxy: NSObject {
+    private let notificationCenter = UNUserNotificationCenter.current()
+
     func add(_ request: UNNotificationRequest, withCompletionHandler completionHandler: ((Error?) -> Void)? = nil) {
-        UNUserNotificationCenter.current().add(request, withCompletionHandler: completionHandler)
+        notificationCenter.add(request, withCompletionHandler: completionHandler)
+    }
+
+    override init() {
+        super.init()
+
+        notificationCenter.delegate = self
+    }
+}
+
+extension NotificationCenterProxy: UNUserNotificationCenterDelegate {
+    func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        // Allow the app to show the notifications when it is active
+        completionHandler([.badge, .banner, .list, .sound])
     }
 }

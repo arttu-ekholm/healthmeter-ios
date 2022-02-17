@@ -43,7 +43,7 @@ struct ContentView: View {
             Spacer()
             if settingsStore.tutorialShown {
                 HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
-                //HeartView(viewModel: HeartView.ViewModel(heartRateService: MockHeartRateService()))
+                // HeartView(viewModel: HeartView.ViewModel(heartRateService: MockHeartRateService())) // uncomment this for App Store screenshots
             }
             Spacer()
                 .sheet(isPresented: $showingTutorialMenu) {

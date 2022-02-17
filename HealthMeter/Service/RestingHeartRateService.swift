@@ -155,7 +155,7 @@ class RestingHeartRateService {
 
     func handleDebugUpdate(update: RestingHeartRateUpdate) {
         let taskId =  UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(5)) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
             print("handling")
             self.handleHeartRateUpdate(update: update, isRealUpdate: false)
             UIApplication.shared.endBackgroundTask(taskId)

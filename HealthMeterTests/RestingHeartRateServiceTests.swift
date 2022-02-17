@@ -15,7 +15,6 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     override func setUp() {
         super.setUp()
-        
         userDefaults?.removePersistentDomain(forName: #file)
         userDefaults = UserDefaults(suiteName: #file)
     }

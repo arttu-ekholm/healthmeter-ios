@@ -19,14 +19,14 @@ class NotificationCenterTests: XCTestCase {
             applicationProxy: mockApplicationProxy,
             notificationCenterProxy: mockNotificationServiceProxy)
 
-        let expectation = expectation(description: "Posting notification when the app is active will result in an error.")
+        let expectation = expectation(description: "Posting notification when the app is active should be successful.")
 
         service.postNotification(title: "Test", body: "Test") { result in
             switch result {
-            case .failure:
+            case .success:
                 expectation.fulfill()
             default:
-                XCTFail("Posting a notification should result in an error.")
+                XCTFail("Posting a notification should be succcessful")
             }
         }
         waitForExpectations(timeout: 2.0, handler: .none)
@@ -61,14 +61,14 @@ class NotificationCenterTests: XCTestCase {
             notificationCenterProxy: mockNotificationServiceProxy)
         mockApplicationProxy.mockApplicationState = .inactive
 
-        let expectation = expectation(description: "Posting notification when the app is inactive should result in a failure.")
+        let expectation = expectation(description: "Posting notification when the app is inactive should be successful.")
 
         service.postNotification(title: "Test", body: "Test") { result in
             switch result {
             case .success:
-                XCTFail("Posting a notification should fail")
-            case .failure:
                 expectation.fulfill()
+            default:
+                XCTFail("Posting a notification should be succcessful")
             }
         }
         waitForExpectations(timeout: 2.0, handler: .none)
