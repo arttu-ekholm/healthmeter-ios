@@ -71,8 +71,8 @@ struct HeartView: View {
             switch viewState {
             case .success(let latest, let average):
                 let current = latest.value
-                let multiplier = (current > average ? current / average : average / current) - 1.0
-                if multiplier > 0 {
+                let multiplier = current / average - 1.0
+                if multiplier >= 0 {
                     if multiplier > 0.2 {
                         return .red
                     } else if multiplier > 0.1 {
