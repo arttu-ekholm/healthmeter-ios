@@ -16,6 +16,7 @@
 		4B3946D127BBA7C1004135CB /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 4B3946D027BBA7C1004135CB /* README.md */; };
 		4B3946D827BCDCDD004135CB /* SetttingsStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946D727BCDCDD004135CB /* SetttingsStore.swift */; };
 		4B3946DA27BD2C98004135CB /* MockHeartViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946D927BD2C98004135CB /* MockHeartViewModel.swift */; };
+		4B3946DC27BE5DFB004135CB /* SettingsStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946DB27BE5DFB004135CB /* SettingsStoreTests.swift */; };
 		4B3E19B827BA8039001F3989 /* InfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3E19B727BA8039001F3989 /* InfoView.swift */; };
 		4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */; };
 		4BA142F7279DA6B5008884F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F6279DA6B5008884F0 /* ContentView.swift */; };
@@ -65,6 +66,7 @@
 		4B3946D027BBA7C1004135CB /* README.md */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = SOURCE_ROOT; };
 		4B3946D727BCDCDD004135CB /* SetttingsStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetttingsStore.swift; sourceTree = "<group>"; };
 		4B3946D927BD2C98004135CB /* MockHeartViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockHeartViewModel.swift; sourceTree = "<group>"; };
+		4B3946DB27BE5DFB004135CB /* SettingsStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsStoreTests.swift; sourceTree = "<group>"; };
 		4B3E19B727BA8039001F3989 /* InfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfoView.swift; sourceTree = "<group>"; };
 		4BA142F1279DA6B5008884F0 /* HealthMeter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthMeter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMeterApp.swift; sourceTree = "<group>"; };
@@ -207,6 +209,7 @@
 			isa = PBXGroup;
 			children = (
 				4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */,
+				4B3946DB27BE5DFB004135CB /* SettingsStoreTests.swift */,
 				4BACE5C227AAC3C4009068F9 /* RestingHeartRateUpdateTests.swift */,
 				4B3946CC27BB9C13004135CB /* NotificationCenterTests.swift */,
 				4B3946CE27BBA0DB004135CB /* HeartViewViewModelTests.swift */,
@@ -468,6 +471,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B3946DC27BE5DFB004135CB /* SettingsStoreTests.swift in Sources */,
 				4B2091B527A1571100CCFD70 /* RestingHeartRateServiceTests.swift in Sources */,
 				4BACE5C327AAC3C4009068F9 /* RestingHeartRateUpdateTests.swift in Sources */,
 				4B3946CF27BBA0DB004135CB /* HeartViewViewModelTests.swift in Sources */,
