@@ -109,23 +109,6 @@ class HeartViewViewModelTests: XCTestCase {
     }
 }
 
-private class MockRestingHeartRateService: RestingHeartRateService {
-    var mockAverageRHRResult: Result<Double, Error>?
-    var mockLatestRHRResult: Result<RestingHeartRateUpdate, Error>?
-
-    override func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
-        if let result = mockAverageRHRResult {
-            averageRHRCallback(result)
-        }
-    }
-
-    override func queryLatestRestingHeartRate(completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
-        if let result = mockLatestRHRResult {
-            completionHandler(result)
-        }
-    }
-}
-
 private enum HeartViewViewModelTestsError: Error {
     case testError
 }

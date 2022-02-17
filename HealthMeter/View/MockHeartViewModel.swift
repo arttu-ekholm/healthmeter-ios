@@ -7,7 +7,7 @@
 
 import Foundation
 
-class MockHeartRateService: RestingHeartRateService {
+class DummyHeartRateService: RestingHeartRateService {
     var average: Double?
     override var averageHeartRate: Double? {
         get { return average }

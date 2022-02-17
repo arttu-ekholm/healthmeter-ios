@@ -43,7 +43,7 @@ struct ContentView: View {
             if settingsStore.tutorialShown {
                 if heartRateService.isHealthDataAvailable {
                     HeartView(viewModel: HeartView.ViewModel(heartRateService: heartRateService))
-                    // HeartView(viewModel: HeartView.ViewModel(heartRateService: MockHeartRateService())) // uncomment this for App Store screenshots
+                    // HeartView(viewModel: HeartView.ViewModel(heartRateService: DummyHeartRateService())) // uncomment this for App Store screenshots
                 } else {
                     NoHealthKitView()
                 }
