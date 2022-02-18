@@ -46,7 +46,13 @@ class RestingHeartRateService {
         return 1.05
     }
 
+    /**
+     if `true`, the manager is handling a `RestingHeartRateUpdate`. Set to `true` when handling begins, and to `false`when the function either
+     decides to ignore the update, or when the `NotificationCenter` callback tells the notificaiton is handled.
+     */
     private var isHandlingUpdate = false
+
+    /// Pending updates that aren't handled yet. Used to resolve the issue where there can be multiple simultaneous `RestingHeartRateUpdate`s.
     private var updateQueue: [RestingHeartRateUpdate] = []
 
     // Dependencies
@@ -60,7 +66,7 @@ class RestingHeartRateService {
     private let queryParser: QueryParser
 
     /// Handles the sending of local push notifications
-    let notificationService: NotificationService
+    private let notificationService: NotificationService
 
     private var currentObserverQuery: HKObserverQuery?
 
@@ -156,6 +162,9 @@ class RestingHeartRateService {
         healthStore.execute(query)
     }
 
+    /**
+     Creates a fake update and handles it after a slight delay.
+     */
     func handleDebugUpdate(update: RestingHeartRateUpdate) {
         let taskId =  UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
         DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
@@ -286,7 +295,7 @@ class RestingHeartRateService {
      Sets the app to observe the changes in HealthKit and wake up when there are new RHR updates.
      */
     func observeInBackground(completionHandler: @escaping ((Bool, Error?) -> Void)) {
-        guard currentObserverQuery == nil else {
+        guard !isObservingChanges else {
             fatalError("App is currently observing")
         }
 
