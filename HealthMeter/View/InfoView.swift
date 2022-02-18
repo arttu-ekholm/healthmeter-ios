@@ -28,7 +28,7 @@ struct InfoView: View {
         }
 
         func sendFakeHeartRateUpdate() {
-            let update = RestingHeartRateUpdate(date: Date(), value: fakeHeartRateValue)
+            let update = RestingHeartRateUpdate(date: Date(), value: fakeHeartRateValue, isRealUpdate: false)
             heartRateService.handleDebugUpdate(update: update)
         }
 
