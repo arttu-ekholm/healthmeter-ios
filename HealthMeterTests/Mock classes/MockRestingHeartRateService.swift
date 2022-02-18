@@ -12,6 +12,7 @@ class MockRestingHeartRateService: RestingHeartRateService {
     var mockAverageRHRResult: Result<Double, Error>?
     var mockLatestRHRResult: Result<RestingHeartRateUpdate, Error>?
     var mockLatestHighRHRNotificationPostDate: Date?
+    var handledDebugUpdate: RestingHeartRateUpdate?
 
     override func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
         if let result = mockAverageRHRResult {
@@ -31,5 +32,9 @@ class MockRestingHeartRateService: RestingHeartRateService {
         } set {
             mockLatestHighRHRNotificationPostDate = newValue
         }
+    }
+
+    override func handleDebugUpdate(update: RestingHeartRateUpdate) {
+        handledDebugUpdate = update
     }
 }
