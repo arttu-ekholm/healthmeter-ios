@@ -83,7 +83,11 @@ struct HeartView: View {
                         return .green
                     }
                 } else {
-                    return .blue
+                    if multiplier < -0.05 {
+                        return .blue // over -5 %
+                    } else {
+                        return .green // within +- 5 %
+                    }
                 }
             default: return .green
             }

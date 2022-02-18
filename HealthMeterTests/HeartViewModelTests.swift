@@ -11,7 +11,7 @@ import XCTest
 class HeartViewModelTests: XCTestCase {
     func testColors() {
         XCTAssertEqual(model(50.0, 50.0).heartColor, .green)
-        XCTAssertEqual(model(49.0, 50.0).heartColor, .blue)
+        XCTAssertEqual(model(49.0, 50.0).heartColor, .green)
         XCTAssertEqual(model(40.0, 50.0).heartColor, .blue)
         XCTAssertEqual(model(51.0, 50.0).heartColor, .green)
         XCTAssertEqual(model(53.0, 50.0).heartColor, .yellow)
