@@ -40,6 +40,16 @@ class RestingHeartRateServiceTests: XCTestCase {
                 date: Date(),
                 value: 55.0),
             average: 55.0), "Should be significant difference")
+        XCTAssertFalse(service.heartRateIsAboveAverage(
+            update: RestingHeartRateUpdate(
+                date: Date(),
+                value: 53.0),
+            average: 55.0), "Below average should return false")
+        XCTAssertFalse(service.heartRateIsAboveAverage(
+            update: RestingHeartRateUpdate(
+                date: Date(),
+                value: 10.0),
+            average: 55.0), "Below average should return false")
     }
 
     func testUpdate_noNotificationIfAvgHRMissing() throws {
