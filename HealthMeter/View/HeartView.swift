@@ -125,7 +125,7 @@ struct HeartView: View {
             if calendar.isDateInToday(update.date) {
                 return "Your resting heart rate today is"
             } else if calendar.isDateInYesterday(update.date) {
-                return "Yesteday, your resting heart rate was"
+                return "Yesterday, your resting heart rate was"
             } else { // past
                 return "Earlier, your resting heart rate was"
             }
