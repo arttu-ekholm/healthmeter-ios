@@ -9,9 +9,24 @@ import XCTest
 @testable import HealthMeter
 
 class InfoViewModelTests: XCTestCase {
+    var userDefaults: UserDefaults!
+
+    override func setUp() {
+        super.setUp()
+        userDefaults?.removePersistentDomain(forName: #file)
+        userDefaults = UserDefaults(suiteName: #file)
+    }
+
+    override func tearDown() {
+        super.tearDown()
+
+        userDefaults.removePersistentDomain(forName: #file)
+    }
+
     func testInitialValues() {
-        let mockHeartRateService = MockRestingHeartRateService()
+        let mockHeartRateService = MockRestingHeartRateService(userDefaults: userDefaults)
         let viewModel = InfoView.ViewModel(heartRateService: mockHeartRateService)
+
         XCTAssertNil(viewModel.averageHeartRate)
         XCTAssertNil(viewModel.latestHighRHRNotificationPostDate)
         XCTAssertFalse(viewModel.highRHRIsPostedToday)
