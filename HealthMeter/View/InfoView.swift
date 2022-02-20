@@ -68,6 +68,18 @@ struct InfoView: View {
         var highRHRIsPostedToday: Bool {
              return heartRateService.hasPostedAboutRisingNotificationToday
         }
+
+        var applicationVersionDisplayable: String {
+            guard let versionNumber = Bundle.main.releaseVersionNumber else {
+                return ""
+            }
+
+            if let buildNumber = Bundle.main.buildVersionNumber {
+                return versionNumber + " (" + buildNumber + ")"
+            } else {
+                return versionNumber
+            }
+        }
     }
 
     var body: some View {
@@ -136,5 +148,14 @@ struct InfoView: View {
 struct DebugView_Previews: PreviewProvider {
     static var previews: some View {
         InfoView(viewModel: InfoView.ViewModel(heartRateService: RestingHeartRateService.shared))
+    }
+}
+
+extension Bundle {
+    var releaseVersionNumber: String? {
+        return infoDictionary?["CFBundleShortVersionString"] as? String
+    }
+    var buildVersionNumber: String? {
+        return infoDictionary?["CFBundleVersion"] as? String
     }
 }

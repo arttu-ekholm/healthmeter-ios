@@ -94,18 +94,9 @@ struct HeartView: View {
         }
 
         func requestLatestRestingHeartRate() {
-            restingHeartRateService.queryLatestRestingHeartRate { [weak self] latestResult in
-                guard let self = self else { return }
+            restingHeartRateService.queryAverageRestingHeartRate { averageResult in
 
-                if case .failure(let error) = latestResult {
-                    DispatchQueue.main.async {
-                        self.viewState = .error(error)
-                        return
-                    }
-                }
-
-                self.restingHeartRateService.queryAverageRestingHeartRate { [weak self] averageResult in
-                    guard let self = self else { return }
+                self.restingHeartRateService.queryLatestRestingHeartRate { latestResult in
                     DispatchQueue.main.async {
                         if case .success(let update) = latestResult, case .success(let average) = averageResult {
                             self.viewState = .success(update, average)
