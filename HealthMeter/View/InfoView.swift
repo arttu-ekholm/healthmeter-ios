@@ -138,10 +138,12 @@ struct InfoView: View {
             })
                 .padding()
                 .border(.secondary, width: 2)
-
             Spacer()
         }
         .padding()
+        Text(viewModel.applicationVersionDisplayable)
+            .font(.footnote)
+            .foregroundColor(.secondary)
     }
 }
 
