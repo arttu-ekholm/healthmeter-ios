@@ -416,6 +416,32 @@ class RestingHeartRateServiceTests: XCTestCase {
 
         waitForExpectations(timeout: 3.0, handler: .none)
     }
+
+    /**
+     When the service has a latest saved date and a new update with **earlier** date is handled, the latest handled date should be returned instead
+     */
+    func testHandleHKUpdate_previousThanStored() throws {
+        let now = Date()
+        let latestUpdate = RestingHeartRateUpdate(date: now, value: 50.0)
+        let data = try XCTUnwrap(JSONEncoder().encode(latestUpdate))
+        userDefaults.set(data, forKey: "LatestRestingHeartRateUpdate")
+
+        let service = RestingHeartRateService(
+            userDefaults: userDefaults)
+        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+
+        // The update has _earlier_ date than the latest handled update.
+        let update = RestingHeartRateUpdate(date: Date().addingTimeInterval(-100), value: 100.0, isRealUpdate: false)
+        service.handleHeartRateUpdate(update: update)
+
+        let predicate = NSPredicate { service, _ in
+            guard let service = service as? RestingHeartRateService else { return false }
+            return !service.hasPostedAboutRisingNotificationToday
+        }
+        _ = expectation(for: predicate, evaluatedWith: service, handler: .none)
+
+        waitForExpectations(timeout: 2.0, handler: .none)
+    }
 }
 
 // MARK: - Mock classes

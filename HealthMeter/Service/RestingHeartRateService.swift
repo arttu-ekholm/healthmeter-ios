@@ -340,7 +340,18 @@ class RestingHeartRateService {
                 query: query,
                 results: results,
                 error: error) { result in
-                    completionHandler(result)
+                    // Verify the latest update from HealthKit is later than the previously handled.
+                    // If not, pass the last handled update instead.
+                    // Consider adding a Boolean flag indicating the update is "cached".
+                    if case .success(let update) = result, update.isRealUpdate, let latestUpdate = self.latestRestingHeartRateUpdate {
+                        if update.date > latestUpdate.date {
+                            completionHandler(.success(update))
+                        } else {
+                            completionHandler(.success(latestUpdate))
+                        }
+                    } else {
+                        completionHandler(result)
+                    }
             }
         }
 
