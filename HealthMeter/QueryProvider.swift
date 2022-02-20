@@ -52,6 +52,6 @@ class QueryProvider {
     }
 
     var sortDescriptorForLatestRestingHeartRate: NSSortDescriptor {
-        return NSSortDescriptor(key: HKSampleSortIdentifierStartDate, ascending: false)
+        return NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
     }
 }
