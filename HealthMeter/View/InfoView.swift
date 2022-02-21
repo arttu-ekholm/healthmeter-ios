@@ -13,6 +13,17 @@ struct InfoView: View {
 
     class ViewModel: ObservableObject {
         private let heartRateService: RestingHeartRateService
+
+        @Published var presentAlert = false
+        @Published var backgroundObserverIsOn: Bool = true {
+            didSet {
+                heartRateService.backgroundObserverQueryEnabled = backgroundObserverIsOn
+                if !backgroundObserverIsOn {
+                    presentAlert = true
+                }
+            }
+        }
+
         @Published var fakeHeartRateValue: Double = 100.0
 
         init(heartRateService: RestingHeartRateService = RestingHeartRateService.shared) {
@@ -21,6 +32,9 @@ struct InfoView: View {
             if let averageHeartRate = heartRateService.averageHeartRate {
                 fakeHeartRateValue = averageHeartRate * heartRateService.threshold + 1
             }
+
+            // This could be simpler with @AppStorage
+            backgroundObserverIsOn = heartRateService.backgroundObserverQueryEnabled
         }
 
         var latestHighRHRNotificationPostDate: Date? {
@@ -65,6 +79,14 @@ struct InfoView: View {
             }
         }
 
+        var backgroundObservationText: String {
+            if backgroundObserverIsOn {
+                return "Restful is observing the changes in your resting heart rate in the background. If this switch is off, you won't receive notifications."
+            } else {
+                return "Restful has stopped observing the cnahges in your resting heart rate. It won't send you notifications until this switch is turned on."
+            }
+        }
+
         var highRHRIsPostedToday: Bool {
              return heartRateService.hasPostedAboutRisingNotificationToday
         }
@@ -75,9 +97,9 @@ struct InfoView: View {
             }
 
             if let buildNumber = Bundle.main.buildVersionNumber {
-                return versionNumber + " (" + buildNumber + ")"
+                return "Restful version " + versionNumber + " (" + buildNumber + ")"
             } else {
-                return versionNumber
+                return "Restful version " + versionNumber
             }
         }
     }
@@ -91,18 +113,35 @@ struct InfoView: View {
                 }
                 .padding()
             }
-            Spacer()
 
-            Text("How does Restful work?")
-                .font(.title2)
-                .bold()
-
-            Text(viewModel.notificationFootnoteString)
+            Toggle("Observe resting heart rate updates and receive notifications", isOn: $viewModel.backgroundObserverIsOn)
+                .alert("Observer and notifications disabled",
+                       isPresented: $viewModel.presentAlert, actions: {
+                    Button("OK", role: .cancel, action: {
+                        viewModel.presentAlert = false
+                    })
+                }) {
+                    Text("You won't see updates about your resting heart rate and won't receive notifications.")
+                }
+            Text(viewModel.backgroundObservationText)
                 .font(.footnote)
                 .foregroundColor(.secondary)
 
-            if viewModel.highRHRIsPostedToday {
-                Text("You have received a notification about your elevated resting heart rate today.")
+            Spacer()
+
+            VStack {
+                Text("How does Restful work?")
+                    .font(.title2)
+                    .bold()
+                    .padding(.bottom)
+
+                Text(viewModel.notificationFootnoteString)
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+
+                if viewModel.highRHRIsPostedToday {
+                    Text("You have received a notification about your elevated resting heart rate today.")
+                }
             }
 
             Spacer()

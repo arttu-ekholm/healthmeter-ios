@@ -20,10 +20,11 @@ struct HealthMeterApp: App {
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(_ application: UIApplication,
                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        RestingHeartRateService.shared.getAuthorisationStatusForRestingHeartRate { status in
+        let heartRateService = RestingHeartRateService.shared
+        heartRateService.getAuthorisationStatusForRestingHeartRate { status in
             if status == .unnecessary {
-                RestingHeartRateService.shared.observeInBackground { success, error in
-                    print("Observing updates in the background: \(success), error: \(error.debugDescription)")
+                if heartRateService.backgroundObserverQueryEnabled {
+                    heartRateService.observeInBackground()
                 }
             }
         }

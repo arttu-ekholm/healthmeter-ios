@@ -31,7 +31,6 @@ struct TutorialView: View {
         }
         @Published var currentPhase: Phase = .authorizeHealthKit
 
-        @Published var presentHealthKitAlert = false
         @Published var presentNotificationsAlert = false
 
         private let heartRateService: RestingHeartRateService

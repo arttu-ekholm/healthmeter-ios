@@ -39,6 +39,7 @@ class RestingHeartRateService {
     private let latestRestingHeartRateUpdateKey = "LatestRestingHeartRateUpdate"
     private let latestHighRHRNotificationPostDateKey = "LatestHighRHRNotificationPostDate"
     private let latestLoweredRHRNotificationPostDateKey = "LatestLoweredRHRNotificationPostDate"
+    private let backgroundObserverQueryEnabledKey = "BackgroundObserverQueryEnabledKey"
 
     private var latestRestingHeartRateUpdate: RestingHeartRateUpdate?
 
@@ -70,10 +71,6 @@ class RestingHeartRateService {
     private let notificationService: NotificationService
 
     private var currentObserverQuery: HKObserverQuery?
-
-    var isObservingChanges: Bool {
-        return currentObserverQuery != nil
-    }
 
     var averageHeartRate: Double? {
         get {
@@ -107,6 +104,23 @@ class RestingHeartRateService {
         }
     }
 
+    var backgroundObserverQueryEnabled: Bool {
+        get {
+            return userDefaults.bool(forKey: backgroundObserverQueryEnabledKey)
+        } set {
+            userDefaults.set(newValue, forKey: backgroundObserverQueryEnabledKey)
+            if newValue == true {
+                observeInBackground()
+            } else { // Stop the most recent observer query if it was launched during the app lifecycle
+                if let currentObserverQuery = currentObserverQuery {
+                    print("stopping observer query: \(currentObserverQuery)")
+                    healthStore.stop(currentObserverQuery)
+                }
+                currentObserverQuery = nil
+            }
+        }
+    }
+
     init(userDefaults: UserDefaults = UserDefaults.standard,
          calendar: Calendar = Calendar.current,
          notificationService: NotificationService = NotificationService(),
@@ -121,6 +135,8 @@ class RestingHeartRateService {
         self.queryParser = queryParser
 
         self.latestRestingHeartRateUpdate = decodeLatestRestingHeartRateUpdate()
+
+        userDefaults.register(defaults: [backgroundObserverQueryEnabledKey: true])
     }
 
     /**
@@ -301,12 +317,14 @@ class RestingHeartRateService {
     /**
      Sets the app to observe the changes in HealthKit and wake up when there are new RHR updates.
      */
-    func observeInBackground(completionHandler: @escaping ((Bool, Error?) -> Void)) {
-        guard !isObservingChanges else {
-            fatalError("App is currently observing")
-        }
+    func observeInBackground(completionHandler: ((Bool, Error?) -> Void)? = nil) {
+        let observerQuery = queryProvider.getObserverQuery { query, completionHandler, error in
+            if self.shouldStopBackgroundQuery { // store the query hash and compare it here if there's a need to stop a specific queue
+                self.healthStore.stop(query)
+                completionHandler()
+                return
+            }
 
-        let observerQuery = queryProvider.getObserverQuery { _, completionHandler, error in
             guard error == nil else { return }
 
             self.queryLatestRestingHeartRate { result in
@@ -330,7 +348,7 @@ class RestingHeartRateService {
                    if let error = error {
                        print("BG observation failed with error: \(error)")
                    }
-                   completionHandler(success, error)
+                   completionHandler?(success, error)
                }
     }
 
@@ -410,5 +428,11 @@ class RestingHeartRateService {
         } else {
             return "Your resting heart rate is normal."
         }
+    }
+
+    // MARK: - Background observer
+
+    var shouldStopBackgroundQuery: Bool {
+        return !backgroundObserverQueryEnabled
     }
 }
