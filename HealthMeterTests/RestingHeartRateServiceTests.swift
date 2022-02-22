@@ -610,8 +610,6 @@ private class MockNotificationService: NotificationService {
     var delay: TimeInterval?
 
     override func postNotification(title: String, body: String, completion: ((Result<Void, Error>) -> Void)? = nil) {
-
-
         if let delay = delay {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 self.postNotificationCalledCount += 1

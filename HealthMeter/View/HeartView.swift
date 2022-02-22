@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// swiftlint:disable:next type_body_length
 struct HeartView: View {
     enum ViewState<T, E> {
         case loading
