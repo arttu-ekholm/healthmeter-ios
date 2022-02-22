@@ -27,6 +27,7 @@ struct ContentView: View {
                 HStack {
                     Spacer()
                     Button {
+                        Haptics().playHapticFeedbackEvent()
                         showingInfoMenu.toggle()
                     } label: {
                         Image(systemName: "info.circle")

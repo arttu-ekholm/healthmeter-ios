@@ -16,6 +16,7 @@ struct InfoView: View {
             HStack {
                 Spacer()
                 Button("Close") {
+                    Haptics().playHapticFeedbackEvent()
                     dismiss()
                 }
                 .padding()
@@ -68,6 +69,7 @@ struct InfoView: View {
                     Spacer()
                 }
                 Button {
+                    Haptics().playHapticFeedbackEvent()
                     viewModel.sendFakeHeartRateUpdate()
                 } label: {
                     Text("Handle fake update")
