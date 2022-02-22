@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import UIKit
 
 extension TutorialView {
     class ViewModel: ObservableObject {
@@ -37,6 +38,10 @@ extension TutorialView {
                     self.authorized = true
                 }
             }
+        }
+
+        var settingsAppURL: URL {
+            return URL(string: UIApplication.openSettingsURLString)!
         }
     }
 }

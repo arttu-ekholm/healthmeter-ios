@@ -152,5 +152,14 @@ extension HeartView {
                 return false
             }
         }
+
+        // MARK: - URLs
+        var healthAppURL: URL {
+            return URL(string: "x-apple-health://")!
+        }
+
+        var settingsAppURL: URL {
+            return URL(string: UIApplication.openSettingsURLString)!
+        }
     }
 }

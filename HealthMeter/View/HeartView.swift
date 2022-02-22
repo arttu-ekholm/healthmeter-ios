@@ -66,7 +66,7 @@ struct HeartView: View {
                 } else {
                     DescriptionTextView(title: error.localizedDescription, subtitle: nil)
                 }
-                Link("Health app", destination: URL(string: "x-apple-health://")!)
+                Link("Health app", destination: viewModel.healthAppURL)
                     .font(.title2)
 
             case .success(let update, let average):
@@ -126,7 +126,7 @@ struct HeartView: View {
                                 }
                             }
 
-                            Link("Settings app", destination: URL(string: UIApplication.openSettingsURLString)!)
+                            Link("Settings app", destination: viewModel.settingsAppURL)
                         }
                         .padding()
                         .border(.orange, width: 2)
