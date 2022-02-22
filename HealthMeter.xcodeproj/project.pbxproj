@@ -190,6 +190,7 @@
 		4B8C2D4A27C4D2290059C108 /* Util */ = {
 			isa = PBXGroup;
 			children = (
+				4B3946D727BCDCDD004135CB /* SetttingsStore.swift */,
 				4B3946C827BB95CE004135CB /* Date+utils.swift */,
 				4B8C2D4B27C4D2370059C108 /* Bundle+version.swift */,
 				4B8C2D4E27C4D38A0059C108 /* Haptics.swift */,
@@ -243,7 +244,6 @@
 				4BACE5BE27AAC32A009068F9 /* QueryParser.swift */,
 				4BA142F8279DA6B6008884F0 /* Assets.xcassets */,
 				4BA142FA279DA6B6008884F0 /* Preview Content */,
-				4B3946D727BCDCDD004135CB /* SetttingsStore.swift */,
 			);
 			path = HealthMeter;
 			sourceTree = "<group>";

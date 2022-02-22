@@ -18,6 +18,3 @@ class Haptics {
         generator.notificationOccurred(.success)
     }
 }
-
-
-
