@@ -47,7 +47,6 @@ struct HeartView: View {
         }
     }
 
-    @State private var animationAmount: CGFloat = 1
     @StateObject var viewModel: ViewModel
     @Environment(\.scenePhase) var scenePhase
 
@@ -74,17 +73,17 @@ struct HeartView: View {
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(viewModel.heartColor)
-                    .scaleEffect(animationAmount)
+                    .scaleEffect(viewModel.animationAmount)
                     .animation(
                         .spring(response: 0.3, dampingFraction: 0.4, blendDuration: 0.0)
                             .delay(0.01)
                             .repeatForever(autoreverses: true),
-                        value: animationAmount
+                        value: viewModel.animationAmount
                     )
                     .padding()
                     .onAppear {
                         // "not calculated yet today" icon shouldn't be animated.
-                        animationAmount = viewModel.heartImageShouldAnimate ? 1.08 : 1.0
+                        viewModel.animationAmount = viewModel.heartImageShouldAnimate ? 1.08 : 1.0
                     }
 
                 Text(viewModel.heartRateAnalysisText(update: update, average: average))
