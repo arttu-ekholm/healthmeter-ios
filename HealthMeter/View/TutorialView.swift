@@ -101,6 +101,7 @@ struct TutorialView: View {
                     .cornerRadius(12)
                 case .allDone:
                     Button {
+                        Haptics().playSuccessHapticFeedbackEvent()
                         settingsStore.tutorialShown = true
                         dismiss()
                     } label: {
