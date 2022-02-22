@@ -21,7 +21,7 @@ enum Trend {
     }
 }
 
-// swiftlint:ignore type_body_length
+// swiftlint:disable type_body_length
 class RestingHeartRateService {
     /**
      These are mapped to `HKAuthorizationRequestStatus`
@@ -178,7 +178,7 @@ class RestingHeartRateService {
     /**
      Decides if a notification needs to be sent about the update. If the update isn't above the average, the update will be ignored.
      */
-    // swiftlint:ignore:next function_body_length
+    // swiftlint:disable:next function_body_length
     func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison

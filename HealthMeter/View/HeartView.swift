@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+// swiftlint:disable:next type_body_length
 struct HeartView: View {
     enum ViewState<T, E> {
         case loading
@@ -70,6 +71,10 @@ struct HeartView: View {
         var heartColor: Color {
             switch viewState {
             case .success(let latest, let average):
+                guard calendar.isDateInToday(latest.date) else {
+                    return .gray
+                }
+
                 let current = latest.value
                 let multiplier = current / average - 1.0
                 if multiplier >= 0 {
@@ -90,6 +95,34 @@ struct HeartView: View {
                     }
                 }
             default: return .green
+            }
+        }
+
+        var heartImageName: String {
+            switch viewState {
+
+            case .success(let latest, let average):
+                guard calendar.isDateInToday(latest.date) else {
+                    return "heart.text.square"
+                }
+
+                let current = latest.value
+                let multiplier = current / average - 1.0
+                if multiplier >= 0 {
+                    if multiplier > 0.05 {
+                        return "arrow.up.heart.fill"
+                    } else {
+                        return "heart.fill"
+                    }
+                } else {
+                    if multiplier < -0.05 {
+                        return "arrow.down.heart.fill"
+                    } else {
+                        return "heart.fill"
+                    }
+                }
+            default:
+                return "heart.fill"
             }
         }
 
@@ -141,6 +174,22 @@ struct HeartView: View {
                 }
             }
         }
+
+        var restingHeartRateIsUpdatedToday: Bool {
+            guard case .success(let update, _) = viewState else {
+                return false
+            }
+
+            return calendar.isDateInToday(update.date)
+        }
+
+        var heartImageShouldAnimate: Bool {
+            if case .success(let latest, _) = viewState, calendar.isDateInToday(latest.date) {
+                return true
+            } else {
+                return false
+            }
+        }
     }
 
     @State private var animationAmount: CGFloat = 1
@@ -166,7 +215,7 @@ struct HeartView: View {
                     .font(.title2)
 
             case .success(let update, let average):
-                Image(systemName: "heart.fill")
+                Image(systemName: viewModel.heartImageName)
                     .resizable()
                     .frame(width: 100, height: 100, alignment: .center)
                     .foregroundColor(viewModel.heartColor)
@@ -179,7 +228,8 @@ struct HeartView: View {
                     )
                     .padding()
                     .onAppear {
-                        animationAmount = 1.08
+                        // "not calculated yet today" icon shouldn't be animated.
+                        animationAmount = viewModel.heartImageShouldAnimate ? 1.08 : 1.0
                     }
 
                 Text(viewModel.heartRateAnalysisText(update: update, average: average))
@@ -194,10 +244,11 @@ struct HeartView: View {
                     Text(" bpm.")
                         .bold()
 
-                    /*
-                     Text("Updated \(update.date.timeAgoDisplay())").font(.footnote)
-                     .padding(.bottom)
-                     */
+                    if viewModel.restingHeartRateIsUpdatedToday {
+                        Text("Updated \(update.date.timeAgoDisplay())")
+                            .font(.footnote)
+                            .padding(.bottom)
+                    }
 
                     Text("Your average resting heart rate is ") +
                     Text(String(format: "%.0f", average))
