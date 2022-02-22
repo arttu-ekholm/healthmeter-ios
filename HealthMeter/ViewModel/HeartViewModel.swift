@@ -11,13 +11,15 @@ import SwiftUI
 
 extension HeartView {
     class ViewModel: ObservableObject {
+
         private let restingHeartRateService: RestingHeartRateService
         private let calendar: Calendar
-        let notificationCenter = UNUserNotificationCenter.current()
+        private let notificationCenter = UNUserNotificationCenter.current()
 
         var shouldReloadContents: Bool
         @Published var viewState: ViewState<RestingHeartRateUpdate, Double>
         @Published var notificationsDenied = false
+        @Published var animationAmount: CGFloat = 1
 
         init(
             heartRateService: RestingHeartRateService = RestingHeartRateService.shared,
