@@ -112,24 +112,7 @@ struct HeartView: View {
                         .bold()
 
                     if viewModel.notificationsDenied {
-                        VStack(spacing: 12) {
-                            HStack(spacing: 12) {
-                                Image(systemName: "exclamationmark.triangle")
-                                    .foregroundColor(.orange)
-                                    .font(.system(size: 36, weight: .medium))
-                                VStack(alignment: .leading, spacing: 10) {
-                                    Text("Notifications are disabled")
-                                    .bold()
-                                    Text("To get notifications about elevated resting heart rate, go to the Settings app and enable them.")
-                                    .font(.footnote)
-                                }
-                            }
-
-                            Link("Settings app", destination: viewModel.settingsAppURL)
-                        }
-                        .padding()
-                        .border(.orange, width: 2)
-                        .padding()
+                        NotificationsDisabledView(settingsAppURL: viewModel.settingsAppURL)
                     }
                 }
             }
@@ -164,7 +147,31 @@ struct HeartView: View {
     }
 }
 
-struct DescriptionTextView: View {
+private struct NotificationsDisabledView: View {
+    let settingsAppURL: URL
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.triangle")
+                    .foregroundColor(.orange)
+                    .font(.system(size: 36, weight: .medium))
+                VStack(alignment: .leading, spacing: 10) {
+                    Text("Notifications are disabled")
+                    .bold()
+                    Text("To get notifications about elevated resting heart rate, go to the Settings app and enable them.")
+                    .font(.footnote)
+                }
+            }
+
+            Link("Settings app", destination: settingsAppURL)
+        }
+        .padding()
+        .border(.orange, width: 2)
+        .padding()
+    }
+}
+
+private struct DescriptionTextView: View {
     let title: String
     let subtitle: String?
     var body: some View {
