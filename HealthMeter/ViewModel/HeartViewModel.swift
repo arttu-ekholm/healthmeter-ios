@@ -20,6 +20,7 @@ extension HeartView {
         @Published var viewState: ViewState<RestingHeartRateUpdate, Double>
         @Published var notificationsDenied = false
         @Published var animationAmount: CGFloat = 1
+        @Published var histogram: RestingHeartRateHistory?
 
         init(
             heartRateService: RestingHeartRateService = RestingHeartRateService.shared,
@@ -162,6 +163,23 @@ extension HeartView {
 
         var settingsAppURL: URL {
             return URL(string: UIApplication.openSettingsURLString)!
+        }
+
+        // MARK: - RHR histogram
+        func fetchHistogramData() {
+            restingHeartRateService.fetchRestingHeartRateHistory(startDate: Date().addingTimeInterval(-60*60*24*30*6)) { result in
+                if case .success(let histogram) = result {
+                    DispatchQueue.main.async {
+                        self.histogram = histogram
+                    }
+                }
+            }
+        }
+
+        var heartRateLevels: HeartRateRanges? {
+            guard let averageHeartRate = restingHeartRateService.averageHeartRate else { return nil }
+
+            return restingHeartRateService.rangesForHeartRateLevels(average: averageHeartRate)
         }
     }
 }

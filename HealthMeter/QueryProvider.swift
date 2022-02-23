@@ -12,6 +12,12 @@ import HealthKit
  Provides `HKQuery` objects
  */
 class QueryProvider {
+    private let calendar: Calendar
+
+    init(calendar: Calendar = Calendar.current) {
+        self.calendar = calendar
+    }
+
     func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
         let sampleType = sampleTypeForRestingHeartRate
         let sortDescriptor = sortDescriptorForLatestRestingHeartRate
@@ -41,6 +47,25 @@ class QueryProvider {
             quantitySamplePredicate: nil,
             options: .discreteAverage,
             anchorDate: queryStartDate,
+            intervalComponents: interval as DateComponents
+        )
+
+        return query
+    }
+
+    func getRestingHeartRateHistogramQuery() -> HKStatisticsCollectionQuery {
+        let quantityType = sampleTypeForRestingHeartRate
+
+        let interval = NSDateComponents()
+        interval.day = 1
+
+        let anchorDate = calendar.date(bySettingHour: 0, minute: 0, second: 1, of: Date())
+
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .discreteAverage,
+            anchorDate: anchorDate!,
             intervalComponents: interval as DateComponents
         )
 

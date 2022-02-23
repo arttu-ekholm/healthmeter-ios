@@ -84,6 +84,7 @@ struct HeartView: View {
                     .onAppear {
                         // "not calculated yet today" icon shouldn't be animated.
                         viewModel.animationAmount = viewModel.heartImageShouldAnimate ? 1.08 : 1.0
+                        viewModel.fetchHistogramData()
                     }
 
                 Text(viewModel.heartRateAnalysisText(update: update, average: average))
@@ -91,6 +92,15 @@ struct HeartView: View {
                     .padding(.bottom)
 
                 VStack {
+                    if let histogram = viewModel.histogram, let levels = viewModel.heartRateLevels {
+                        RestingHeartRateHistogram(
+                            histogram: histogram,
+                            levels: levels,
+                            average: average,
+                            active: update.value)
+                            .frame(maxHeight: 200, alignment: .bottom)
+                            .padding()
+                    }
                     Text(viewModel.getLatestRestingHeartRateDisplayString(update: update)) + Text(" ") +
                     Text(String(format: "%.0f", update.value))
                         .font(.title2)
@@ -110,7 +120,6 @@ struct HeartView: View {
                         .bold() +
                     Text(" bpm.")
                         .bold()
-
                     if viewModel.notificationsDenied {
                         NotificationsDisabledView(settingsAppURL: viewModel.settingsAppURL)
                     }
@@ -184,6 +193,106 @@ private struct DescriptionTextView: View {
             }
         }
         .padding()
+    }
+}
+
+private struct RestingHeartRateHistogram: View {
+    let histogram: RestingHeartRateHistory
+    let levels: HeartRateRanges
+    let average: Double
+    let active: Double
+    @State var spacing: CGFloat = 4.0
+
+    var body: some View {
+        GeometryReader { geometry in
+            HStack(alignment: .bottom, spacing: 2) {
+                ForEach(histogram.histogramItems, id: \.self) { item in
+                    let width = (geometry.size.width / CGFloat(histogram.histogramItems.count)) - spacing
+                    HistogramBar(
+                        item: item,
+                        value: normalizedValue(value: item.count,
+                                               maximumValue: histogram.maximumValue),
+                        level: levels.levelForRestingHeartRate(rate: Double(item.item)) ?? nil,
+                        isAverage: Int(average) == item.item,
+                        isActive: Int(active) == item.item)
+                        .frame(width: width, alignment: .bottom)
+                }
+            }
+        }
+    }
+
+    func normalizedValue(value: Int, maximumValue: Int) -> Double {
+        return Double(value) / Double(maximumValue)
+    }
+}
+
+private let history = RestingHeartRateHistory(histogramItems: [
+    RestingHeartRateHistogramItem(item: 50, count: 3),
+    RestingHeartRateHistogramItem(item: 51, count: 0),
+    RestingHeartRateHistogramItem(item: 52, count: 4),
+    RestingHeartRateHistogramItem(item: 53, count: 6),
+    RestingHeartRateHistogramItem(item: 54, count: 8),
+    RestingHeartRateHistogramItem(item: 55, count: 4),
+    RestingHeartRateHistogramItem(item: 56, count: 3),
+    RestingHeartRateHistogramItem(item: 57, count: 1),
+    RestingHeartRateHistogramItem(item: 58, count: 3),
+    RestingHeartRateHistogramItem(item: 59, count: 0),
+    RestingHeartRateHistogramItem(item: 60, count: 4),
+    RestingHeartRateHistogramItem(item: 61, count: 6),
+    RestingHeartRateHistogramItem(item: 62, count: 8),
+    RestingHeartRateHistogramItem(item: 63, count: 4),
+    RestingHeartRateHistogramItem(item: 64, count: 3),
+    RestingHeartRateHistogramItem(item: 65, count: 1)
+])
+
+struct RestingHeartRateHistogram_Previews: PreviewProvider {
+    static var previews: some View {
+        RestingHeartRateHistogram(
+            histogram: history,
+            levels: RestingHeartRateService.shared.rangesForHeartRateLevels(average: 50.0),
+            average: 50.0,
+            active: 52.0)
+    }
+}
+
+private struct HistogramBar: View {
+    let item: RestingHeartRateHistogramItem
+    let value: Double
+    let level: HeartRateLevel?
+    let isAverage: Bool
+    let isActive: Bool
+
+    var body: some View {
+        VStack {
+            GeometryReader { geometry in
+                RoundedRectangle(cornerRadius: 4.0)
+                    .foregroundColor(color)
+                    .brightness(isActive ? 0.1 : 0)
+                    .frame(width: geometry.size.width, height: geometry.size.height * value, alignment: .bottom)
+                    .offset(x: 0, y: geometry.size.height * (1 - value))
+
+            }
+            Text(text)
+                .font(.footnote)
+                .fontWeight(isAverage ? .bold : .regular)
+                .fixedSize()
+        }
+    }
+
+    private var text: String {
+        if isAverage { return String(item.item) }
+        return item.item % 5 == 0 ? String(item.item) : " "
+    }
+
+    private var color: Color {
+        switch self.level {
+        case .belowAverage: return .blue
+        case .normal: return .green
+        case .slightlyElevated: return .yellow
+        case .noticeablyElevated: return .orange
+        case .wayAboveElevated: return .red
+        case nil: return .gray
+        }
     }
 }
 

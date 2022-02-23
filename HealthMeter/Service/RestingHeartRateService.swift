@@ -45,7 +45,11 @@ class RestingHeartRateService {
 
     // If the latest update is this much above the avg. RHR, the notification will be triggered.
     var threshold: Double {
-        return 1.05
+        return 1 + thresholdMultiplier
+    }
+
+    var thresholdMultiplier: Double {
+        return 0.05
     }
 
     /**
@@ -405,6 +409,24 @@ class RestingHeartRateService {
         return HKHealthStore.isHealthDataAvailable()
     }
 
+    // MARK: - Average resting heart rate data for chart
+    func fetchRestingHeartRateHistory(startDate: Date, completion: @escaping (Result<RestingHeartRateHistory, Error>) -> Void) {
+        let now = Date()
+
+        let query = queryProvider.getRestingHeartRateHistogramQuery()
+        query.initialResultsHandler = { query, results, error in
+            self.queryParser.parseRestingHeartRateHistogram(startDate: startDate,
+                                                                      endDate: now,
+                                                                      query: query,
+                                                                      result: results,
+                                                                      error: error,
+                                                                      callback: { result in
+                completion(result)
+            })
+        }
+        healthStore.execute(query)
+    }
+
     // MARK: - Strings
 
     func heartRateAnalysisText(current: Double, average: Double) -> String {
@@ -430,9 +452,48 @@ class RestingHeartRateService {
         }
     }
 
+    func rangesForHeartRateLevels(average: Double) -> HeartRateRanges {
+        let ranges: [HeartRateLevel: Range<Double>] = [
+            .belowAverage: 0..<(average * (1 - thresholdMultiplier)),
+            .normal: (average * (1 - thresholdMultiplier))..<average + (average * thresholdMultiplier),
+            .slightlyElevated: average + (average * thresholdMultiplier)..<average + (average * 2 * thresholdMultiplier),
+            .noticeablyElevated: average + (average * 2 * thresholdMultiplier)..<average + (average * 4 * thresholdMultiplier),
+            .wayAboveElevated: average + (average * 4 * thresholdMultiplier)..<Double.infinity
+        ]
+        return HeartRateRanges(ranges: ranges)
+    }
+
     // MARK: - Background observer
 
     var shouldStopBackgroundQuery: Bool {
         return !backgroundObserverQueryEnabled
     }
+}
+
+struct RestingHeartRateHistory {
+    let histogramItems: [RestingHeartRateHistogramItem]
+
+    var maximumValue: Int {
+        return histogramItems.map {$0.count}.max() ?? 0
+    }
+}
+
+struct RestingHeartRateHistogramItem: Hashable {
+    let item: Int
+    let count: Int
+}
+
+struct HeartRateRanges {
+    let ranges: [HeartRateLevel: Range<Double>]
+    func levelForRestingHeartRate(rate: Double) -> HeartRateLevel? {
+        return ranges.first(where: { $0.value.contains(rate) })?.key
+    }
+}
+
+enum HeartRateLevel {
+    case belowAverage
+    case normal
+    case slightlyElevated
+    case noticeablyElevated
+    case wayAboveElevated
 }
