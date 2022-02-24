@@ -24,8 +24,8 @@ struct RestingHeartRateHistogram: View {
                         value: normalizedValue(value: item.count,
                                                maximumValue: histogram.maximumValue),
                         level: levels.levelForRestingHeartRate(rate: Double(item.item)) ?? nil,
-                        isAverage: Int(average) == item.item,
-                        isActive: Int(active) == item.item)
+                        isAverage: Int(round(average)) == item.item,
+                        isActive: Int(round(active)) == item.item)
                         .frame(width: width, alignment: .bottom)
                 }
             }
