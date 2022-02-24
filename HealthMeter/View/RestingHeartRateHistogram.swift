@@ -63,6 +63,7 @@ struct RestingHeartRateHistogram_Previews: PreviewProvider {
             levels: RestingHeartRateService.shared.rangesForHeartRateLevels(average: 50.0),
             average: 50.0,
             active: 52.0)
+            .frame(width: 350, height: 200, alignment: .bottom)
     }
 }
 
@@ -85,24 +86,21 @@ private struct HistogramBar: View {
             }
             Text(text)
                 .font(.footnote)
-                .fontWeight(isAverage ? .bold : .regular)
+                .foregroundColor(.white)
+                .fontWeight(isAverage ? .heavy : .regular)
+                .padding(.horizontal, isAverage ? 6 : 4)
+                .background(text != " " ? color : .clear)
+                .cornerRadius(5)
                 .fixedSize()
         }
     }
 
     private var text: String {
         if isAverage { return String(item.item) }
-        return item.item % 5 == 0 ? String(item.item) : " "
+        return item.item.isMultiple(of: 5) ? String(item.item) : " "
     }
 
     private var color: Color {
-        switch self.level {
-        case .belowAverage: return .blue
-        case .normal: return .green
-        case .slightlyElevated: return .yellow
-        case .noticeablyElevated: return .orange
-        case .wayAboveElevated: return .red
-        case nil: return .gray
-        }
+        return colorForLevel(level)
     }
 }
