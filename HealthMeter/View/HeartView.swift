@@ -84,6 +84,7 @@ struct HeartView: View {
                     .onAppear {
                         // "not calculated yet today" icon shouldn't be animated.
                         viewModel.animationAmount = viewModel.heartImageShouldAnimate ? 1.08 : 1.0
+                        viewModel.fetchHistogramData()
                     }
 
                 Text(viewModel.heartRateAnalysisText(update: update, average: average))
@@ -91,9 +92,19 @@ struct HeartView: View {
                     .padding(.bottom)
 
                 VStack {
+                    if let histogram = viewModel.histogram, let levels = viewModel.heartRateLevels {
+                        RestingHeartRateHistogram(
+                            histogram: histogram,
+                            levels: levels,
+                            average: average,
+                            active: update.value)
+                            .frame(maxHeight: 200, alignment: .bottom)
+                            .padding()
+                    }
                     Text(viewModel.getLatestRestingHeartRateDisplayString(update: update)) + Text(" ") +
                     Text(String(format: "%.0f", update.value))
                         .font(.title2)
+                        .foregroundColor(colorForLevel(viewModel.heartRateLevels?.levelForRestingHeartRate(rate: update.value)))
                         .bold() +
                     Text(" bpm.")
                         .bold()
@@ -107,10 +118,10 @@ struct HeartView: View {
                     Text("Your average resting heart rate is ") +
                     Text(String(format: "%.0f", average))
                         .font(.title2)
+                        .foregroundColor(colorForLevel(viewModel.heartRateLevels?.levelForRestingHeartRate(rate: average)))
                         .bold() +
                     Text(" bpm.")
                         .bold()
-
                     if viewModel.notificationsDenied {
                         NotificationsDisabledView(settingsAppURL: viewModel.settingsAppURL)
                     }
