@@ -104,6 +104,7 @@ struct HeartView: View {
                     Text(viewModel.getLatestRestingHeartRateDisplayString(update: update)) + Text(" ") +
                     Text(String(format: "%.0f", update.value))
                         .font(.title2)
+                        .foregroundColor(colorForLevel(viewModel.heartRateLevels?.levelForRestingHeartRate(rate: update.value)))
                         .bold() +
                     Text(" bpm.")
                         .bold()
@@ -117,6 +118,7 @@ struct HeartView: View {
                     Text("Your average resting heart rate is ") +
                     Text(String(format: "%.0f", average))
                         .font(.title2)
+                        .foregroundColor(colorForLevel(viewModel.heartRateLevels?.levelForRestingHeartRate(rate: average)))
                         .bold() +
                     Text(" bpm.")
                         .bold()
