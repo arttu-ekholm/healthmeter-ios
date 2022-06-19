@@ -294,7 +294,8 @@ class RestingHeartRateService {
     }
 
     func notificationTitle(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String {
-        return trend.displayText
+        let emoji = colorEmojiForLevel(heartRateLevelForMultiplier(multiplier: heartRate / averageHeartRate))
+        return "\(emoji) \(trend.displayText)"
     }
 
     func notificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String? {
@@ -449,6 +450,22 @@ class RestingHeartRateService {
             }
         } else {
             return "Your resting heart rate is normal."
+        }
+    }
+
+    func heartRateLevelForMultiplier(multiplier: Double) -> HeartRateLevel {
+        if multiplier > 1.05 {
+            if multiplier > 1.2 {
+                return .wayAboveElevated
+            } else if multiplier > 1.1 {
+                return .noticeablyElevated
+            } else {
+                return .slightlyElevated
+            }
+        } else if multiplier < 0.95 {
+            return .belowAverage
+        } else {
+            return .normal
         }
     }
 
