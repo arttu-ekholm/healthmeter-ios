@@ -442,6 +442,27 @@ class RestingHeartRateServiceTests: XCTestCase {
 
         waitForExpectations(timeout: 2.0, handler: .none)
     }
+
+    // MARK: - Multipliers and colors
+    
+    func testHeartRateLevelForMultiplier() {
+        let service = RestingHeartRateService()
+        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 50.0/50.0), .normal)
+        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 20.0/50.0), .belowAverage)
+        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 55.0/50.0), .slightlyElevated)
+        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 60.0/50.0), .noticeablyElevated)
+        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 85.0/50.0), .wayAboveElevated)
+    }
+
+    func testNotificationTitleContainsColorEmoji() {
+        let service = RestingHeartRateService()
+        XCTAssertTrue(service.notificationTitle(trend: .lowering, heartRate: 30, averageHeartRate: 50).contains("🟦"))
+        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 50, averageHeartRate: 50).contains("🟩"))
+        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 53, averageHeartRate: 50).contains("🟨"))
+        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 56, averageHeartRate: 50).contains("🟧"))
+        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 70, averageHeartRate: 50).contains("🟥"))
+        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 100, averageHeartRate: 50).contains("🟥"))
+    }
 }
 
 // MARK: - Mock classes

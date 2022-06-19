@@ -17,3 +17,13 @@ func colorForLevel(_ level: HeartRateLevel?) -> Color {
     case nil: return .gray
     }
 }
+
+func colorEmojiForLevel(_ level: HeartRateLevel) -> String {
+    switch level {
+    case .belowAverage: return "🟦"
+    case .normal: return "🟩"
+    case .slightlyElevated: return "🟨"
+    case .noticeablyElevated: return "🟧"
+    case .wayAboveElevated: return "🟥"
+    }
+}
