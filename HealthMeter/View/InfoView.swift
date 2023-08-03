@@ -57,21 +57,6 @@ struct InfoView: View {
             Text(viewModel.latestHighRHRNotificationDisplayString)
 
             Spacer()
-
-            VStack(alignment: .center, spacing: 12, content: {
-                Text("Test the notification")
-                    .font(.title3)
-                    .bold()
-                HStack {
-                    Spacer()
-                    Stepper("Fake resting heart rate: \(String(format: "%.0f", (viewModel.fakeHeartRateValue))) bpm", value: $viewModel.fakeHeartRateValue, in: 1...150)
-                        .font(.footnote)
-                    Spacer()
-                }
-            })
-                .padding()
-                .border(.secondary, width: 2)
-            Spacer()
         }
         .padding()
         Text(viewModel.applicationVersionDisplayable)

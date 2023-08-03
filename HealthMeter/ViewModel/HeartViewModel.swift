@@ -54,7 +54,7 @@ extension HeartView {
                     }
                 } else {
                     if multiplier < -0.05 {
-                        return .blue // over -5 %
+                        return .green // over -5 %
                     } else {
                         return .green // within +- 5 %
                     }
@@ -80,11 +80,7 @@ extension HeartView {
                         return "heart.fill"
                     }
                 } else {
-                    if multiplier < -0.05 {
-                        return "arrow.down.heart.fill"
-                    } else {
-                        return "heart.fill"
-                    }
+                    return "heart.fill"
                 }
             default:
                 return "heart.fill"

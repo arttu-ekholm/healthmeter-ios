@@ -112,7 +112,7 @@ class HeartViewViewModelTests: XCTestCase {
     func testColors() {
         XCTAssertEqual(model(50.0, 50.0).heartColor, .green)
         XCTAssertEqual(model(49.0, 50.0).heartColor, .green)
-        XCTAssertEqual(model(40.0, 50.0).heartColor, .blue)
+        XCTAssertEqual(model(40.0, 50.0).heartColor, .green)
         XCTAssertEqual(model(51.0, 50.0).heartColor, .green)
         XCTAssertEqual(model(53.0, 50.0).heartColor, .yellow)
         XCTAssertEqual(model(55.0, 50.0).heartColor, .orange)
@@ -123,7 +123,6 @@ class HeartViewViewModelTests: XCTestCase {
 
     func testImageString() {
         let upArrow = "arrow.up.heart.fill"
-        let downArrow = "arrow.down.heart.fill"
         let fill = "heart.fill"
         let notToday = "heart.text.square"
         let yesterday = Date().addingTimeInterval(-60*60*24)
@@ -131,7 +130,7 @@ class HeartViewViewModelTests: XCTestCase {
         XCTAssertEqual(model(50.0, 50.0).heartImageName, fill)
         XCTAssertEqual(model(51.0, 50.0).heartImageName, fill)
         XCTAssertEqual(model(150.0, 50.0).heartImageName, upArrow)
-        XCTAssertEqual(model(30.0, 50.0).heartImageName, downArrow)
+        XCTAssertEqual(model(30.0, 50.0).heartImageName, fill)
 
         XCTAssertEqual(model(50.0, 50.0, yesterday).heartImageName, notToday)
         XCTAssertEqual(model(51.0, 50.0, yesterday).heartImageName, notToday)
