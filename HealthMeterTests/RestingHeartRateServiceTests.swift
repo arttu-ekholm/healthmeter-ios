@@ -155,20 +155,6 @@ class RestingHeartRateServiceTests: XCTestCase {
         XCTAssertTrue(service.hasPostedAboutLoweredNotificationToday)
     }
 
-    // MARK: - Encoding and decoding latest resting heart rate
-    func testDecodeLatestRestingHeartRateUpdate_initial() {
-        let service = RestingHeartRateService(userDefaults: userDefaults)
-        XCTAssertNil(service.decodeLatestRestingHeartRateUpdate(), "Latest RHR should be initially nil")
-    }
-
-    func testDecodeLatestRestingHeartRateUpdate_encoding() throws {
-        let latest = RestingHeartRateUpdate(date: Date(), value: 50.0)
-        let data = try XCTUnwrap(JSONEncoder().encode(latest))
-        userDefaults.set(data, forKey: "LatestRestingHeartRateUpdate")
-        let service = RestingHeartRateService(userDefaults: userDefaults)
-        XCTAssertNotNil(service.decodeLatestRestingHeartRateUpdate(), "Latest RHR shouldn't be nil")
-    }
-
     // MARK: - HealthStore queries
 
     func testObserveInBackground_functionsCalled() {

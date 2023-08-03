@@ -146,7 +146,7 @@ class RestingHeartRateService {
     /**
      Decodes the latest RHR update from UserDefaults
      */
-    func decodeLatestRestingHeartRateUpdate() -> RestingHeartRateUpdate? {
+    private func decodeLatestRestingHeartRateUpdate() -> RestingHeartRateUpdate? {
         guard let data = userDefaults.data(forKey: latestRestingHeartRateUpdateKey) else { return nil }
 
         let decoder = JSONDecoder()
