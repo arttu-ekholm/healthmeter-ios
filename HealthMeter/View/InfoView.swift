@@ -68,21 +68,6 @@ struct InfoView: View {
                         .font(.footnote)
                     Spacer()
                 }
-                Button {
-                    Haptics().playHapticFeedbackEvent()
-                    viewModel.sendFakeHeartRateUpdate()
-                } label: {
-                    Text("Handle fake update")
-                        .bold()
-                }
-                .font(.title2)
-                .padding()
-                .foregroundColor(.white)
-                .background(.blue)
-                .cornerRadius(12)
-                Text(viewModel.fakeUpdateDescriptionText)
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
             })
                 .padding()
                 .border(.secondary, width: 2)

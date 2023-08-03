@@ -33,8 +33,4 @@ class MockRestingHeartRateService: RestingHeartRateService {
             mockLatestHighRHRNotificationPostDate = newValue
         }
     }
-
-    override func handleDebugUpdate(update: RestingHeartRateUpdate) {
-        handledDebugUpdate = update
-    }
 }

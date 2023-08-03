@@ -38,11 +38,6 @@ extension InfoView {
             return heartRateService.latestHighRHRNotificationPostDate
         }
 
-        func sendFakeHeartRateUpdate() {
-            let update = RestingHeartRateUpdate(date: Date(), value: fakeHeartRateValue)
-            heartRateService.handleDebugUpdate(update: update)
-        }
-
         var averageHeartRate: Double? {
             return heartRateService.averageHeartRate
         }

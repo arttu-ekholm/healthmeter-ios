@@ -184,21 +184,8 @@ class RestingHeartRateService {
     }
 
     /**
-     Creates a fake update and handles it after a slight delay.
-     */
-    func handleDebugUpdate(update: RestingHeartRateUpdate) {
-        let taskId =  UIApplication.shared.beginBackgroundTask(expirationHandler: nil)
-        DispatchQueue.main.asyncAfter(deadline: .now() + .seconds(2)) {
-            print("handling")
-            self.handleHeartRateUpdate(update: update)
-            UIApplication.shared.endBackgroundTask(taskId)
-        }
-    }
-
-    /**
      Decides if a notification needs to be sent about the update. If the update isn't above the average, the update will be ignored.
      */
-    // swiftlint:disable:next function_body_length
     func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
