@@ -9,8 +9,7 @@ import SwiftUI
 
 func colorForLevel(_ level: HeartRateLevel?) -> Color {
     switch level {
-    case .belowAverage: return .blue
-    case .normal: return .green
+    case .belowAverage, .normal: return .green
     case .slightlyElevated: return .yellow
     case .noticeablyElevated: return .orange
     case .wayAboveElevated: return .red
@@ -20,8 +19,7 @@ func colorForLevel(_ level: HeartRateLevel?) -> Color {
 
 func colorEmojiForLevel(_ level: HeartRateLevel) -> String {
     switch level {
-    case .belowAverage: return "🟦"
-    case .normal: return "🟩"
+    case .belowAverage, .normal: return "🟩"
     case .slightlyElevated: return "🟨"
     case .noticeablyElevated: return "🟧"
     case .wayAboveElevated: return "🟥"

@@ -437,7 +437,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     func testNotificationTitleContainsColorEmoji() {
         let service = RestingHeartRateService()
-        XCTAssertTrue(service.notificationTitle(trend: .lowering, heartRate: 30, averageHeartRate: 50).contains("🟦"))
+        XCTAssertTrue(service.notificationTitle(trend: .lowering, heartRate: 30, averageHeartRate: 50).contains("🟩"))
         XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 50, averageHeartRate: 50).contains("🟩"))
         XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 53, averageHeartRate: 50).contains("🟨"))
         XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 56, averageHeartRate: 50).contains("🟧"))
