@@ -92,25 +92,6 @@ class RestingHeartRateServiceTests: XCTestCase {
         waitForExpectations(timeout: 2.0, handler: .none)
     }
 
-    func testPosted_rising_debug() throws {
-        let mockNotificationService = MockNotificationService()
-        let service = RestingHeartRateService(
-            userDefaults: userDefaults,
-            notificationService: mockNotificationService)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
-
-        let update = RestingHeartRateUpdate(date: Date(), value: 100.0, isRealUpdate: false)
-        service.handleHeartRateUpdate(update: update)
-
-        let predicate = NSPredicate { service, _ in
-            guard let service = service as? RestingHeartRateService else { return false }
-            return !service.hasPostedAboutRisingNotificationToday
-        }
-        _ = expectation(for: predicate, evaluatedWith: service, handler: .none)
-
-        waitForExpectations(timeout: 2.0, handler: .none)
-    }
-
     func testPosted_risingToLowered() throws {
         let mockNotificationService = MockNotificationService()
         let service = RestingHeartRateService(
@@ -190,7 +171,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     // MARK: - HealthStore queries
 
-    func testObserveInBacground_functionsCalled() {
+    func testObserveInBackground_functionsCalled() {
         let mockHealthStore = MockHealthStore()
         let service = RestingHeartRateService(userDefaults: userDefaults, healthStore: mockHealthStore)
         service.observeInBackground { _, _ in }
@@ -431,7 +412,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
         // The update has _earlier_ date than the latest handled update.
-        let update = RestingHeartRateUpdate(date: Date().addingTimeInterval(-100), value: 100.0, isRealUpdate: false)
+        let update = RestingHeartRateUpdate(date: Date().addingTimeInterval(-100), value: 100.0)
         service.handleHeartRateUpdate(update: update)
 
         let predicate = NSPredicate { service, _ in

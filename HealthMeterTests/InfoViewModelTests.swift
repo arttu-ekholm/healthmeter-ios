@@ -50,12 +50,4 @@ class InfoViewModelTests: XCTestCase {
 
         XCTAssertTrue(viewModel.highRHRIsPostedToday)
     }
-
-    func testFakeNotification_isFake() throws {
-        let mockHeartRateService = MockRestingHeartRateService()
-        let viewModel = InfoView.ViewModel(heartRateService: mockHeartRateService)
-        viewModel.sendFakeHeartRateUpdate()
-        let update = try XCTUnwrap(mockHeartRateService.handledDebugUpdate)
-        XCTAssertFalse(update.isRealUpdate)
-    }
 }

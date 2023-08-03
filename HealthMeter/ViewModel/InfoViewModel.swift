@@ -39,7 +39,7 @@ extension InfoView {
         }
 
         func sendFakeHeartRateUpdate() {
-            let update = RestingHeartRateUpdate(date: Date(), value: fakeHeartRateValue, isRealUpdate: false)
+            let update = RestingHeartRateUpdate(date: Date(), value: fakeHeartRateValue)
             heartRateService.handleDebugUpdate(update: update)
         }
 

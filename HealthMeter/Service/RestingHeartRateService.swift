@@ -54,7 +54,7 @@ class RestingHeartRateService {
 
     /**
      if `true`, the manager is handling a `RestingHeartRateUpdate`. Set to `true` when handling begins, and to `false`when the function either
-     decides to ignore the update, or when the `NotificationCenter` callback tells the notificaiton is handled.
+     decides to ignore the update, or when the `NotificationCenter` callback tells the notification is handled.
      */
     private var isHandlingUpdate = false
 
@@ -211,7 +211,7 @@ class RestingHeartRateService {
          `updateQueue` array.
          */
 
-        if update.isRealUpdate, isHandlingUpdate {
+        if isHandlingUpdate {
             print("Is already handling an update, adding it to the queue")
             updateQueue.append(update)
             return
@@ -230,10 +230,8 @@ class RestingHeartRateService {
             }
         }
 
-        if update.isRealUpdate {
-            // Save the update so its date can be compared to the next updates
-            self.latestRestingHeartRateUpdate = update
-        }
+        // Save the update so its date can be compared to the next updates
+        self.latestRestingHeartRateUpdate = update
 
         let isAboveAverageRHR = heartRateIsAboveAverage(update: update, average: averageHeartRate)
 
@@ -269,7 +267,7 @@ class RestingHeartRateService {
                                                                       averageHeartRate: averageHeartRate),
                                              body: message) { result in
             self.isHandlingUpdate = false
-            if case .success = result, update.isRealUpdate { // The dates for test notifications aren't saved
+            if case .success = result {
                 self.saveNotificationPostDate(forTrend: trend)
             }
             // If the pending updates queue has more items, process them
@@ -371,7 +369,7 @@ class RestingHeartRateService {
                         self.handleHeartRateUpdate(update: update)
                     }
 
-                    if case .success(let update) = result, update.isRealUpdate, let latestUpdate = self.latestRestingHeartRateUpdate {
+                    if case .success(let update) = result, let latestUpdate = self.latestRestingHeartRateUpdate {
                         if update.date > latestUpdate.date {
                             completionHandler(.success(update))
                         } else {
