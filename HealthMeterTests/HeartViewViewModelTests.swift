@@ -12,7 +12,7 @@ class HeartViewViewModelTests: XCTestCase {
     func testRequestLatestRestingHeartRate_success() {
         let mockHeartRateService = MockRestingHeartRateService()
         mockHeartRateService.mockAverageRHRResult = .success(50)
-        mockHeartRateService.mockLatestRHRResult = .success(RestingHeartRateUpdate(date: Date(), value: 50))
+        mockHeartRateService.mockLatestRHRResult = .success(GenericUpdate(date: Date(), value: 50, type: .restingHeartRate))
 
         let viewModel = HeartView.ViewModel(heartRateService: mockHeartRateService)
 
@@ -89,7 +89,7 @@ class HeartViewViewModelTests: XCTestCase {
     func testRequestLatestRestingHeartRate_failure_average() {
         let mockHeartRateService = MockRestingHeartRateService()
         mockHeartRateService.mockAverageRHRResult = .failure(HeartViewViewModelTestsError.testError)
-        mockHeartRateService.mockLatestRHRResult = .success(RestingHeartRateUpdate(date: Date(), value: 50.0))
+        mockHeartRateService.mockLatestRHRResult = .success(GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate))
 
         let viewModel = HeartView.ViewModel(heartRateService: mockHeartRateService)
 
@@ -145,5 +145,5 @@ private enum HeartViewViewModelTestsError: Error {
 
 private func model(_ latest: Double, _ average: Double, _ date: Date = Date()) -> HeartView.ViewModel {
     let mockService = MockRestingHeartRateService()
-    return HeartView.ViewModel(heartRateService: mockService, shouldReloadContents: false, viewState: .success(RestingHeartRateUpdate(date: date, value: latest), average))
+    return HeartView.ViewModel(heartRateService: mockService, shouldReloadContents: false, viewState: .success(GenericUpdate(date: date, value: latest, type: .restingHeartRate), average))
 }

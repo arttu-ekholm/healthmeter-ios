@@ -38,7 +38,8 @@ class QueryParser {
     func parseLatestRestingHeartRateQueryResults(query: HKSampleQuery,
                                                  results: [HKSample]?,
                                                  error: Error?,
-                                                 completion: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
+                                                 type: UpdateType,
+                                                 completion: @escaping (Result<GenericUpdate, Error>) -> Void) {
         if let error = error {
             completion(.failure(error))
             return
@@ -49,8 +50,26 @@ class QueryParser {
             return
         }
 
-        let heartRateUpdate = RestingHeartRateUpdate(sample: sample)
+        let heartRateUpdate = GenericUpdate(sample: sample, type: type)
         completion(.success(heartRateUpdate))
+    }
+
+    func parseLatestWristTemperatureResults(query: HKSampleQuery,
+                                            results: [HKSample]?,
+                                            error: Error?,
+                                            completion: @escaping (Result<GenericUpdate, Error>) -> Void) {
+        if let error = error {
+            completion(.failure(error))
+            return
+        }
+
+        guard let sample = results?.last as? HKQuantitySample else {
+            completion(.failure(QueryParserError.noLatestRestingHeartRateFound)) // TODO: other errors
+            return
+        }
+
+        let update = GenericUpdate(sample: sample, type: .wristTemperature)
+        completion(.success(update))
     }
 
     func parseAverageRestingHeartRateQueryResults(startDate: Date,
@@ -71,6 +90,34 @@ class QueryParser {
 
         do {
             let avgRestingValue = try averageRestingHeartRateCalculator.averageRestingHeartRate(
+                fromStatsCollection: statsCollection,
+                startDate: startDate,
+                endDate: endDate)
+
+            callback(.success(avgRestingValue))
+        } catch {
+            callback(.failure(error))
+        }
+    }
+
+    func parseAverageWristTemperatureQueryResults(startDate: Date,
+                                                  endDate: Date,
+                                                  query: HKStatisticsCollectionQuery,
+                                                  result: HKStatisticsCollection?,
+                                                  error: Error?,
+                                                  callback: (Result<Double, Error>) -> Void) {
+        if let error = error {
+            callback(.failure(error))
+            return
+        }
+
+        guard let statsCollection = result else {
+            callback(.failure(QueryParserError.noRestingHeartRateStatisticsFound)) // TODO:
+            return
+        }
+
+        do {
+            let avgRestingValue = try averageRestingHeartRateCalculator.averageWristTemperature(
                 fromStatsCollection: statsCollection,
                 startDate: startDate,
                 endDate: endDate)
@@ -103,7 +150,6 @@ class QueryParser {
         let unit = HKUnit(from: "count/min")
 
         statsCollection.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
-            print(statistics)
             if let quantity = statistics.averageQuantity() {
                 let value = Int(quantity.doubleValue(for: unit))
 

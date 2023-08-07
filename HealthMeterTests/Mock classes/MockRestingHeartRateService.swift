@@ -10,9 +10,9 @@ import Foundation
 
 class MockRestingHeartRateService: RestingHeartRateService {
     var mockAverageRHRResult: Result<Double, Error>?
-    var mockLatestRHRResult: Result<RestingHeartRateUpdate, Error>?
+    var mockLatestRHRResult: Result<GenericUpdate, Error>?
     var mockLatestHighRHRNotificationPostDate: Date?
-    var handledDebugUpdate: RestingHeartRateUpdate?
+    var handledDebugUpdate: GenericUpdate?
 
     override func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
         if let result = mockAverageRHRResult {
@@ -20,7 +20,7 @@ class MockRestingHeartRateService: RestingHeartRateService {
         }
     }
 
-    override func queryLatestRestingHeartRate(completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
+    override func queryLatestMeasurement(type: UpdateType, completionHandler: @escaping (Result<GenericUpdate, Error>) -> Void) {
         if let result = mockLatestRHRResult {
             completionHandler(result)
         }

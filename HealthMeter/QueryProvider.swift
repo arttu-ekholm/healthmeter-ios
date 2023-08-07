@@ -18,9 +18,33 @@ class QueryProvider {
         self.calendar = calendar
     }
 
+    /*
     func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
         let sampleType = sampleTypeForRestingHeartRate
-        let sortDescriptor = sortDescriptorForLatestRestingHeartRate
+        let sortDescriptor = sortDescriptor
+        let sampleQuery = HKSampleQuery(sampleType: sampleType,
+                                        predicate: nil,
+                                        limit: 1,
+                                        sortDescriptors: [sortDescriptor],
+                                        resultsHandler: resultsHandler)
+        return sampleQuery
+    }
+     */
+
+    func getLatestWristTemperature(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
+        let sampleType = sampleTypeForWristTemperature
+        let sortDescriptor = sortDescriptor
+        let sampleQuery = HKSampleQuery(sampleType: sampleType,
+                                        predicate: nil,
+                                        limit: 1,
+                                        sortDescriptors: [sortDescriptor],
+                                        resultsHandler: resultsHandler)
+        return sampleQuery
+    }
+
+    func getLatestMeasurement(for type: UpdateType, resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
+        let sampleType = sampleTypeFor(type)
+        let sortDescriptor = sortDescriptor
         let sampleQuery = HKSampleQuery(sampleType: sampleType,
                                         predicate: nil,
                                         limit: 1,
@@ -38,6 +62,23 @@ class QueryProvider {
 
     func getAverageRestingHeartRateQuery(queryStartDate: Date) -> HKStatisticsCollectionQuery {
         let quantityType = sampleTypeForRestingHeartRate
+
+        let interval = NSDateComponents()
+        interval.month = 6
+
+        let query = HKStatisticsCollectionQuery(
+            quantityType: quantityType,
+            quantitySamplePredicate: nil,
+            options: .discreteAverage,
+            anchorDate: queryStartDate,
+            intervalComponents: interval as DateComponents
+        )
+
+        return query
+    }
+
+    func getAverageWristTemperatureQuery(queryStartDate: Date) -> HKStatisticsCollectionQuery {
+        let quantityType = sampleTypeForWristTemperature
 
         let interval = NSDateComponents()
         interval.month = 6
@@ -76,7 +117,18 @@ class QueryProvider {
         return HKSampleType.quantityType(forIdentifier: HKQuantityTypeIdentifier.restingHeartRate)!
     }
 
-    var sortDescriptorForLatestRestingHeartRate: NSSortDescriptor {
+    var sortDescriptor: NSSortDescriptor {
         return NSSortDescriptor(key: HKSampleSortIdentifierEndDate, ascending: false)
+    }
+
+    var sampleTypeForWristTemperature: HKQuantityType {
+        return HKSampleType.quantityType(forIdentifier: HKQuantityTypeIdentifier.appleSleepingWristTemperature)!
+    }
+
+    func sampleTypeFor(_ type: UpdateType) -> HKQuantityType {
+        switch type {
+        case .wristTemperature: return HKSampleType.quantityType(forIdentifier: HKQuantityTypeIdentifier.appleSleepingWristTemperature)!
+        case .restingHeartRate: return HKSampleType.quantityType(forIdentifier: HKQuantityTypeIdentifier.restingHeartRate)!
+        }
     }
 }

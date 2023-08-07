@@ -21,12 +21,22 @@ class DummyHeartRateService: RestingHeartRateService {
         averageHeartRate = 57.0
     }
 
+
     override func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
         averageRHRCallback(.success(57.0))
     }
 
+    /*
     override func queryLatestRestingHeartRate(completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
         completionHandler(.success(RestingHeartRateUpdate(date: .now.addingTimeInterval(-60*60), value: 58.0)))
+    }*/
+
+    /*
+    override func queryLatestMeasurement(type: UpdateType, completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
+        completionHandler(.success(RestingHeartRateUpdate(date: .now.addingTimeInterval(-60*60), value: 58.0)))
+    }*/
+    override func queryLatestMeasurement(type: UpdateType, completionHandler: @escaping (Result<GenericUpdate, Error>) -> Void) {
+        completionHandler(.success(GenericUpdate(date: .now.addingTimeInterval(-60*60), value: 58.0, type: .restingHeartRate)))
     }
 
     override func fetchRestingHeartRateHistory(startDate: Date, completion: @escaping (Result<RestingHeartRateHistory, Error>) -> Void) {

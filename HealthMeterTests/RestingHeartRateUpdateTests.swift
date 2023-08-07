@@ -19,7 +19,7 @@ class RestingHeartRateUpdateTests: XCTestCase {
         let now = Date()
         let sample = HKQuantitySample(type: type, quantity: quantity, start: now.addingTimeInterval(-1), end: now)
 
-        let update = RestingHeartRateUpdate(sample: sample)
+        let update = GenericUpdate(sample: sample, type: .restingHeartRate)
 
         XCTAssertEqual(now, update.date)
         XCTAssertEqual(value, update.value, accuracy: 0.001)
@@ -30,7 +30,7 @@ class RestingHeartRateUpdateTests: XCTestCase {
         let date = Date()
         let value = 50.0
 
-        let update = RestingHeartRateUpdate(date: date, value: value)
+        let update = GenericUpdate(date: date, value: value, type: .restingHeartRate)
 
         XCTAssertEqual(date, update.date)
         XCTAssertEqual(value, update.value, accuracy: 0.001)

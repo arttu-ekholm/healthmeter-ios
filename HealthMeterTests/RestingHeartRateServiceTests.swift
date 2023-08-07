@@ -31,32 +31,36 @@ class RestingHeartRateServiceTests: XCTestCase {
         let service = RestingHeartRateService()
 
         XCTAssertTrue(service.heartRateIsAboveAverage(
-            update: RestingHeartRateUpdate(
+            update: GenericUpdate(
                 date: Date(),
-                value: 70.0),
+                value: 70.0,
+                type: .restingHeartRate),
             average: 55.0), "Should be significant difference")
         XCTAssertFalse(service.heartRateIsAboveAverage(
-            update: RestingHeartRateUpdate(
+            update: GenericUpdate(
                 date: Date(),
-                value: 55.0),
+                value: 55.0,
+                type: .restingHeartRate),
             average: 55.0), "Should be significant difference")
         XCTAssertFalse(service.heartRateIsAboveAverage(
-            update: RestingHeartRateUpdate(
+            update: GenericUpdate(
                 date: Date(),
-                value: 53.0),
+                value: 53.0,
+                type: .restingHeartRate),
             average: 55.0), "Below average should return false")
         XCTAssertFalse(service.heartRateIsAboveAverage(
-            update: RestingHeartRateUpdate(
+            update: GenericUpdate(
                 date: Date(),
-                value: 10.0),
+                value: 10.0,
+                type: .restingHeartRate),
             average: 55.0), "Below average should return false")
     }
 
     func testUpdate_noNotificationIfAvgHRMissing() throws {
         let mockNotificationService = MockNotificationService()
         let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: mockNotificationService)
-        let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
-        service.handleHeartRateUpdate(update: update)
+        let update = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
+        service.handleUpdate(update: update)
 
         XCTAssertFalse(mockNotificationService.postNotificationCalled, "Notification shouldn't be sent if there is no average heart rate")
     }
@@ -80,8 +84,8 @@ class RestingHeartRateServiceTests: XCTestCase {
             notificationService: mockNotificationService)
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
-        let update = RestingHeartRateUpdate(date: Date(), value: 100.0)
-        service.handleHeartRateUpdate(update: update)
+        let update = GenericUpdate(date: Date(), value: 100.0, type: .restingHeartRate)
+        service.handleUpdate(update: update)
 
         let predicate = NSPredicate { service, _ in
             guard let service = service as? RestingHeartRateService else { return false }
@@ -99,10 +103,10 @@ class RestingHeartRateServiceTests: XCTestCase {
             notificationService: mockNotificationService)
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
-        let risingUpdate = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0)
-        service.handleHeartRateUpdate(update: risingUpdate)
-        let loweringUpdate = RestingHeartRateUpdate(date: Date(), value: 50.0)
-        service.handleHeartRateUpdate(update: loweringUpdate)
+        let risingUpdate = GenericUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0, type: .restingHeartRate)
+        service.handleUpdate(update: risingUpdate)
+        let loweringUpdate = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
+        service.handleUpdate(update: loweringUpdate)
 
         let risingNotificationCalled = NSPredicate { service, _ in
             guard let service = service as? RestingHeartRateService else { return false }
@@ -126,8 +130,8 @@ class RestingHeartRateServiceTests: XCTestCase {
         let service = RestingHeartRateService(userDefaults: userDefaults)
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
-        let update = RestingHeartRateUpdate(date: Date(), value: 50.0)
-        service.handleHeartRateUpdate(update: update)
+        let update = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
+        service.handleUpdate(update: update)
 
         XCTAssertFalse(service.hasPostedAboutRisingNotificationToday)
         XCTAssertFalse(service.hasPostedAboutLoweredNotificationToday)
@@ -141,14 +145,14 @@ class RestingHeartRateServiceTests: XCTestCase {
         let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
-        let risingUpdate1 = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60*3), value: 100.0)
-        service.handleHeartRateUpdate(update: risingUpdate1)
-        let loweringUpdate1 = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60*2), value: 50.0)
-        service.handleHeartRateUpdate(update: loweringUpdate1)
-        let risingUpdate2 = RestingHeartRateUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0)
-        service.handleHeartRateUpdate(update: risingUpdate2)
-        let loweringUpdate2 = RestingHeartRateUpdate(date: Date(), value: 50.0)
-        service.handleHeartRateUpdate(update: loweringUpdate2)
+        let risingUpdate1 = GenericUpdate(date: Date().addingTimeInterval(-60*60*3), value: 100.0, type: .restingHeartRate)
+        service.handleUpdate(update: risingUpdate1)
+        let loweringUpdate1 = GenericUpdate(date: Date().addingTimeInterval(-60*60*2), value: 50.0, type: .restingHeartRate)
+        service.handleUpdate(update: loweringUpdate1)
+        let risingUpdate2 = GenericUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0, type: .restingHeartRate)
+        service.handleUpdate(update: risingUpdate2)
+        let loweringUpdate2 = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
+        service.handleUpdate(update: loweringUpdate2)
         XCTAssertEqual(notificationService.postNotificationCalledCount, 2, "Only two notifications should be sent - one for high RHR and and another for lowered RRH")
 
         XCTAssertTrue(service.hasPostedAboutRisingNotificationToday)
@@ -169,7 +173,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         let mockHealthStore = MockHealthStore()
         let mockQueryProvider = MockQueryProvider()
         let mockQueryParser = MockQueryParser()
-        mockQueryParser.update = RestingHeartRateUpdate(date: Date(), value: 50.0)
+        mockQueryParser.update = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
         let service = RestingHeartRateService(userDefaults: userDefaults,
                                               healthStore: mockHealthStore,
                                               queryProvider: mockQueryProvider,
@@ -193,7 +197,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         let mockQueryProvider = MockQueryProvider()
         let mockQueryParser = MockQueryParser()
         let mockNotificationService = MockNotificationService()
-        mockQueryParser.update = RestingHeartRateUpdate(date: Date(), value: 100.0)
+        mockQueryParser.update = GenericUpdate(date: Date(), value: 100.0, type: .restingHeartRate)
         let service = RestingHeartRateService(userDefaults: userDefaults,
                                               notificationService: mockNotificationService,
                                               healthStore: mockHealthStore,
@@ -213,7 +217,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         let mockHealthStore = MockHealthStore()
         let mockQueryProvider = MockQueryProvider()
         let service = RestingHeartRateService(userDefaults: userDefaults, healthStore: mockHealthStore, queryProvider: mockQueryProvider)
-        service.queryLatestRestingHeartRate { _ in }
+        service.queryLatestMeasurement(type: .restingHeartRate) { _ in }
         XCTAssertTrue(mockHealthStore.executeQueryCalled)
     }
 
@@ -224,11 +228,10 @@ class RestingHeartRateServiceTests: XCTestCase {
                                               healthStore: mockHealthStore,
                                               queryProvider: mockQueryProvider)
         let expectation = expectation(description: "No samples should result in an error.")
-        service.queryLatestRestingHeartRate { result in
+        service.queryLatestMeasurement(type: .restingHeartRate) { result in
             if case .failure(let error) = result, error is QueryParser.QueryParserError {
                 expectation.fulfill()
             }
-
         }
         waitForExpectations(timeout: 2.0, handler: .none)
     }
@@ -241,7 +244,7 @@ class RestingHeartRateServiceTests: XCTestCase {
                                               healthStore: mockHealthStore,
                                               queryProvider: mockQueryProvider)
         let expectation = expectation(description: "Query should fail with an error.")
-        service.queryLatestRestingHeartRate { result in
+        service.queryLatestMeasurement(type: .restingHeartRate) { result in
             if case .failure(let error) = result, error is TestError {
                 expectation.fulfill()
             }
@@ -258,9 +261,9 @@ class RestingHeartRateServiceTests: XCTestCase {
                                               healthStore: mockHealthStore,
                                               queryProvider: mockQueryProvider,
                                               queryParser: mockQueryParser)
-        mockQueryParser.update = RestingHeartRateUpdate(date: Date(), value: 50.0)
+        mockQueryParser.update = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
         let expectation = expectation(description: "queryLatestRestingHeartRate's result should be success")
-        service.queryLatestRestingHeartRate { result in
+        service.queryLatestMeasurement(type: .restingHeartRate) { result in
             if case .success = result {
                 expectation.fulfill()
             }
@@ -366,12 +369,12 @@ class RestingHeartRateServiceTests: XCTestCase {
                                               queryParser: mockQueryParser)
 
         let now = Date()
-        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
-        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
-        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
-        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
-        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
-        service.handleHeartRateUpdate(update: RestingHeartRateUpdate(date: now, value: 120.0))
+        service.handleUpdate(update: GenericUpdate(date: now, value: 120.0, type: .restingHeartRate))
+        service.handleUpdate(update: GenericUpdate(date: now, value: 120.0, type: .restingHeartRate))
+        service.handleUpdate(update: GenericUpdate(date: now, value: 120.0, type: .restingHeartRate))
+        service.handleUpdate(update: GenericUpdate(date: now, value: 120.0, type: .restingHeartRate))
+        service.handleUpdate(update: GenericUpdate(date: now, value: 120.0, type: .restingHeartRate))
+        service.handleUpdate(update: GenericUpdate(date: now, value: 120.0, type: .restingHeartRate))
 
         let predicate = NSPredicate { mockNotificationService, _ in
             guard let mockNotificationService = mockNotificationService as? MockNotificationService else { return false }
@@ -389,7 +392,7 @@ class RestingHeartRateServiceTests: XCTestCase {
      */
     func testHandleHKUpdate_previousThanStored() throws {
         let now = Date()
-        let latestUpdate = RestingHeartRateUpdate(date: now, value: 50.0)
+        let latestUpdate = GenericUpdate(date: now, value: 50.0, type: .restingHeartRate)
         let data = try XCTUnwrap(JSONEncoder().encode(latestUpdate))
         userDefaults.set(data, forKey: "LatestRestingHeartRateUpdate")
 
@@ -398,8 +401,8 @@ class RestingHeartRateServiceTests: XCTestCase {
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
 
         // The update has _earlier_ date than the latest handled update.
-        let update = RestingHeartRateUpdate(date: Date().addingTimeInterval(-100), value: 100.0)
-        service.handleHeartRateUpdate(update: update)
+        let update = GenericUpdate(date: Date().addingTimeInterval(-100), value: 100.0, type: .restingHeartRate)
+        service.handleUpdate(update: update)
 
         let predicate = NSPredicate { service, _ in
             guard let service = service as? RestingHeartRateService else { return false }
@@ -411,7 +414,6 @@ class RestingHeartRateServiceTests: XCTestCase {
     }
 
     // MARK: - Multipliers and colors
-    
     func testHeartRateLevelForMultiplier() {
         let service = RestingHeartRateService()
         XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 50.0/50.0), .normal)
@@ -469,12 +471,12 @@ private class MockQueryProvider: QueryProvider {
 
     var mockResultHandler: ((HKStatisticsCollectionQuery, HKStatisticsCollection?, Error?) -> Void)?
 
-    override func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
+    override func getLatestMeasurement(for type: UpdateType, resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
         getLatestRestingHeartRateQueryCalled = true
-        let mockQuery = MockSampleQuery(sampleType: self.sampleTypeForRestingHeartRate,
+        let mockQuery = MockSampleQuery(sampleType: self.sampleTypeFor(.restingHeartRate),
                                         predicate: nil,
                                         limit: 1,
-                                        sortDescriptors: [self.sortDescriptorForLatestRestingHeartRate],
+                                        sortDescriptors: [self.sortDescriptor],
                                         resultsHandler: resultsHandler)
         return mockQuery
     }
@@ -510,7 +512,7 @@ private class MockStatisticCollectionQuery: HKStatisticsCollectionQuery {
 }
 
 private class MockQueryParser: QueryParser {
-    var update: RestingHeartRateUpdate?
+    var update: GenericUpdate?
     var error: Error?
     var queryResultsCalled = false
 
@@ -518,7 +520,8 @@ private class MockQueryParser: QueryParser {
         query: HKSampleQuery,
         results: [HKSample]?,
         error: Error?,
-        completion: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
+        type: UpdateType,
+        completion: @escaping (Result<GenericUpdate, Error>) -> Void) {
             queryResultsCalled = true
             if let error = error {
                 completion(.failure(error))
@@ -601,7 +604,6 @@ private class MockNotificationService: NotificationService {
         if let delay = delay {
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 self.postNotificationCalledCount += 1
-                print("postNotificationCalledCount = \(self.postNotificationCalledCount)")
                 completion?(.success(()))
             }
         } else {

@@ -8,6 +8,8 @@
 import Foundation
 import HealthKit
 import UIKit
+import Combine
+import SwiftUI
 
 enum Trend {
     case rising
@@ -22,7 +24,7 @@ enum Trend {
 }
 
 // swiftlint:disable type_body_length
-class RestingHeartRateService {
+class RestingHeartRateService: ObservableObject {
     /**
      These are mapped to `HKAuthorizationRequestStatus`
      */
@@ -36,12 +38,15 @@ class RestingHeartRateService {
     // UserDefaults and its keys
     private let userDefaults: UserDefaults
     private let averageRestingHeartRateKey = "AverageRestingHeartRate"
+    private let averageWristTemperatureKey = "AverageWristTemperature"
     private let latestRestingHeartRateUpdateKey = "LatestRestingHeartRateUpdate"
+    private let latestWristTemperatureUpdateKey = "LatestWristTemperatureUpdate"
     private let latestHighRHRNotificationPostDateKey = "LatestHighRHRNotificationPostDate"
     private let latestLoweredRHRNotificationPostDateKey = "LatestLoweredRHRNotificationPostDate"
     private let backgroundObserverQueryEnabledKey = "BackgroundObserverQueryEnabledKey"
 
-    private var latestRestingHeartRateUpdate: RestingHeartRateUpdate?
+    @Published private(set) var latestRestingHeartRateUpdate: Result<GenericUpdate, Error>?
+    @Published private(set) var latestWristTemperatureUpdate: Result<GenericUpdate, Error>?
 
     // If the latest update is this much above the avg. RHR, the notification will be triggered.
     var threshold: Double {
@@ -59,7 +64,7 @@ class RestingHeartRateService {
     private var isHandlingUpdate = false
 
     /// Pending updates that aren't handled yet. Used to resolve the issue where there can be multiple simultaneous `RestingHeartRateUpdate`s.
-    private var updateQueue: [RestingHeartRateUpdate] = []
+    private var updateQueue: [GenericUpdate] = []
 
     // Dependencies
     private let calendar: Calendar
@@ -73,16 +78,34 @@ class RestingHeartRateService {
 
     /// Handles the sending of local push notifications
     private let notificationService: NotificationService
-
     private var currentObserverQuery: HKObserverQuery?
 
-    var averageHeartRate: Double? {
+    @Published private(set) var averageHeartRatePublished: Double?
+    @Published private(set) var averageWristTemperaturePublished: Double?
+
+    private(set) var averageHeartRate: Double? {
         get {
             guard let avg = userDefaults.object(forKey: averageRestingHeartRateKey) else { return nil }
             return avg as? Double
         }
         set {
             userDefaults.set(newValue, forKey: averageRestingHeartRateKey)
+            averageHeartRatePublished = newValue
+        }
+    }
+
+    private(set) var averageWristTemperature: Double? {
+        get {
+            guard let avg = userDefaults.object(forKey: averageWristTemperatureKey) else { return nil }
+            return avg as? Double
+        }
+        set {
+            userDefaults.set(newValue, forKey: averageWristTemperatureKey)
+            DispatchQueue.main.async {
+                self.averageWristTemperaturePublished = newValue
+                self.objectWillChange.send()
+            }
+
         }
     }
 
@@ -146,19 +169,22 @@ class RestingHeartRateService {
     /**
      Decodes the latest RHR update from UserDefaults
      */
-    private func decodeLatestRestingHeartRateUpdate() -> RestingHeartRateUpdate? {
+    private func decodeLatestRestingHeartRateUpdate() -> Result<GenericUpdate, Error>? {
         guard let data = userDefaults.data(forKey: latestRestingHeartRateUpdateKey) else { return nil }
 
         let decoder = JSONDecoder()
-        let update = try? decoder.decode(RestingHeartRateUpdate.self, from: data)
-
-        return update
+        do {
+            let update = try decoder.decode(GenericUpdate.self, from: data)
+            return .success(update)
+        } catch {
+            return .failure(error)
+        }
     }
 
     /**
      - returns true if the heart rate is above the average
      */
-    func heartRateIsAboveAverage(update: RestingHeartRateUpdate, average: Double) -> Bool {
+    func heartRateIsAboveAverage(update: GenericUpdate, average: Double) -> Bool {
         return update.value / average > threshold
     }
 
@@ -183,10 +209,49 @@ class RestingHeartRateService {
         healthStore.execute(query)
     }
 
+    func queryAverageWristTemperature(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
+        let now = Date()
+        let queryStartDate = now.addingTimeInterval(-60 * 60 * 24 * 60)
+        let query = queryProvider.getAverageWristTemperatureQuery(queryStartDate: queryStartDate)
+
+        query.initialResultsHandler = { query, results, error in
+            self.queryParser.parseAverageWristTemperatureQueryResults(startDate: queryStartDate,
+                                                                      endDate: now,
+                                                                      query: query,
+                                                                      result: results,
+                                                                      error: error,
+                                                                      callback: { result in
+                if case .success(let value) = result {
+                    self.averageWristTemperature = value
+                }
+                averageRHRCallback(result)
+            })
+        }
+        healthStore.execute(query)
+    }
+
+    func handleUpdate(update: GenericUpdate) {
+        switch update.type {
+        case .restingHeartRate: handleHeartRateUpdate(update: update)
+        case .wristTemperature: handleWristTemperatureUpdate(update: update)
+        }
+    }
+    func handleUpdateFailure(error: Error, type: UpdateType) {
+        switch type {
+        case .restingHeartRate: latestRestingHeartRateUpdate = .failure(error)
+        case .wristTemperature: latestWristTemperatureUpdate = .failure(error)
+        }
+    }
+
+    private func handleWristTemperatureUpdate(update: GenericUpdate) {
+        self.latestWristTemperatureUpdate = .success(update)
+        // TODO: maybe send notifications
+    }
+
     /**
      Decides if a notification needs to be sent about the update. If the update isn't above the average, the update will be ignored.
      */
-    func handleHeartRateUpdate(update: RestingHeartRateUpdate) {
+    private func handleHeartRateUpdate(update: GenericUpdate) {
         guard let averageHeartRate = averageHeartRate else {
             // No avg HR, the app cannot do the comparison
             return
@@ -207,8 +272,8 @@ class RestingHeartRateService {
         isHandlingUpdate = true
 
         // Check if the date is later than the last saved rate update
-        if let previousUpdate = latestRestingHeartRateUpdate {
-            guard update.date > previousUpdate.date else {
+        if let previousUpdate = latestRestingHeartRateUpdate, case .success(let res) = previousUpdate {
+            guard update.date > res.date else {
                 // The update is earlier than the latest, so no need to compare
                 // This can be ignored
                 isHandlingUpdate = false
@@ -218,7 +283,7 @@ class RestingHeartRateService {
         }
 
         // Save the update so its date can be compared to the next updates
-        self.latestRestingHeartRateUpdate = update
+        self.latestRestingHeartRateUpdate = .success(update)
 
         let isAboveAverageRHR = heartRateIsAboveAverage(update: update, average: averageHeartRate)
 
@@ -267,7 +332,7 @@ class RestingHeartRateService {
 
         print("Handling pending update")
         let update = updateQueue.removeFirst()
-        handleHeartRateUpdate(update: update)
+        handleUpdate(update: update)
     }
 
     private func saveNotificationPostDate(forTrend trend: Trend) {
@@ -317,14 +382,19 @@ class RestingHeartRateService {
 
             guard error == nil else { return }
 
-            self.queryLatestRestingHeartRate { result in
-
+            self.queryLatestMeasurement(type: .restingHeartRate, completionHandler: { result in
                 if case .success(let update) = result {
-                    self.handleHeartRateUpdate(update: update)
+                    self.handleUpdate(update: update)
                 }
-
                 completionHandler()
-            }
+            })
+
+            self.queryLatestMeasurement(type: .wristTemperature, completionHandler: { result in
+                if case .success(let update) = result {
+                    self.handleUpdate(update: update)
+                }
+                completionHandler()
+            })
         }
         healthStore.execute(observerQuery)
 
@@ -342,21 +412,30 @@ class RestingHeartRateService {
                }
     }
 
-    func queryLatestRestingHeartRate(completionHandler: @escaping (Result<RestingHeartRateUpdate, Error>) -> Void) {
-        let sampleQuery = queryProvider.getLatestRestingHeartRateQuery { query, results, error in
+    func queryLatestMeasurement(type: UpdateType, completionHandler: @escaping (Result<GenericUpdate, Error>) -> Void) {
+        let sampleQuery = queryProvider.getLatestMeasurement(for: type, resultsHandler: { query, results, error in
             self.queryParser.parseLatestRestingHeartRateQueryResults(
                 query: query,
                 results: results,
-                error: error) { result in
+                error: error,
+                type: type) { result in
                     // Verify the latest update from HealthKit is later than the previously handled.
                     // If not, pass the last handled update instead.
                     // Consider adding a Boolean flag indicating the update is "cached".
 
-                    if case .success(let update) = result {
-                        self.handleHeartRateUpdate(update: update)
+                    switch result {
+                    case .success(let update):
+                        self.handleUpdate(update: update)
+                    case .failure(let error):
+                        self.handleUpdateFailure(error: error, type: type)
+                    }
+                    let latestUpdateForType: Result<GenericUpdate, any Error>?
+                    switch type {
+                    case .restingHeartRate: latestUpdateForType = self.latestRestingHeartRateUpdate
+                    case .wristTemperature: latestUpdateForType = self.latestWristTemperatureUpdate
                     }
 
-                    if case .success(let update) = result, let latestUpdate = self.latestRestingHeartRateUpdate {
+                    if case .success(let update) = result, let latestUpdateForType = latestUpdateForType, case .success(let latestUpdate) = latestUpdateForType {
                         if update.date > latestUpdate.date {
                             completionHandler(.success(update))
                         } else {
@@ -366,7 +445,7 @@ class RestingHeartRateService {
                         completionHandler(result)
                     }
             }
-        }
+        })
 
         healthStore.execute(sampleQuery)
     }
@@ -374,7 +453,8 @@ class RestingHeartRateService {
     // MARK: - HealthKit permissions
 
     func requestAuthorisation(completion: @escaping (Bool, Error?) -> Void) {
-        let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
+        let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
+                       HKObjectType.quantityType(forIdentifier: .appleSleepingWristTemperature)!])
         healthStore.requestAuthorization(toShare: [], read: rhr) { (success, error) in
             completion(success, error)
         }
