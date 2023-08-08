@@ -295,9 +295,7 @@ class RestingHeartRateService: ObservableObject {
 
         if !hasPostedAboutRisingNotificationToday(type: .wristTemperature) {
             trend = .rising
-            message = notificationMessage(trend: .rising,
-                                          heartRate: update.value,
-                                          averageHeartRate: averageWristTemperature)
+            message = wristTemperatureNotificationMessage(temperature: update.value, averageTemperature: averageWristTemperature)
         } else {
             isHandlingUpdate = false
             handleNextItemFromQueueIfNeeded()
@@ -305,7 +303,6 @@ class RestingHeartRateService: ObservableObject {
         }
 
         guard let message = message else { return }
-
 
         notificationService.postNotification(
             title: wristTemperatureNotificationTitle(
@@ -367,7 +364,7 @@ class RestingHeartRateService: ObservableObject {
         if isAboveAverageRHR {
             if !hasPostedAboutRisingNotificationToday(type: .restingHeartRate) {
                 trend = .rising
-                message = notificationMessage(trend: .rising,
+                message = restingHeartRateNotificationMessage(trend: .rising,
                                               heartRate: update.value,
                                               averageHeartRate: averageHeartRate)
             }
@@ -375,7 +372,7 @@ class RestingHeartRateService: ObservableObject {
             // RHR has been high, now it's lowered.
             if !hasPostedAboutLoweredNotificationToday, hasPostedAboutRisingNotificationToday(type: .restingHeartRate) {
                 trend = .lowering
-                message = notificationMessage(trend: .lowering,
+                message = restingHeartRateNotificationMessage(trend: .lowering,
                                               heartRate: update.value,
                                               averageHeartRate: averageHeartRate)
             }
@@ -409,14 +406,14 @@ class RestingHeartRateService: ObservableObject {
     }
 
     private func saveNotificationPostDate(forTrend trend: Trend, type: UpdateType) {
-        if trend == .rising {
-            switch type {
-            case .restingHeartRate: latestHighRHRNotificationPostDate = Date()
-            case .wristTemperature: latestWristTemperatureNotificationPostDate = Date()
+        switch type {
+        case .restingHeartRate:
+            if trend == .rising {
+                latestHighRHRNotificationPostDate = Date()
+            } else if trend == .lowering {
+                latestLoweredRHRNotificationPostDate = Date()
             }
-
-        } else if trend == .lowering {
-            latestLoweredRHRNotificationPostDate = Date()
+        case .wristTemperature: latestWristTemperatureNotificationPostDate = Date()
         }
     }
 
@@ -429,7 +426,11 @@ class RestingHeartRateService: ObservableObject {
         return String(format: "Your wrist temperature is elevated: %.1f°C", temperature)
     }
 
-    func notificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String? {
+    func wristTemperatureNotificationMessage(temperature: Double, averageTemperature: Double) -> String {
+        return String(format: "It's %.1f°C above the average", temperature - averageTemperature)
+    }
+
+    func restingHeartRateNotificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String? {
         switch trend {
         case .rising:
             return heartRateAnalysisText(current: heartRate, average: averageHeartRate) + " " + "You should slow down."
