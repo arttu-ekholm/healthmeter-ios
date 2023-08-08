@@ -96,27 +96,33 @@ struct HeartView: View {
                 Image(systemName: "thermometer.medium")
                     .font(.title2)
                     .bold()
-                    .foregroundColor(viewModel.wristTemperatureColor)
+                    .foregroundColor(viewModel.rhrDisabled ? .gray: viewModel.wristTemperatureColor)
                     .frame(width: 36)
                 VStack(alignment: .leading, content: {
                     HStack {
                         Text("Wrist temperature")
                             .font(.title2)
                             .bold()
+                            .foregroundColor(viewModel.wristTemperatureDisabled ? .gray : .black)
                         Spacer()
                         Text(viewModel.wristTemperatureStatusDisplayText)
                             .foregroundColor(viewModel.wristTemperatureColor)
                             .font(.title2)
                             .bold()
                     }
-                    HStack {
-                        Text("Current")
-                        Text(viewModel.wristTemperatureCurrentDisplayText)
-                            .foregroundColor(viewModel.wristTemperatureColor)
-                            .bold()
-                        Spacer()
+                    if viewModel.wristTemperatureDisabled {
+                        Text("Failed to fetch measurement")
+                            .foregroundColor(.gray)
+                    } else {
+                        HStack {
+                            Text("Current")
+                            Text(viewModel.wristTemperatureCurrentDisplayText)
+                                .foregroundColor(viewModel.wristTemperatureColor)
+                                .bold()
+                            Spacer()
 
-                        Text(viewModel.wristTemperatureDiffDisplayText)
+                            Text(viewModel.wristTemperatureDiffDisplayText)
+                        }
                     }
                 })
             }
