@@ -198,7 +198,7 @@ class RestingHeartRateService: ObservableObject {
     }
 
     func wristTemperatureIsAboveAverage(update: GenericUpdate, average: Double) -> Bool {
-        return update.value / average > 1.0
+        return update.value - average > 1.0
     }
 
     func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
