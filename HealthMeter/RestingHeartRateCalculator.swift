@@ -44,7 +44,7 @@ class RestingHeartRateCalculator {
             }
         }
 
-        guard !avgValues.isEmpty else { throw RestingHeartRateCalculatorError.emptyCollection } // TODO:
+        guard !avgValues.isEmpty else { throw RestingHeartRateCalculatorError.emptyCollection }
 
         let avgRestingValue = avgValues.reduce(0.0, { partialResult, next in
             return partialResult + next

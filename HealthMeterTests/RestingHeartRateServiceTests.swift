@@ -89,7 +89,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
         let predicate = NSPredicate { service, _ in
             guard let service = service as? RestingHeartRateService else { return false }
-            return service.hasPostedAboutRisingNotificationToday
+            return service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate)
         }
         _ = expectation(for: predicate, evaluatedWith: service, handler: .none)
 
@@ -110,7 +110,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
         let risingNotificationCalled = NSPredicate { service, _ in
             guard let service = service as? RestingHeartRateService else { return false }
-            return service.hasPostedAboutRisingNotificationToday
+            return service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate)
         }
 
         let loweredNotificationCalled = NSPredicate { service, _ in
@@ -133,7 +133,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         let update = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
         service.handleUpdate(update: update)
 
-        XCTAssertFalse(service.hasPostedAboutRisingNotificationToday)
+        XCTAssertFalse(service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate))
         XCTAssertFalse(service.hasPostedAboutLoweredNotificationToday)
     }
 
@@ -155,7 +155,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         service.handleUpdate(update: loweringUpdate2)
         XCTAssertEqual(notificationService.postNotificationCalledCount, 2, "Only two notifications should be sent - one for high RHR and and another for lowered RRH")
 
-        XCTAssertTrue(service.hasPostedAboutRisingNotificationToday)
+        XCTAssertTrue(service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate))
         XCTAssertTrue(service.hasPostedAboutLoweredNotificationToday)
     }
 
@@ -406,7 +406,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
         let predicate = NSPredicate { service, _ in
             guard let service = service as? RestingHeartRateService else { return false }
-            return !service.hasPostedAboutRisingNotificationToday
+            return !service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate)
         }
         _ = expectation(for: predicate, evaluatedWith: service, handler: .none)
 
@@ -425,12 +425,12 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     func testNotificationTitleContainsColorEmoji() {
         let service = RestingHeartRateService()
-        XCTAssertTrue(service.notificationTitle(trend: .lowering, heartRate: 30, averageHeartRate: 50).contains("🟩"))
-        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 50, averageHeartRate: 50).contains("🟩"))
-        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 53, averageHeartRate: 50).contains("🟨"))
-        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 56, averageHeartRate: 50).contains("🟧"))
-        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 70, averageHeartRate: 50).contains("🟥"))
-        XCTAssertTrue(service.notificationTitle(trend: .rising, heartRate: 100, averageHeartRate: 50).contains("🟥"))
+        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .lowering, heartRate: 30, averageHeartRate: 50).contains("🟩"))
+        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 50, averageHeartRate: 50).contains("🟩"))
+        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 53, averageHeartRate: 50).contains("🟨"))
+        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 56, averageHeartRate: 50).contains("🟧"))
+        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 70, averageHeartRate: 50).contains("🟥"))
+        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 100, averageHeartRate: 50).contains("🟥"))
     }
 }
 

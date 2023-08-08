@@ -80,7 +80,7 @@ extension InfoView {
         }
 
         var highRHRIsPostedToday: Bool {
-             return heartRateService.hasPostedAboutRisingNotificationToday
+            return heartRateService.hasPostedAboutRisingNotificationToday(type: .restingHeartRate)
         }
 
         var applicationVersionDisplayable: String {

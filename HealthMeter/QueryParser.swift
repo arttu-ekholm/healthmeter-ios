@@ -13,14 +13,14 @@ import HealthKit
  */
 class QueryParser {
     enum QueryParserError: LocalizedError {
-        case noLatestRestingHeartRateFound
-        case noRestingHeartRateStatisticsFound
+        case noLatestValueFound
+        case noStatisticsFound
 
         var errorDescription: String? {
             switch self {
-            case .noLatestRestingHeartRateFound:
+            case .noLatestValueFound:
                 return "No latest resting heart rate found."
-            case .noRestingHeartRateStatisticsFound:
+            case .noStatisticsFound:
                 return "No resting heart rate statistics found."
             }
         }
@@ -46,7 +46,7 @@ class QueryParser {
         }
 
         guard let sample = results?.last as? HKQuantitySample else {
-            completion(.failure(QueryParserError.noLatestRestingHeartRateFound))
+            completion(.failure(QueryParserError.noLatestValueFound))
             return
         }
 
@@ -64,7 +64,7 @@ class QueryParser {
         }
 
         guard let sample = results?.last as? HKQuantitySample else {
-            completion(.failure(QueryParserError.noLatestRestingHeartRateFound)) // TODO: other errors
+            completion(.failure(QueryParserError.noLatestValueFound))
             return
         }
 
@@ -84,7 +84,7 @@ class QueryParser {
         }
 
         guard let statsCollection = result else {
-            callback(.failure(QueryParserError.noRestingHeartRateStatisticsFound))
+            callback(.failure(QueryParserError.noStatisticsFound))
             return
         }
 
@@ -112,7 +112,7 @@ class QueryParser {
         }
 
         guard let statsCollection = result else {
-            callback(.failure(QueryParserError.noRestingHeartRateStatisticsFound)) // TODO:
+            callback(.failure(QueryParserError.noStatisticsFound))
             return
         }
 
@@ -141,7 +141,7 @@ class QueryParser {
         }
 
         guard let statsCollection = result else {
-            callback(.failure(QueryParserError.noRestingHeartRateStatisticsFound))
+            callback(.failure(QueryParserError.noStatisticsFound))
             return
         }
 
