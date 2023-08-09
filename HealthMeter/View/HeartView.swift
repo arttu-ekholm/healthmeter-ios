@@ -66,7 +66,7 @@ struct HeartView: View {
                     HStack {
                         Text("Resting heart rate")
                             .font(.title2)
-                            .foregroundColor(viewModel.rhrDisabled ? .gray : .black)
+                            .foregroundColor(viewModel.rhrDisabled ? .gray : .primary)
                             .bold()
                         Spacer()
                         Text(viewModel.rhrStatusDisplayText)
@@ -103,7 +103,7 @@ struct HeartView: View {
                         Text("Wrist temperature")
                             .font(.title2)
                             .bold()
-                            .foregroundColor(viewModel.wristTemperatureDisabled ? .gray : .black)
+                            .foregroundColor(viewModel.wristTemperatureDisabled ? .gray : .primary)
                         Spacer()
                         Text(viewModel.wristTemperatureStatusDisplayText)
                             .foregroundColor(viewModel.wristTemperatureColor)
