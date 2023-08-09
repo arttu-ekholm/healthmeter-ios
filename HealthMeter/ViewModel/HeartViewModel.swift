@@ -12,7 +12,6 @@ import Combine
 
 extension HeartView {
     class ViewModel: ObservableObject {
-
         @Published private var restingHeartRateService: RestingHeartRateService
         private let calendar: Calendar
         private let notificationCenter = UNUserNotificationCenter.current()
@@ -28,8 +27,16 @@ extension HeartView {
         @Published var avgWrist: Double?
         @Published var wristTemperature: Result<GenericUpdate, Error>?
 
+        @Published private (set) var missingMeasurementsIsDismissed: Bool = false
         var shouldShowMissingMeasurements: Bool {
-            return false // TODO: implement
+            if missingMeasurementsIsDismissed { return false }
+            if case .failure = rhr { return true }
+            if case .failure = wristTemperature { return true }
+            return false
+        }
+
+        func markMissingMeasurementsAsShown(_ state: Bool = true) {
+            missingMeasurementsIsDismissed = state
         }
 
         var rhrColor: Color? {
@@ -122,17 +129,8 @@ extension HeartView {
         var restingHeartRateDisplayText: String {
             switch rhr {
             case .success(let update):
-                guard let avg = avg else { return "" }
+                guard avg != nil else { return "" }
                 return String(format: "%.0f bpm", update.value)
-
-//                let diff = (update.value / avg) - 1
-//                let diffString = String(format: "%.0f", diff)
-//                if diff > 0.05 {
-//                    return "\(val) – elevated (\(diffString) bpm above the average)"
-//                } else {
-//                    let aboveBelow = diff > 0 ? "above" : "below"
-//                    return "\(val) - normal (\(diffString) bpm \(aboveBelow) the average)"
-//                }
             case .failure: return ""
             case nil: return ""
             }
@@ -141,17 +139,8 @@ extension HeartView {
         var wristTemperatureDisplayText: String {
             switch wristTemperature {
             case .success(let update):
-                guard let avgWrist else { return "" }
-                //let diff = update.value - avgWrist
-                //let diffString = String(format: "%.1f", diff)
+                guard avgWrist != nil else { return "" }
                 return String(format: "%.1f°C", update.value)
-                /*if diff > 1 {
-                    return "\(val) – elevated (\(diffString)°C above the average)"
-                } else {
-                    let aboveBelow = diff > 0 ? "above" : "below"
-                    return "\(val) – normal (\(diffString)°C \(aboveBelow) the average)"
-                }
-                 */
             case .failure: return ""
             case nil: return ""
             }
@@ -168,9 +157,9 @@ extension HeartView {
                 self.calendar = calendar
                 self.shouldReloadContents = shouldReloadContents
                 self.viewState = viewState
-                self.rhr = restingHeartRateService.latestRestingHeartRateUpdate
-                self.avg = restingHeartRateService.averageHeartRatePublished
-                self.wristTemperature = restingHeartRateService.latestWristTemperatureUpdate
+                self.rhr = heartRateService.latestRestingHeartRateUpdate
+                self.avg = heartRateService.averageHeartRatePublished
+                self.wristTemperature = heartRateService.latestWristTemperatureUpdate
                 restingHeartRateService.$averageWristTemperaturePublished.sink { [weak self] update in
                     self?.avgWrist = update
                 }
@@ -179,10 +168,8 @@ extension HeartView {
                     DispatchQueue.main.async {
                         self?.avg = update
                     }
-
                 }
                 .store(in: &cancellables)
-
             }
 
         var heartColor: Color {

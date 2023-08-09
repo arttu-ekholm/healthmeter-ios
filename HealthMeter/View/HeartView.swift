@@ -157,13 +157,20 @@ struct HeartView: View {
                             .font(.title3)
                             .bold()
                         Spacer()
-                        Image(systemName: "xmark")
-                            .bold()
+                        Button {
+                            withAnimation {
+                                viewModel.markMissingMeasurementsAsShown()
+                            }
+
+                        } label: {
+                            Image(systemName: "xmark")
+                                .bold()
+                        }
                     }
                     .padding(.bottom)
 
-                    Text("We're unable to fetch some of the measurements. Make sure you have authorised the reading of the measurements in the Settings app")
-                    Link("Settings app", destination: URL(string: UIApplication.openSettingsURLString)!)
+                    Text("We're unable to fetch some of the measurements. Make sure you have authorised the reading of the measurements in the Health app")
+                    Link("Health app", destination: URL(string: "x-apple-health://Sources/")!)
                         .bold()
                 }
                 .padding()
