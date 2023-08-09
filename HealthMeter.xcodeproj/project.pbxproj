@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		31EDA18512DBE2FD1206E778 /* Pods_HealthMeter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328A44247B8DB88843E90415 /* Pods_HealthMeter.framework */; };
 		4B2091B327A156DE00CCFD70 /* RestingHeartRateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */; };
 		4B2091B527A1571100CCFD70 /* RestingHeartRateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */; };
 		4B30734A2A83659400BD8C9D /* WhatsNewKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B3073492A83659400BD8C9D /* WhatsNewKit */; };
@@ -42,8 +41,6 @@
 		4BAD2D0727C76B8600BA2E96 /* Color+level.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BAD2D0627C76B8600BA2E96 /* Color+level.swift */; };
 		4BBE120027A9CDC200112638 /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BBE11FF27A9CDC200112638 /* NotificationService.swift */; };
 		4BBE120427A9CF7500112638 /* RestingHeartRateUpdate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */; };
-		B0D1D59A48472513632B5840 /* Pods_HealthMeter_HealthMeterUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F36688EB3F9AF3436C37254 /* Pods_HealthMeter_HealthMeterUITests.framework */; };
-		BCF7638A001B9B7E8ACE536A /* Pods_HealthMeterTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8433264F70474C935F15B810 /* Pods_HealthMeterTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,11 +61,6 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		214549E2381A2ABB61B8521B /* Pods-HealthMeterTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthMeterTests.release.xcconfig"; path = "Target Support Files/Pods-HealthMeterTests/Pods-HealthMeterTests.release.xcconfig"; sourceTree = "<group>"; };
-		2EE37A75F98BB7BA2697C88F /* Pods-HealthMeterTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthMeterTests.debug.xcconfig"; path = "Target Support Files/Pods-HealthMeterTests/Pods-HealthMeterTests.debug.xcconfig"; sourceTree = "<group>"; };
-		328A44247B8DB88843E90415 /* Pods_HealthMeter.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HealthMeter.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		3F36688EB3F9AF3436C37254 /* Pods_HealthMeter_HealthMeterUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HealthMeter_HealthMeterUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		453DBE6024B31BBF284557DF /* Pods-HealthMeter-HealthMeterUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthMeter-HealthMeterUITests.release.xcconfig"; path = "Target Support Files/Pods-HealthMeter-HealthMeterUITests/Pods-HealthMeter-HealthMeterUITests.release.xcconfig"; sourceTree = "<group>"; };
 		4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateService.swift; sourceTree = "<group>"; };
 		4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateServiceTests.swift; sourceTree = "<group>"; };
 		4B3946C827BB95CE004135CB /* Date+utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+utils.swift"; sourceTree = "<group>"; };
@@ -107,10 +99,6 @@
 		4BAD2D0627C76B8600BA2E96 /* Color+level.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Color+level.swift"; sourceTree = "<group>"; };
 		4BBE11FF27A9CDC200112638 /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		4BBE120327A9CF7500112638 /* RestingHeartRateUpdate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateUpdate.swift; sourceTree = "<group>"; };
-		5FEF0F53820219A54CECFB27 /* Pods-HealthMeter.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthMeter.release.xcconfig"; path = "Target Support Files/Pods-HealthMeter/Pods-HealthMeter.release.xcconfig"; sourceTree = "<group>"; };
-		661C9CDD3899A65111BF7B92 /* Pods-HealthMeter-HealthMeterUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthMeter-HealthMeterUITests.debug.xcconfig"; path = "Target Support Files/Pods-HealthMeter-HealthMeterUITests/Pods-HealthMeter-HealthMeterUITests.debug.xcconfig"; sourceTree = "<group>"; };
-		8433264F70474C935F15B810 /* Pods_HealthMeterTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HealthMeterTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C19B5E5510E3933F4B885F95 /* Pods-HealthMeter.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthMeter.debug.xcconfig"; path = "Target Support Files/Pods-HealthMeter/Pods-HealthMeter.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -119,7 +107,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				4BA14321279DA97D008884F0 /* HealthKit.framework in Frameworks */,
-				31EDA18512DBE2FD1206E778 /* Pods_HealthMeter.framework in Frameworks */,
 				4B30734A2A83659400BD8C9D /* WhatsNewKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -128,7 +115,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BCF7638A001B9B7E8ACE536A /* Pods_HealthMeterTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,7 +122,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				B0D1D59A48472513632B5840 /* Pods_HealthMeter_HealthMeterUITests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -146,12 +131,6 @@
 		43DA5DDFBD92BD39CE21B7C3 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				C19B5E5510E3933F4B885F95 /* Pods-HealthMeter.debug.xcconfig */,
-				5FEF0F53820219A54CECFB27 /* Pods-HealthMeter.release.xcconfig */,
-				661C9CDD3899A65111BF7B92 /* Pods-HealthMeter-HealthMeterUITests.debug.xcconfig */,
-				453DBE6024B31BBF284557DF /* Pods-HealthMeter-HealthMeterUITests.release.xcconfig */,
-				2EE37A75F98BB7BA2697C88F /* Pods-HealthMeterTests.debug.xcconfig */,
-				214549E2381A2ABB61B8521B /* Pods-HealthMeterTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -285,9 +264,6 @@
 			isa = PBXGroup;
 			children = (
 				4BA14320279DA97D008884F0 /* HealthKit.framework */,
-				328A44247B8DB88843E90415 /* Pods_HealthMeter.framework */,
-				3F36688EB3F9AF3436C37254 /* Pods_HealthMeter_HealthMeterUITests.framework */,
-				8433264F70474C935F15B810 /* Pods_HealthMeterTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -299,8 +275,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4BA14315279DA6B6008884F0 /* Build configuration list for PBXNativeTarget "HealthMeter" */;
 			buildPhases = (
-				105610C03F6C7E51271693F6 /* [CP] Check Pods Manifest.lock */,
-				4BA9503C27BA853F00B9D591 /* Run SwiftLint */,
 				4BA142ED279DA6B5008884F0 /* Sources */,
 				4BA142EE279DA6B5008884F0 /* Frameworks */,
 				4BA142EF279DA6B5008884F0 /* Resources */,
@@ -308,6 +282,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				4BF89CC02A841B79003AFB6B /* PBXTargetDependency */,
 			);
 			name = HealthMeter;
 			packageProductDependencies = (
@@ -321,7 +296,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4BA14318279DA6B6008884F0 /* Build configuration list for PBXNativeTarget "HealthMeterTests" */;
 			buildPhases = (
-				287AE8A9EEB7A7E58C58D28A /* [CP] Check Pods Manifest.lock */,
 				4BA142FD279DA6B6008884F0 /* Sources */,
 				4BA142FE279DA6B6008884F0 /* Frameworks */,
 				4BA142FF279DA6B6008884F0 /* Resources */,
@@ -340,7 +314,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4BA1431B279DA6B6008884F0 /* Build configuration list for PBXNativeTarget "HealthMeterUITests" */;
 			buildPhases = (
-				19B769477D28117F15754187 /* [CP] Check Pods Manifest.lock */,
 				4BA14307279DA6B6008884F0 /* Sources */,
 				4BA14308279DA6B6008884F0 /* Frameworks */,
 				4BA14309279DA6B6008884F0 /* Resources */,
@@ -389,6 +362,7 @@
 			mainGroup = 4BA142E8279DA6B5008884F0;
 			packageReferences = (
 				4B3073482A83659400BD8C9D /* XCRemoteSwiftPackageReference "WhatsNewKit" */,
+				4BF89CBE2A841B4B003AFB6B /* XCRemoteSwiftPackageReference "SwiftLintPlugin" */,
 			);
 			productRefGroup = 4BA142F2279DA6B5008884F0 /* Products */;
 			projectDirPath = "";
@@ -427,93 +401,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXShellScriptBuildPhase section */
-		105610C03F6C7E51271693F6 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HealthMeter-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		19B769477D28117F15754187 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HealthMeter-HealthMeterUITests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		287AE8A9EEB7A7E58C58D28A /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-HealthMeterTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		4BA9503C27BA853F00B9D591 /* Run SwiftLint */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Run SwiftLint";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\n\nif which swiftlint >/dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, download from https://github.com/realm/SwiftLint\"\nfi\n";
-		};
-/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		4BA142ED279DA6B5008884F0 /* Sources */ = {
@@ -578,6 +465,10 @@
 			isa = PBXTargetDependency;
 			target = 4BA142F0279DA6B5008884F0 /* HealthMeter */;
 			targetProxy = 4BA1430C279DA6B6008884F0 /* PBXContainerItemProxy */;
+		};
+		4BF89CC02A841B79003AFB6B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = 4BF89CBF2A841B79003AFB6B /* SwiftLint */;
 		};
 /* End PBXTargetDependency section */
 
@@ -700,7 +591,6 @@
 		};
 		4BA14316279DA6B6008884F0 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = C19B5E5510E3933F4B885F95 /* Pods-HealthMeter.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -737,7 +627,6 @@
 		};
 		4BA14317279DA6B6008884F0 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 5FEF0F53820219A54CECFB27 /* Pods-HealthMeter.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -774,7 +663,6 @@
 		};
 		4BA14319279DA6B6008884F0 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2EE37A75F98BB7BA2697C88F /* Pods-HealthMeterTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -795,7 +683,6 @@
 		};
 		4BA1431A279DA6B6008884F0 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 214549E2381A2ABB61B8521B /* Pods-HealthMeterTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -816,7 +703,6 @@
 		};
 		4BA1431C279DA6B6008884F0 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 661C9CDD3899A65111BF7B92 /* Pods-HealthMeter-HealthMeterUITests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -835,7 +721,6 @@
 		};
 		4BA1431D279DA6B6008884F0 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 453DBE6024B31BBF284557DF /* Pods-HealthMeter-HealthMeterUITests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
@@ -902,6 +787,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		4BF89CBE2A841B4B003AFB6B /* XCRemoteSwiftPackageReference "SwiftLintPlugin" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/lukepistrol/SwiftLintPlugin";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.52.4;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -909,6 +802,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 4B3073482A83659400BD8C9D /* XCRemoteSwiftPackageReference "WhatsNewKit" */;
 			productName = WhatsNewKit;
+		};
+		4BF89CBF2A841B79003AFB6B /* SwiftLint */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4BF89CBE2A841B4B003AFB6B /* XCRemoteSwiftPackageReference "SwiftLintPlugin" */;
+			productName = "plugin:SwiftLint";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
