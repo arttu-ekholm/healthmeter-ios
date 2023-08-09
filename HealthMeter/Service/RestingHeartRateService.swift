@@ -286,7 +286,7 @@ class RestingHeartRateService: ObservableObject {
         }
 
         // Save the update so its date can be compared to the next updates
-        self.latestRestingHeartRateUpdate = .success(update)
+        self.latestWristTemperatureUpdate = .success(update)
         let trend: Trend
         let message: String?
         let isAboveAverageWristTemperature = wristTemperatureIsAboveAverage(update: update, average: averageWristTemperature)
