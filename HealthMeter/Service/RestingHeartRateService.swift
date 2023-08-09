@@ -23,7 +23,7 @@ enum Trend {
     }
 }
 
-// swiftlint:disable type_body_length
+// swiftlint: disable type_body_length
 class RestingHeartRateService: ObservableObject {
     /**
      These are mapped to `HKAuthorizationRequestStatus`
@@ -121,7 +121,7 @@ class RestingHeartRateService: ObservableObject {
         }
     }
 
-    var latestWristTemperatureNotificationPostDate: Date? {
+    var latestWTNotificationPostDate: Date? {
         get {
             return userDefaults.object(forKey: latestHighWTNotificationPostDateKey) as? Date
         } set {
@@ -411,7 +411,7 @@ class RestingHeartRateService: ObservableObject {
             } else if trend == .lowering {
                 latestLoweredRHRNotificationPostDate = Date()
             }
-        case .wristTemperature: latestWristTemperatureNotificationPostDate = Date()
+        case .wristTemperature: latestWTNotificationPostDate = Date()
         }
     }
 
@@ -441,7 +441,7 @@ class RestingHeartRateService: ObservableObject {
         let date: Date?
         switch type {
         case .restingHeartRate: date = latestHighRHRNotificationPostDate
-        case .wristTemperature: date = latestWristTemperatureNotificationPostDate
+        case .wristTemperature: date = latestWTNotificationPostDate
         }
         guard let date else { return false }
 
@@ -636,6 +636,7 @@ class RestingHeartRateService: ObservableObject {
         return !backgroundObserverQueryEnabled
     }
 }
+// swiftlint: enable type_body_length
 
 struct RestingHeartRateHistory {
     let histogramItems: [RestingHeartRateHistogramItem]

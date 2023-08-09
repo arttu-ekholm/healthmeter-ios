@@ -21,7 +21,6 @@ class DummyHeartRateService: RestingHeartRateService {
         averageHeartRate = 57.0
     }
 
-
     override func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
         averageRHRCallback(.success(57.0))
     }

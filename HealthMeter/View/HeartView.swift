@@ -144,7 +144,6 @@ struct HeartView: View {
             }
 */
 
-
             if viewModel.shouldShowMissingMeasurements {
                 Divider()
                 VStack(alignment: .center, spacing: 12) {
@@ -183,9 +182,7 @@ struct HeartView: View {
                 NotificationsDisabledView(settingsAppURL: viewModel.settingsAppURL)
             }
 
-
             Spacer()
-
 
             //            Text("Resting heart rate")
             //            Text(viewModel.restingHeartRateDisplayText)

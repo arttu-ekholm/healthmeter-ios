@@ -11,6 +11,7 @@ import SwiftUI
 import Combine
 
 extension HeartView {
+    // swiftlint:disable type_body_length
     class ViewModel: ObservableObject {
         @Published private var restingHeartRateService: RestingHeartRateService
         private let calendar: Calendar
@@ -246,10 +247,8 @@ extension HeartView {
         }
 
         func requestLatestWristTemperature() {
-            restingHeartRateService.queryAverageWristTemperature { averageResult in
-                self.restingHeartRateService.queryLatestMeasurement(type: .wristTemperature) { _ in
-                    // TODO: maybe handle the success here
-                }
+            restingHeartRateService.queryAverageWristTemperature { _ in
+                self.restingHeartRateService.queryLatestMeasurement(type: .wristTemperature) { _ in }
             }
         }
 
@@ -325,4 +324,5 @@ extension HeartView {
             return restingHeartRateService.rangesForHeartRateLevels(average: averageHeartRate)
         }
     }
+    // swiftlint:enable type_body_length
 }

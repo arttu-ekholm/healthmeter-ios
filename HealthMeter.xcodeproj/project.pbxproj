@@ -25,7 +25,6 @@
 		4B83AE5227C4D1C000D16D69 /* TutorialViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B83AE5127C4D1C000D16D69 /* TutorialViewModel.swift */; };
 		4B8C2D4C27C4D2370059C108 /* Bundle+version.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8C2D4B27C4D2370059C108 /* Bundle+version.swift */; };
 		4B8C2D4F27C4D38A0059C108 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B8C2D4E27C4D38A0059C108 /* Haptics.swift */; };
-		4B9C1CDB2A7D1CB6009FDA85 /* UpdateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9C1CDA2A7D1CB6009FDA85 /* UpdateHandler.swift */; };
 		4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */; };
 		4BA142F7279DA6B5008884F0 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4BA142F6279DA6B5008884F0 /* ContentView.swift */; };
 		4BA142F9279DA6B6008884F0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4BA142F8279DA6B6008884F0 /* Assets.xcassets */; };
@@ -78,7 +77,6 @@
 		4B83AE5127C4D1C000D16D69 /* TutorialViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TutorialViewModel.swift; sourceTree = "<group>"; };
 		4B8C2D4B27C4D2370059C108 /* Bundle+version.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Bundle+version.swift"; sourceTree = "<group>"; };
 		4B8C2D4E27C4D38A0059C108 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
-		4B9C1CDA2A7D1CB6009FDA85 /* UpdateHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateHandler.swift; sourceTree = "<group>"; };
 		4BA142F1279DA6B5008884F0 /* HealthMeter.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthMeter.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4BA142F4279DA6B5008884F0 /* HealthMeterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthMeterApp.swift; sourceTree = "<group>"; };
 		4BA142F6279DA6B5008884F0 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -140,7 +138,6 @@
 			children = (
 				4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */,
 				4BBE11FF27A9CDC200112638 /* NotificationService.swift */,
-				4B9C1CDA2A7D1CB6009FDA85 /* UpdateHandler.swift */,
 			);
 			path = Service;
 			sourceTree = "<group>";
@@ -425,7 +422,6 @@
 				4BACE5C927ABB8A6009068F9 /* TutorialView.swift in Sources */,
 				4BACE5BF27AAC32A009068F9 /* QueryParser.swift in Sources */,
 				4B8C2D4F27C4D38A0059C108 /* Haptics.swift in Sources */,
-				4B9C1CDB2A7D1CB6009FDA85 /* UpdateHandler.swift in Sources */,
 				4BAD2D0727C76B8600BA2E96 /* Color+level.swift in Sources */,
 				4B83AE5227C4D1C000D16D69 /* TutorialViewModel.swift in Sources */,
 				4B3946D827BCDCDD004135CB /* SetttingsStore.swift in Sources */,

@@ -8,26 +8,6 @@
 import Foundation
 import HealthKit
 
-/**
- Wraps the relevant fields of `HKQuantitySample` object
- */
-/*
-struct RestingHeartRateUpdate: Codable {
-    let date: Date
-    let value: Double
-
-    init(sample: HKQuantitySample) {
-        self.date = sample.endDate
-        self.value = sample.quantity.doubleValue(for: HKUnit(from: "count/min"))
-    }
-
-    init(date: Date, value: Double) {
-        self.date = date
-        self.value = value
-    }
-}
- */
-
 enum UpdateType: Int, Codable {
     case wristTemperature
     case restingHeartRate
@@ -47,8 +27,6 @@ struct GenericUpdate: Codable {
             self.value = sample.quantity.doubleValue(for: HKUnit(from: "degC"))
         }
         self.type = type
-
-        //self.value = sample.quantity.doubleValue(for: HKUnit(from: "count/min"))
     }
 
     init(date: Date, value: Double, type: UpdateType) {
