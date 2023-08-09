@@ -12,30 +12,40 @@ struct InfoView: View {
     @StateObject var viewModel: ViewModel
 
     var body: some View {
-        VStack(alignment: .center, spacing: 12) {
-            HStack {
-                Spacer()
-                Button("Close") {
-                    Haptics().playHapticFeedbackEvent()
-                    dismiss()
-                }
-                .padding()
-            }
+        VStack(alignment: .center, spacing: 24) {
 
-            Toggle("Observe resting heart rate updates and receive notifications", isOn: $viewModel.backgroundObserverIsOn)
-                .alert("Observer and notifications disabled",
+            ZStack {
+                Text("Settings")
+                    .font(.title)
+                    .bold()
+                ZStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            Haptics().playHapticFeedbackEvent()
+                                dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .bold()
+                        }
+                    }
+
+                }
+            }
+            .padding(.bottom)
+
+            Toggle("Observe updates and receive notifications", isOn: $viewModel.backgroundObserverIsOn)
+                .alert("Observer and notifications are now disabled",
                        isPresented: $viewModel.presentAlert, actions: {
                     Button("OK", role: .cancel, action: {
                         viewModel.presentAlert = false
                     })
                 }) {
-                    Text("You won't see updates about your resting heart rate and won't receive notifications.")
+                    Text("You won't see updates about your elevated resting heart rate or wrist temperature, and you won't receive notifications about it.")
                 }
             Text(viewModel.backgroundObservationText)
                 .font(.footnote)
                 .foregroundColor(.secondary)
-
-            Spacer()
 
             VStack {
                 Text("How does Restful work?")
@@ -52,8 +62,6 @@ struct InfoView: View {
                 }
             }
 
-            Spacer()
-
             Text(viewModel.latestHighRHRNotificationDisplayString)
 
             Spacer()
@@ -65,7 +73,7 @@ struct InfoView: View {
     }
 }
 
-struct DebugView_Previews: PreviewProvider {
+struct InfoView_Previews: PreviewProvider {
     static var previews: some View {
         InfoView(viewModel: InfoView.ViewModel(heartRateService: RestingHeartRateService.shared))
     }
