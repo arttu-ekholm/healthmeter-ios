@@ -10,6 +10,7 @@
 		31EDA18512DBE2FD1206E778 /* Pods_HealthMeter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 328A44247B8DB88843E90415 /* Pods_HealthMeter.framework */; };
 		4B2091B327A156DE00CCFD70 /* RestingHeartRateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */; };
 		4B2091B527A1571100CCFD70 /* RestingHeartRateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */; };
+		4B30734A2A83659400BD8C9D /* WhatsNewKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B3073492A83659400BD8C9D /* WhatsNewKit */; };
 		4B3946C927BB95CE004135CB /* Date+utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946C827BB95CE004135CB /* Date+utils.swift */; };
 		4B3946CD27BB9C13004135CB /* NotificationCenterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946CC27BB9C13004135CB /* NotificationCenterTests.swift */; };
 		4B3946CF27BBA0DB004135CB /* HeartViewViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3946CE27BBA0DB004135CB /* HeartViewViewModelTests.swift */; };
@@ -119,6 +120,7 @@
 			files = (
 				4BA14321279DA97D008884F0 /* HealthKit.framework in Frameworks */,
 				31EDA18512DBE2FD1206E778 /* Pods_HealthMeter.framework in Frameworks */,
+				4B30734A2A83659400BD8C9D /* WhatsNewKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -308,6 +310,9 @@
 			dependencies = (
 			);
 			name = HealthMeter;
+			packageProductDependencies = (
+				4B3073492A83659400BD8C9D /* WhatsNewKit */,
+			);
 			productName = HealthMeter;
 			productReference = 4BA142F1279DA6B5008884F0 /* HealthMeter.app */;
 			productType = "com.apple.product-type.application";
@@ -382,6 +387,9 @@
 				Base,
 			);
 			mainGroup = 4BA142E8279DA6B5008884F0;
+			packageReferences = (
+				4B3073482A83659400BD8C9D /* XCRemoteSwiftPackageReference "WhatsNewKit" */,
+			);
 			productRefGroup = 4BA142F2279DA6B5008884F0 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -718,7 +726,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = fi.bitodi.heartmeter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -755,7 +763,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.2;
+				MARKETING_VERSION = 1.3.0;
 				PRODUCT_BUNDLE_IDENTIFIER = fi.bitodi.heartmeter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -884,6 +892,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4B3073482A83659400BD8C9D /* XCRemoteSwiftPackageReference "WhatsNewKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SvenTiigi/WhatsNewKit";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4B3073492A83659400BD8C9D /* WhatsNewKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4B3073482A83659400BD8C9D /* XCRemoteSwiftPackageReference "WhatsNewKit" */;
+			productName = WhatsNewKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4BA142E9279DA6B5008884F0 /* Project object */;
 }
