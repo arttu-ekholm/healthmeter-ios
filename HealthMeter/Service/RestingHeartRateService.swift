@@ -274,7 +274,6 @@ class RestingHeartRateService: ObservableObject {
 
         // Check if the date is later than the last saved rate update
         if let previousUpdate = latestWristTemperatureUpdate, case .success(let res) = previousUpdate {
-            /*
             guard update.date > res.date else {
                 // The update is earlier than the latest, so no need to compare
                 // This can be ignored
@@ -282,7 +281,6 @@ class RestingHeartRateService: ObservableObject {
                 handleNextItemFromQueueIfNeeded()
                 return
             }
-             */
         }
 
         // Save the update so its date can be compared to the next updates
