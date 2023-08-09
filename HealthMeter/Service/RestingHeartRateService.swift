@@ -274,6 +274,7 @@ class RestingHeartRateService: ObservableObject {
 
         // Check if the date is later than the last saved rate update
         if let previousUpdate = latestWristTemperatureUpdate, case .success(let res) = previousUpdate {
+            /*
             guard update.date > res.date else {
                 // The update is earlier than the latest, so no need to compare
                 // This can be ignored
@@ -281,6 +282,7 @@ class RestingHeartRateService: ObservableObject {
                 handleNextItemFromQueueIfNeeded()
                 return
             }
+             */
         }
 
         // Save the update so its date can be compared to the next updates
@@ -290,32 +292,30 @@ class RestingHeartRateService: ObservableObject {
         let isAboveAverageWristTemperature = wristTemperatureIsAboveAverage(update: update, average: averageWristTemperature)
 
         if isAboveAverageWristTemperature {
-
-        }
-
-        if !hasPostedAboutRisingNotificationToday(type: .wristTemperature) {
-            trend = .rising
-            message = wristTemperatureNotificationMessage(temperature: update.value, averageTemperature: averageWristTemperature)
-        } else {
-            isHandlingUpdate = false
-            handleNextItemFromQueueIfNeeded()
-            return
-        }
-
-        guard let message = message else { return }
-
-        notificationService.postNotification(
-            title: wristTemperatureNotificationTitle(
-                temperature: update.value,
-                averageTemperature: averageWristTemperature),
-            body: message) { result in
-                self.isHandlingUpdate = false
-                if case .success = result {
-                    self.saveNotificationPostDate(forTrend: trend, type: .wristTemperature)
-                }
-                // If the pending updates queue has more items, process them
-                self.handleNextItemFromQueueIfNeeded()
+            if !hasPostedAboutRisingNotificationToday(type: .wristTemperature) {
+                trend = .rising
+                message = wristTemperatureNotificationMessage(temperature: update.value, averageTemperature: averageWristTemperature)
+            } else {
+                isHandlingUpdate = false
+                handleNextItemFromQueueIfNeeded()
+                return
             }
+
+            guard let message = message else { return }
+
+            notificationService.postNotification(
+                title: wristTemperatureNotificationTitle(
+                    temperature: update.value,
+                    averageTemperature: averageWristTemperature),
+                body: message) { result in
+                    self.isHandlingUpdate = false
+                    if case .success = result {
+                        self.saveNotificationPostDate(forTrend: trend, type: .wristTemperature)
+                    }
+                    // If the pending updates queue has more items, process them
+                    self.handleNextItemFromQueueIfNeeded()
+                }
+        }
     }
 
     /**
