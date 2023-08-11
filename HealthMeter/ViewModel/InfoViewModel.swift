@@ -50,23 +50,6 @@ extension InfoView {
             """
         }
 
-        var notificationFootnoteString: String {
-            let thresholdRestingHeartRate: String
-            if let averageHeartRate = averageHeartRate {
-                thresholdRestingHeartRate = String(format: " The threshold for elevated resting heart rate level is  %.0f bpm.", averageHeartRate * heartRateService.threshold)
-            } else {
-                thresholdRestingHeartRate = ""
-            }
-
-            return """
-            Restful monitors your resting heart rate and wrist temperature levels on the background. If either appears to be elevated, the app sends you a notification.\(thresholdRestingHeartRate)
-
-            You'll receive only one notification about either event per day.
-
-            Restful doesn't need a network connection to function. It doesn't modify your records in the Health app. Restful doesn't collect your personal information or gather analytics.
-            """
-        }
-
         var latestHighRHRNotificationDisplayString: String {
             if let date = latestHighRHRNotificationPostDate {
                 return "Restful has notified you about elevated resting heart rate \(date.timeAgoDisplay())"

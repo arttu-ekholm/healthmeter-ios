@@ -13,38 +13,74 @@ struct InfoView: View {
 
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
-            VStack(alignment: .center, spacing: 24) {
-
+            ZStack {
+                Text("Settings and info")
+                    .font(.title)
+                    .bold()
                 ZStack {
-                    Text("Settings")
-                        .font(.title)
-                        .bold()
-                    ZStack {
-                        HStack {
-                            Spacer()
-                            Button {
-                                Haptics().playHapticFeedbackEvent()
-                                    dismiss()
-                            } label: {
-                                Image(systemName: "xmark")
-                                    .bold()
-                            }
+                    HStack {
+                        Spacer()
+                        Button {
+                            Haptics().playHapticFeedbackEvent()
+                                dismiss()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .bold()
                         }
-
                     }
+
                 }
-                .padding(.bottom)
+            }
+            .padding(.bottom)
+            VStack(alignment: .center, spacing: 24) {
+                /*
+                 return """
+                 Restful monitors your resting heart rate and wrist temperature levels on the background. If either appears to be elevated, the app sends you a notification.\(thresholdRestingHeartRate)
+
+                 You'll receive only one notification about either event per day.
+
+                 Restful doesn't need a network connection to function. It doesn't modify your records in the Health app. Restful doesn't collect your personal information or gather analytics.
+                 """
+                 */
 
                 VStack(alignment: .leading) {
                     Text("What does Restful do?")
-                        .font(.title2)
+                        .font(.title3)
                         .bold()
                         .padding(.bottom)
+                    VStack(spacing: 24) {
+                        HStack(spacing: 16) {
+                            Image(systemName: "figure.walk")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 36, height: 36)
+                                .foregroundColor(.accentColor)
+                            Text("Restful monitors your resting heart rate and wrist temperature levels on the background. The app notifies you if either seems to be elevated.")
+                                .font(.subheadline)
+                            Spacer()
+                        }
+                        HStack(spacing: 16) {
+                            Image(systemName: "bell.badge")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 36, height: 36)
+                                .foregroundColor(.accentColor)
+                            Text("The amount of notifications is limited to one per day for each measurement type.")
+                                .font(.subheadline)
+                            Spacer()
+                        }
+                        HStack(spacing: 16) {
+                            Image(systemName: "checkerboard.shield")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 36, height: 36)
+                                .foregroundColor(.accentColor)
+                            Text("Restful doesn't need a network connection to function. It doesn't modify your records in the Health app. Restful doesn't collect your personal information or gather analytics.")
+                                .font(.subheadline)
+                            Spacer()
 
-                    Text(viewModel.notificationFootnoteString)
-                        .font(.callout)
-                        .foregroundColor(.primary)
-
+                        }
+                    }
                     /*
                     if viewModel.highRHRIsPostedToday {
                         Text("You have received a notification about your elevated resting heart rate today.")
