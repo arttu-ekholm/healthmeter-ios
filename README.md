@@ -4,7 +4,7 @@ Get a push notification when your resting heart is elevated.
 
 ## About
 
-HealthMeter monitors the resting heart rate (RHR) from HealthKit and sends a push notification when the RHR is above your average. Everything is done locally on the device and the notifications are local notifications.
+HealthMeter monitors the resting heart rate (RHR) and resting wrist temperature from HealthKit and sends a push notification when either measurement is elevated. Everything is done locally on the device and the notifications are local notifications. The app doesn't require or use network connection.
 
 ## Requirements
 
@@ -16,7 +16,8 @@ I created this project for several reasons:
 1. I wanted to improve my skills with SwiftUI & MVVM architecture and animations
 2. to make an application with testable architecture
 3. to get an early warning when I might be getting a flu.
-4. I like the idea of having apps with minimal user interface that interact with the user via push notifications or widgets.
+4. I like the idea of having apps with minimal user interface that interact with the user via push notifications or widgets
+5. I'm too cheap to buy an Oura ring
 
 ## Installation and usage
 
@@ -24,8 +25,9 @@ Clone the project and run `pod install` in the project root. Build & run on an i
 
 ## External dependencies
 
-This project uses [CocoaPods](https://cocoapods.org) as external dependency manager. At the moment, the only dependency is [SwiftLint](https://github.com/realm/SwiftLint), which only helps to write well-formatted code.
+External dependencies are managed by Swift packages.
+
 
 ## App Store
 
-This project is also available in the App Store as [Restful - Heart rate monitor](https://apps.apple.com/fi/app/restful-heart-rate-monitor/id1610317388?l=en).
+The app is available for free in the App Store as [Restful - Heart rate monitor](https://apps.apple.com/fi/app/restful-heart-rate-monitor/id1610317388?l=en).
