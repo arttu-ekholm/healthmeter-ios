@@ -29,6 +29,8 @@ extension HeartView {
         @Published var wristTemperature: Result<GenericUpdate, Error>?
 
         @Published private (set) var missingMeasurementsIsDismissed: Bool = false
+        @Published private (set) var disabledNotificationsAlertIsDismissed: Bool = false
+
         var shouldShowMissingMeasurements: Bool {
             if missingMeasurementsIsDismissed { return false }
             if case .failure = rhr { return true }
@@ -38,6 +40,15 @@ extension HeartView {
 
         func markMissingMeasurementsAsShown(_ state: Bool = true) {
             missingMeasurementsIsDismissed = state
+        }
+
+        var shouldShowDisabledNotificationsAlert: Bool {
+            if disabledNotificationsAlertIsDismissed { return false }
+            return notificationsDenied
+        }
+
+        func markDisabledNotificationsAlertAsShown(_ state: Bool = true) {
+            disabledNotificationsAlertIsDismissed = state
         }
 
         var rhrColor: Color? {

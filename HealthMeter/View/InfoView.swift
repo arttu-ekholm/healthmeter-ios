@@ -10,7 +10,6 @@ import SwiftUI
 struct InfoView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject var viewModel: ViewModel
-
     var body: some View {
         ScrollView(.vertical, showsIndicators: true) {
             ZStack {
@@ -25,24 +24,13 @@ struct InfoView: View {
                                 dismiss()
                         } label: {
                             Image(systemName: "xmark")
-                                .bold()
+                                .font(.title2)
                         }
                     }
-
                 }
             }
             .padding(.bottom)
             VStack(alignment: .center, spacing: 24) {
-                /*
-                 return """
-                 Restful monitors your resting heart rate and wrist temperature levels on the background. If either appears to be elevated, the app sends you a notification.\(thresholdRestingHeartRate)
-
-                 You'll receive only one notification about either event per day.
-
-                 Restful doesn't need a network connection to function. It doesn't modify your records in the Health app. Restful doesn't collect your personal information or gather analytics.
-                 """
-                 */
-
                 VStack(alignment: .leading) {
                     Text("What does Restful do?")
                         .font(.title3)
@@ -65,7 +53,7 @@ struct InfoView: View {
                                 .scaledToFit()
                                 .frame(width: 36, height: 36)
                                 .foregroundColor(.accentColor)
-                            Text("The amount of notifications is limited to one per day for each measurement type.")
+                            Text("You will receive maximum of one notification per elevated measurement of each measurement type.")
                                 .font(.subheadline)
                             Spacer()
                         }
@@ -86,29 +74,33 @@ struct InfoView: View {
                         Text("You have received a notification about your elevated resting heart rate today.")
                     }
                      */
+                    Divider()
+                        .padding(.vertical)
+                    Text("Settings")
+                        .font(.title3)
+                        .bold()
+
+                    Toggle("Observe updates and receive notifications", isOn: $viewModel.backgroundObserverIsOn)
+                        .alert("Observer and notifications are now disabled",
+                               isPresented: $viewModel.presentAlert, actions: {
+                            Button("OK", role: .cancel, action: {
+                                viewModel.presentAlert = false
+                            })
+                        }) {
+                            Text("You won't see updates about your elevated resting heart rate or wrist temperature, and you won't receive notifications about it.")
+                        }
+                        .padding()
+                    Text(viewModel.backgroundObservationText)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .padding(.horizontal)
+
+                    Spacer(minLength: 40)
+                    Text(viewModel.applicationVersionDisplayable)
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+
                 }
-
-                Divider()
-
-                Toggle("Observe updates and receive notifications", isOn: $viewModel.backgroundObserverIsOn)
-                    .alert("Observer and notifications are now disabled",
-                           isPresented: $viewModel.presentAlert, actions: {
-                        Button("OK", role: .cancel, action: {
-                            viewModel.presentAlert = false
-                        })
-                    }) {
-                        Text("You won't see updates about your elevated resting heart rate or wrist temperature, and you won't receive notifications about it.")
-                    }
-                    .padding(.horizontal)
-                Text(viewModel.backgroundObservationText)
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal)
-
-                Spacer()
-                Text(viewModel.applicationVersionDisplayable)
-                    .font(.footnote)
-                    .foregroundColor(.secondary)
             }
         }
         .padding()
