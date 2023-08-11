@@ -197,8 +197,12 @@ class RestingHeartRateService: ObservableObject {
         return update.value / average > threshold
     }
 
-    func wristTemperatureIsAboveAverage(update: GenericUpdate, average: Double) -> Bool {
-        return update.value - average > 1.0
+    func wristTemperatureIsAboveAverage(update: GenericUpdate, average: Double, locale: Locale = .current) -> Bool {
+        if locale.measurementSystem == .us {
+            return update.value - average > 1.8
+        } else {
+            return update.value - average > 1.0
+        }
     }
 
     func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
@@ -421,11 +425,11 @@ class RestingHeartRateService: ObservableObject {
     }
 
     func wristTemperatureNotificationTitle(temperature: Double, averageTemperature: Double) -> String {
-        return String(format: "Your wrist temperature is elevated: %.1f°C", temperature)
+        return String(format: "Your wrist temperature is elevated: %.1f\(Locale.current.temperatureSymbol)", temperature)
     }
 
     func wristTemperatureNotificationMessage(temperature: Double, averageTemperature: Double) -> String {
-        return String(format: "It's %.1f°C above the average", temperature - averageTemperature)
+        return String(format: "It's %.1f\(Locale.current.temperatureSymbol) above the average", temperature - averageTemperature)
     }
 
     func restingHeartRateNotificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String? {

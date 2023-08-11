@@ -34,9 +34,14 @@ class RestingHeartRateCalculator {
         return avgRestingValue
     }
 
-    func averageWristTemperature(fromStatsCollection statsCollection: HKStatisticsCollection, startDate: Date, endDate: Date) throws -> Double {
+    func averageWristTemperature(fromStatsCollection statsCollection: HKStatisticsCollection, startDate: Date, endDate: Date, locale: Locale = .current) throws -> Double {
         var avgValues = [Double]()
-        let unit = HKUnit(from: "degC")
+        let unit: HKUnit
+        if locale.measurementSystem == .us {
+            unit = HKUnit.degreeFahrenheit()
+        } else {
+            unit = HKUnit.degreeCelsius()
+        }
         statsCollection.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
             if let quantity = statistics.averageQuantity() {
                 let value = quantity.doubleValue(for: unit)

@@ -18,13 +18,18 @@ struct GenericUpdate: Codable {
     let value: Double
     let type: UpdateType
 
-    init(sample: HKQuantitySample, type: UpdateType) {
+    init(sample: HKQuantitySample, type: UpdateType, locale: Locale = Locale.current) {
         self.date = sample.endDate
         switch type {
         case .restingHeartRate:
             self.value = sample.quantity.doubleValue(for: HKUnit(from: "count/min"))
         case .wristTemperature:
-            self.value = sample.quantity.doubleValue(for: HKUnit(from: "degC"))
+            if locale.measurementSystem == .us {
+                self.value = sample.quantity.doubleValue(for: HKUnit.degreeFahrenheit())
+            } else {
+                self.value = sample.quantity.doubleValue(for: HKUnit.degreeCelsius())
+            }
+
         }
         self.type = type
     }

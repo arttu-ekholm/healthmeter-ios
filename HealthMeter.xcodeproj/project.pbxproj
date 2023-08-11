@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4B0907172A850DF400DCBD92 /* Locale+utils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B0907162A850DF400DCBD92 /* Locale+utils.swift */; };
 		4B2091B327A156DE00CCFD70 /* RestingHeartRateService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */; };
 		4B2091B527A1571100CCFD70 /* RestingHeartRateServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */; };
 		4B30734A2A83659400BD8C9D /* WhatsNewKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4B3073492A83659400BD8C9D /* WhatsNewKit */; };
@@ -60,6 +61,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4B0907162A850DF400DCBD92 /* Locale+utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Locale+utils.swift"; sourceTree = "<group>"; };
 		4B2091B227A156DE00CCFD70 /* RestingHeartRateService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateService.swift; sourceTree = "<group>"; };
 		4B2091B427A1571100CCFD70 /* RestingHeartRateServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RestingHeartRateServiceTests.swift; sourceTree = "<group>"; };
 		4B3946C827BB95CE004135CB /* Date+utils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Date+utils.swift"; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 				4B8C2D4B27C4D2370059C108 /* Bundle+version.swift */,
 				4B8C2D4E27C4D38A0059C108 /* Haptics.swift */,
 				4BAD2D0627C76B8600BA2E96 /* Color+level.swift */,
+				4B0907162A850DF400DCBD92 /* Locale+utils.swift */,
 			);
 			path = Util;
 			sourceTree = "<group>";
@@ -415,6 +418,7 @@
 				4BBE120427A9CF7500112638 /* RestingHeartRateUpdate.swift in Sources */,
 				4B8C2D4C27C4D2370059C108 /* Bundle+version.swift in Sources */,
 				4B3946C927BB95CE004135CB /* Date+utils.swift in Sources */,
+				4B0907172A850DF400DCBD92 /* Locale+utils.swift in Sources */,
 				4BA142F5279DA6B5008884F0 /* HealthMeterApp.swift in Sources */,
 				4B3946DA27BD2C98004135CB /* MockHeartViewModel.swift in Sources */,
 				4B83AE4E27C4D15600D16D69 /* HeartViewModel.swift in Sources */,
