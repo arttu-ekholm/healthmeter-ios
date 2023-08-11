@@ -100,7 +100,7 @@ extension HeartView {
 
         var wristTemperatureCurrentDisplayText: String {
             if case .success(let update) = wristTemperature {
-                return String(format: "%.1f\(Locale.current.temperatureSymbol)", update.value)
+                return String(format: "%.1f°\(Locale.current.temperatureSymbol)", update.value)
             } else {
                 return ""
             }
@@ -112,7 +112,7 @@ extension HeartView {
                 guard let avgWrist else { return "" }
                 let aboveBelow = update.value > avgWrist ? "above" : "below"
                 let diff = abs(update.value - avgWrist)
-                return String(format: "%.1f\(Locale.current.temperatureSymbol) \(aboveBelow) average", diff)
+                return String(format: "%.1f°\(Locale.current.temperatureSymbol) \(aboveBelow) average", diff)
             case .failure: return ""
             case nil: return ""
             }

@@ -425,11 +425,11 @@ class RestingHeartRateService: ObservableObject {
     }
 
     func wristTemperatureNotificationTitle(temperature: Double, averageTemperature: Double) -> String {
-        return String(format: "Your wrist temperature is elevated: %.1f\(Locale.current.temperatureSymbol)", temperature)
+        return String(format: "Your wrist temperature is elevated: %.1f°\(Locale.current.temperatureSymbol)", temperature)
     }
 
     func wristTemperatureNotificationMessage(temperature: Double, averageTemperature: Double) -> String {
-        return String(format: "It's %.1f\(Locale.current.temperatureSymbol) above the average", temperature - averageTemperature)
+        return String(format: "It's %.1f°\(Locale.current.temperatureSymbol) above the average", temperature - averageTemperature)
     }
 
     func restingHeartRateNotificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String? {
