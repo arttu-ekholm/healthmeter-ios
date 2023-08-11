@@ -19,45 +19,76 @@ struct TutorialView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12.0) {
-            HStack {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 12.0) {
+                HStack {
+                    Spacer()
+                    Text("Welcome to Restful")
+                        .font(.title)
+                        .bold()
+                        .padding()
+                    Spacer()
+                }
+
+                Text("Restful tracks your resting heart rate and your sleeping wrist temperature and notifies you if either rises above your normal level.")
+                Text("Elevated resting heart rate might be a sign of illness or stress.")
                 Spacer()
-                Text("Restful")
-                    .font(.title)
+                ZStack {
+                    Divider()
+                    Image(systemName:  "heart.fill")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+
+                        .foregroundColor(.green)
+                        .padding(.horizontal)
+                }
+
+                Spacer()
+                Text("Setting up Restful contains three steps")
+                    .font(.headline)
                     .bold()
-                    .padding()
-                Spacer()
-            }
-            Spacer()
+                    .padding(.bottom)
 
-            Text("Restful tracks your resting heart rate and notifies you if it rises above normal level. Higher than usual resting heart rate might be a sign of an illness.")
-            Text("To make Restful work, you need three things:")
-                .bold()
-                .padding()
+                HStack {
+                    Image(systemName: viewModel.authorized ? "checkmark" : "")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .fontWeight(viewModel.currentPhase == .authorizeHealthKit ? .semibold : .regular)
+                        .foregroundColor(.green)
+                        .padding(.horizontal)
+                    Text("Allow Restful to read from Health app.")
+                        .font(.subheadline)
+                        .fontWeight(viewModel.currentPhase == .authorizeHealthKit ? .semibold : .regular)
+                }
+                HStack {
+                    Image(systemName: viewModel.notificationsEnabled ? "checkmark" : "")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(.green)
+                        .fontWeight(viewModel.currentPhase == .allowPushNotifications ? .semibold : .regular)
+                        .padding()
+                    Text("Enable push notifications")
+                        .font(.subheadline)
+                        .fontWeight(viewModel.currentPhase == .allowPushNotifications ? .semibold : .regular)
+                }
+                HStack {
+                    Image(systemName: "")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundColor(.green)
+                        .fontWeight(viewModel.currentPhase == .allDone ? .semibold : .regular)
+                        .padding()
+                    Text("Make sure you have an activity watch that records resting heart rate and wrist temperature, such as Apple Watch.")
+                        .font(.subheadline)
+                        .fontWeight(viewModel.currentPhase == .allDone ? .semibold : .regular)
+                }
+                .padding(.bottom)
+            }
 
-            HStack {
-                Image(systemName: viewModel.authorized ? "checkmark.square" : "square")
-                    .foregroundColor(.blue)
-                    .padding()
-                Text("Allow Restful to read resting heart rate from HealthKit.")
-                    .fontWeight(viewModel.currentPhase == .authorizeHealthKit ? .bold : .regular)
-            }
-            HStack {
-                Image(systemName: viewModel.notificationsEnabled ? "checkmark.square" : "square")
-                    .foregroundColor(.blue)
-                    .padding()
-                Text("Have push notifications enabled.")
-                    .fontWeight(viewModel.currentPhase == .allowPushNotifications ? .bold : .regular)
-            }
-            HStack {
-                Image(systemName: "square")
-                    .foregroundColor(.blue)
-                    .padding()
-                Text("A device that records resting heart rate, such as Apple Watch.")
-                    .fontWeight(viewModel.currentPhase == .allDone ? .bold : .regular)
-            }
-
-            .padding(.bottom)
             Spacer()
             HStack(alignment: .center) {
                 Spacer()
@@ -67,7 +98,7 @@ struct TutorialView: View {
                     Button {
                         viewModel.authorizeHealthKit()
                     } label: {
-                        Text("Authorise HealthKit")
+                        Text("Authorise Health app")
                             .bold()
                     }
                     .font(.title2)
@@ -105,7 +136,7 @@ struct TutorialView: View {
                         settingsStore.tutorialShown = true
                         dismiss()
                     } label: {
-                        Text("Start using the app")
+                        Text("Done")
                             .bold()
                     }
                     .font(.title2)
