@@ -13,7 +13,7 @@ enum UpdateType: Int, Codable {
     case restingHeartRate
 }
 
-struct GenericUpdate: Codable {
+struct GenericUpdate: Codable, Equatable {
     let date: Date
     let value: Double
     let type: UpdateType

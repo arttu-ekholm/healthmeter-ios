@@ -53,8 +53,13 @@ class QueryProvider {
         return sampleQuery
     }
 
-    func getObserverQuery(updateHandler: @escaping (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void) -> HKObserverQuery {
-        let observerQuery = HKObserverQuery(sampleType: sampleTypeForRestingHeartRate, predicate: nil) { query, observerQueryHandler, error in
+    func getObserverQuery(type: UpdateType, updateHandler: @escaping (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void) -> HKObserverQuery {
+        let sampleType: HKSampleType
+        switch type {
+        case .wristTemperature: sampleType = sampleTypeForWristTemperature
+        case .restingHeartRate: sampleType = sampleTypeForRestingHeartRate
+        }
+        let observerQuery = HKObserverQuery(sampleType: sampleType, predicate: nil) { query, observerQueryHandler, error in
             updateHandler(query, observerQueryHandler, error)
         }
         return observerQuery

@@ -32,7 +32,8 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         heartRateService.getAuthorisationStatusForRestingHeartRate { status in
             if status == .unnecessary {
                 if heartRateService.backgroundObserverQueryEnabled {
-                    heartRateService.observeInBackground()
+                    heartRateService.observeInBackground(type: .restingHeartRate)
+                    heartRateService.observeInBackground(type: .wristTemperature)
                 }
             }
         }
@@ -51,14 +52,26 @@ extension HealthMeterApp: WhatsNewCollectionProvider {
             features: [
                 WhatsNew.Feature(image: .init(systemName: "thermometer.medium", foregroundColor: .accentColor),
                                  title: "Wrist temperature measurement",
-                                 subtitle: "Get notified when your body temperature gets elevated.")],
+                                 subtitle: "Apple Watch measures the wrist temperature during your sleep. Get notified if your wrist temperature rises.")],
             primaryAction: WhatsNew.PrimaryAction(
                     title: "Grant access",
                     backgroundColor: .accentColor,
                     foregroundColor: .white,
                     hapticFeedback: .notification(.success),
                     onDismiss: {
-                        RestingHeartRateService.shared.requestAuthorisation { _, _ in }
+                        RestingHeartRateService.shared.requestAuthorisation { success, error in
+                            if success {
+                                RestingHeartRateService.shared.observeInBackground(type: .wristTemperature)
+
+                                RestingHeartRateService.shared.queryAverageWristTemperature { res in
+                                    RestingHeartRateService.shared.queryLatestMeasurement(type: .wristTemperature) { res in print("WT done \(res)") }
+                                }
+                                RestingHeartRateService.shared.queryAverageRestingHeartRate { res in
+                                    RestingHeartRateService.shared.queryLatestMeasurement(type: .restingHeartRate) { res in print("RHR done \(res)")}
+                                }
+                            }
+                        }
+
                     }
                 ),
                 // The optional secondary action that is displayed above the primary action

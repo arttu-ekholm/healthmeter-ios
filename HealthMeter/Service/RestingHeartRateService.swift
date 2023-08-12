@@ -49,6 +49,9 @@ class RestingHeartRateService: ObservableObject {
     @Published private(set) var latestRestingHeartRateUpdate: Result<GenericUpdate, Error>?
     @Published private(set) var latestWristTemperatureUpdate: Result<GenericUpdate, Error>?
 
+    @Published private(set) var averageHeartRatePublished: Double?
+    @Published private(set) var averageWristTemperaturePublished: Double?
+
     // If the latest update is this much above the avg. RHR, the notification will be triggered.
     var threshold: Double {
         return 1 + thresholdMultiplier
@@ -79,10 +82,8 @@ class RestingHeartRateService: ObservableObject {
 
     /// Handles the sending of local push notifications
     private let notificationService: NotificationService
-    private var currentObserverQuery: HKObserverQuery?
 
-    @Published private(set) var averageHeartRatePublished: Double?
-    @Published private(set) var averageWristTemperaturePublished: Double?
+    private var observerQueries: [UpdateType: HKObserverQuery] = [:]
 
     private(set) var averageHeartRate: Double? {
         get {
@@ -146,13 +147,14 @@ class RestingHeartRateService: ObservableObject {
         } set {
             userDefaults.set(newValue, forKey: backgroundObserverQueryEnabledKey)
             if newValue == true {
-                observeInBackground()
-            } else { // Stop the most recent observer query if it was launched during the app lifecycle
-                if let currentObserverQuery = currentObserverQuery {
-                    print("stopping observer query: \(currentObserverQuery)")
-                    healthStore.stop(currentObserverQuery)
+                observeInBackground(type: .restingHeartRate)
+                observeInBackground(type: .wristTemperature)
+            } else { // Stop the observer queries
+                observerQueries.forEach { keyValue in
+                    print("stopping observer query: \(keyValue.value)")
+                    healthStore.stop(keyValue.value)
                 }
-                currentObserverQuery = nil
+                observerQueries.removeAll()
             }
         }
     }
@@ -461,8 +463,8 @@ class RestingHeartRateService: ObservableObject {
     /**
      Sets the app to observe the changes in HealthKit and wake up when there are new RHR updates.
      */
-    func observeInBackground(completionHandler: ((Bool, Error?) -> Void)? = nil) {
-        let observerQuery = queryProvider.getObserverQuery { query, completionHandler, error in
+    func observeInBackground(type: UpdateType, completionHandler: ((Bool, Error?) -> Void)? = nil) {
+        let observerQuery = queryProvider.getObserverQuery(type: type) { query, completionHandler, error in
             if self.shouldStopBackgroundQuery { // store the query hash and compare it here if there's a need to stop a specific queue
                 self.healthStore.stop(query)
                 completionHandler()
@@ -471,14 +473,7 @@ class RestingHeartRateService: ObservableObject {
 
             guard error == nil else { return }
 
-            self.queryLatestMeasurement(type: .restingHeartRate, completionHandler: { result in
-                if case .success(let update) = result {
-                    self.handleUpdate(update: update)
-                }
-                completionHandler()
-            })
-
-            self.queryLatestMeasurement(type: .wristTemperature, completionHandler: { result in
+            self.queryLatestMeasurement(type: type, completionHandler: { result in
                 if case .success(let update) = result {
                     self.handleUpdate(update: update)
                 }
@@ -488,11 +483,11 @@ class RestingHeartRateService: ObservableObject {
         healthStore.execute(observerQuery)
 
         healthStore.enableBackgroundDelivery(
-            for: queryProvider.sampleTypeForRestingHeartRate,
+            for: queryProvider.sampleTypeFor(type),
             frequency: .hourly) { success, error in
                 if success {
-                    print("BG observation successful")
-                    self.currentObserverQuery = observerQuery
+                    print("BG observation successful for type \(type)")
+                    self.observerQueries[type] = observerQuery
                 }
                 if let error = error {
                     print("BG observation failed with error: \(error)")

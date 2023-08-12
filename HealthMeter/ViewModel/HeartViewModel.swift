@@ -10,6 +10,12 @@ import UserNotifications
 import SwiftUI
 import Combine
 
+struct AllMeasurementsDisplay {
+    let string: String
+    let color: Color
+    let image: Image
+}
+
 extension HeartView {
     // swiftlint:disable type_body_length
     class ViewModel: ObservableObject {
@@ -30,6 +36,44 @@ extension HeartView {
 
         @Published private (set) var missingMeasurementsIsDismissed: Bool = false
         @Published private (set) var disabledNotificationsAlertIsDismissed: Bool = false
+
+        var allMeasurementsDisplay: AllMeasurementsDisplay? {
+            var elevatedRHR: Bool?
+            var elevatedWristTemperature: Bool?
+            var level: HeartRateLevel?
+            let text: String
+            let image: Image
+            if let avg = avg, avg != 0, case .success(let update) = rhr {
+                let multiplier = update.value / avg
+                level = restingHeartRateService.heartRateLevelForMultiplier(multiplier: multiplier)
+                elevatedRHR = level == .noticeablyElevated || level == .slightlyElevated || level == .wayAboveElevated
+            }
+            if let avg = avgWrist, avg != 0, case .success(let update) = wristTemperature {
+                elevatedWristTemperature = restingHeartRateService.wristTemperatureIsAboveAverage(update: update, average: avg)
+            }
+            if elevatedRHR == nil && elevatedWristTemperature == nil {
+                return nil
+            } else if elevatedRHR ?? false && elevatedWristTemperature ?? false {
+                return AllMeasurementsDisplay(string: "All fine", color: .green, image: Image(systemName: "checkmark"))
+            } else {
+                var color: Color
+                if elevatedWristTemperature ?? false {
+                    color = .red
+                    text = "Elevated measurements"
+                    image = Image(systemName: "exclamationmark.triangle")
+                } else if let level = level {
+                    color = colorForLevel(level)
+                    text = (level == .belowAverage || level == .normal) ? "You're all fine" : "Elevated measurements"
+                    image = (level == .belowAverage || level == .normal) ? Image(systemName: "hand.thumbsup") : Image(systemName: "exclamationmark.triangle")
+                } else {
+                    text = "Elevated measurements"
+                    color = .primary
+                    image = Image(systemName: "exclamationmark.triangle")
+                }
+
+                return AllMeasurementsDisplay(string: text, color: color, image: image)
+            }
+        }
 
         var shouldShowMissingMeasurements: Bool {
             if missingMeasurementsIsDismissed { return false }
@@ -169,19 +213,37 @@ extension HeartView {
                 self.calendar = calendar
                 self.shouldReloadContents = shouldReloadContents
                 self.viewState = viewState
-                self.rhr = heartRateService.latestRestingHeartRateUpdate
-                self.avg = heartRateService.averageHeartRatePublished
-                self.wristTemperature = heartRateService.latestWristTemperatureUpdate
-                restingHeartRateService.$averageWristTemperaturePublished.sink { [weak self] update in
-                    self?.avgWrist = update
-                }
-                .store(in: &cancellables)
-                restingHeartRateService.$averageHeartRatePublished.sink { [weak self] update in
-                    DispatchQueue.main.async {
-                        self?.avg = update
+                restingHeartRateService.$averageWristTemperaturePublished
+                    .sink { [weak self] update in
+                        DispatchQueue.main.async {
+                            self?.avgWrist = update
+                        }
                     }
-                }
-                .store(in: &cancellables)
+                    .store(in: &cancellables)
+
+                restingHeartRateService.$latestWristTemperatureUpdate
+                    .sink(receiveValue: { [weak self] newValue in
+                        DispatchQueue.main.async {
+                            self?.wristTemperature = newValue
+                        }
+                    })
+                    .store(in: &cancellables)
+
+                restingHeartRateService.$latestRestingHeartRateUpdate
+                    .sink(receiveValue: { [weak self] newValue in
+                        DispatchQueue.main.async {
+                            self?.rhr = newValue
+                        }
+                    })
+                    .store(in: &cancellables)
+
+                restingHeartRateService.$averageHeartRatePublished
+                    .sink { [weak self] update in
+                        DispatchQueue.main.async {
+                            self?.avg = update
+                        }
+                    }
+                    .store(in: &cancellables)
             }
 
         var heartColor: Color {

@@ -62,7 +62,7 @@ struct ContentView: View {
                             .interactiveDismissDisabled(true)
                     }
                 }
-        }
+        }.whatsNewSheet()
     }
 }
 

@@ -52,12 +52,38 @@ struct HeartView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 24, content: {
+            VStack(alignment: .leading, spacing: 36, content: {
+                Spacer(minLength: 40)
+
+                if let disp = viewModel.allMeasurementsDisplay {
+                    HStack {
+                        Spacer()
+                        Text(disp.string)
+                            .foregroundColor(.primary)
+                            .font(.title2)
+                            .bold()
+                        Spacer()
+                    }
+                    ZStack {
+                        Divider()
+                        Circle()
+                            .fill(.white)
+                            .frame(width: 48, height: 48)
+                        Image(systemName: "hand.thumbsup")
+                            .resizable()
+                            .frame(width: 36, height: 36)
+                            .foregroundColor(disp.color)
+                            .scaledToFit()
+                    }
+                } else {
+                    Divider()
+                }
+
                 HStack {
                     Image(systemName: "heart")
                         .font(.title2)
                         .bold()
-                        .foregroundColor(viewModel.rhrDisabled ? .gray : viewModel.rhrColor)
+                        .foregroundColor(viewModel.rhrDisabled ? .gray : .secondary)
                         .frame(width: 36)
                     VStack(alignment: .leading, content: {
                         HStack {
@@ -72,7 +98,7 @@ struct HeartView: View {
                                 .bold()
                         }
                         if viewModel.rhrDisabled {
-                            Text("Failed to fetch measurement")
+                            Text("Failed to fetch measurements")
                                 .foregroundColor(.gray)
                         } else {
                             HStack {
@@ -85,6 +111,19 @@ struct HeartView: View {
                                 Text(viewModel.rhrAverageDisplayText)
                                     .bold()
                             }
+                            HStack {
+                                if case .success(let update) = viewModel.rhr {
+                                    Text(update.date.timeAgoDisplay())
+                                        .font(.footnote)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                if viewModel.avg != nil {
+                                    Text("6 month average")
+                                        .font(.footnote)
+                                        .foregroundColor(.secondary)
+                                }
+                            }
                         }
                     })
                 }
@@ -92,7 +131,7 @@ struct HeartView: View {
                     Image(systemName: "thermometer.medium")
                         .font(.title2)
                         .bold()
-                        .foregroundColor(viewModel.rhrDisabled ? .gray: viewModel.wristTemperatureColor)
+                        .foregroundColor(viewModel.rhrDisabled ? .gray: .secondary)
                         .frame(width: 36)
                     VStack(alignment: .leading, content: {
                         HStack {
@@ -107,7 +146,7 @@ struct HeartView: View {
                                 .bold()
                         }
                         if viewModel.wristTemperatureDisabled {
-                            Text("Failed to fetch measurement")
+                            Text("Failed to fetch measurements")
                                 .foregroundColor(.gray)
                         } else {
                             HStack {
@@ -118,6 +157,19 @@ struct HeartView: View {
                                 Spacer()
 
                                 Text(viewModel.wristTemperatureDiffDisplayText)
+                            }
+                        }
+                        HStack {
+                            if case .success(let update) = viewModel.wristTemperature {
+                                Text(update.date.timeAgoDisplay())
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            if viewModel.avgWrist != nil {
+                                Text("6 month average")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
                             }
                         }
                     })
