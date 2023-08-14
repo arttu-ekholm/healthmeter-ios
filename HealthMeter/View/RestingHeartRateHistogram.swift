@@ -4,7 +4,7 @@
 //
 //  Created by Arttu Ekholm on 24.2.2022.
 //
-
+/*
 import SwiftUI
 
 struct RestingHeartRateHistogram: View {
@@ -104,3 +104,5 @@ private struct HistogramBar: View {
         return colorForLevel(level)
     }
 }
+
+*/

@@ -23,8 +23,19 @@ enum Trend {
     }
 }
 
+protocol RestingHeartRateProvider: AnyObject {
+    var averageHeartRatePublished: Double? { get }
+    var averageWristTemperaturePublished: Double? { get }
+
+    var averageWristTemperature: Double? { get }
+    var averageHeartRate: Double? { get }
+
+    var latestRestingHeartRateUpdate: Result<GenericUpdate, Error>? { get }
+    var latestWristTemperatureUpdate: Result<GenericUpdate, Error>? { get }
+}
+
 // swiftlint: disable type_body_length
-class RestingHeartRateService: ObservableObject {
+class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     /**
      These are mapped to `HKAuthorizationRequestStatus`
      */
@@ -41,9 +52,6 @@ class RestingHeartRateService: ObservableObject {
     private let averageWristTemperatureKey = "AverageWristTemperature"
     private let latestRestingHeartRateUpdateKey = "LatestRestingHeartRateUpdate"
     private let latestWristTemperatureUpdateKey = "LatestWristTemperatureUpdate"
-    private let latestHighRHRNotificationPostDateKey = "LatestHighRHRNotificationPostDate"
-    private let latestHighWTNotificationPostDateKey = "LatestHighWTNotificationPostDateKey"
-    private let latestLoweredRHRNotificationPostDateKey = "LatestLoweredRHRNotificationPostDate"
     private let backgroundObserverQueryEnabledKey = "BackgroundObserverQueryEnabledKey"
 
     @Published private(set) var latestRestingHeartRateUpdate: Result<GenericUpdate, Error>?
@@ -51,24 +59,6 @@ class RestingHeartRateService: ObservableObject {
 
     @Published private(set) var averageHeartRatePublished: Double?
     @Published private(set) var averageWristTemperaturePublished: Double?
-
-    // If the latest update is this much above the avg. RHR, the notification will be triggered.
-    var threshold: Double {
-        return 1 + thresholdMultiplier
-    }
-
-    var thresholdMultiplier: Double {
-        return 0.05
-    }
-
-    /**
-     if `true`, the manager is handling a `RestingHeartRateUpdate`. Set to `true` when handling begins, and to `false`when the function either
-     decides to ignore the update, or when the `NotificationCenter` callback tells the notification is handled.
-     */
-    private var isHandlingUpdate = false
-
-    /// Pending updates that aren't handled yet. Used to resolve the issue where there can be multiple simultaneous `RestingHeartRateUpdate`s.
-    private var updateQueue: [GenericUpdate] = []
 
     // Dependencies
     private let calendar: Calendar
@@ -80,8 +70,7 @@ class RestingHeartRateService: ObservableObject {
     /// Parses the query responses
     private let queryParser: QueryParser
 
-    /// Handles the sending of local push notifications
-    private let notificationService: NotificationService
+    private let decisionManager: DecisionManager
 
     private var observerQueries: [UpdateType: HKObserverQuery] = [:]
 
@@ -107,37 +96,6 @@ class RestingHeartRateService: ObservableObject {
                 self.averageWristTemperaturePublished = newValue
                 self.objectWillChange.send()
             }
-
-        }
-    }
-
-    /**
-     The date when the last "You have a high RHR" notification is posted
-     */
-    var latestHighRHRNotificationPostDate: Date? {
-        get {
-            return userDefaults.object(forKey: latestHighRHRNotificationPostDateKey) as? Date
-        } set {
-            userDefaults.set(newValue, forKey: latestHighRHRNotificationPostDateKey)
-        }
-    }
-
-    var latestWTNotificationPostDate: Date? {
-        get {
-            return userDefaults.object(forKey: latestHighWTNotificationPostDateKey) as? Date
-        } set {
-            userDefaults.set(newValue, forKey: latestHighWTNotificationPostDateKey)
-        }
-    }
-
-    /**
-     The date when the last "You lowered your RHR!" notification is posted
-     */
-    var latestLoweredRHRNotificationPostDate: Date? {
-        get {
-            return userDefaults.object(forKey: latestLoweredRHRNotificationPostDateKey) as? Date
-        } set {
-            userDefaults.set(newValue, forKey: latestLoweredRHRNotificationPostDateKey)
         }
     }
 
@@ -161,16 +119,18 @@ class RestingHeartRateService: ObservableObject {
 
     init(userDefaults: UserDefaults = UserDefaults.standard,
          calendar: Calendar = Calendar.current,
-         notificationService: NotificationService = NotificationService(),
          healthStore: HKHealthStore = HKHealthStore(),
          queryProvider: QueryProvider = QueryProvider(),
-         queryParser: QueryParser = QueryParser()) {
+         queryParser: QueryParser = QueryParser(),
+         decisionManager: DecisionManager = DecisionManager(decisionEngine: DecisionEngineImplementation())) {
         self.userDefaults = userDefaults
         self.calendar = calendar
-        self.notificationService = notificationService
         self.healthStore = healthStore
         self.queryProvider = queryProvider
         self.queryParser = queryParser
+        self.decisionManager = decisionManager
+
+        decisionManager.restingHeartRateProvider = self
 
         self.latestRestingHeartRateUpdate = decodeLatestUpdate(ofType: .restingHeartRate)
         self.latestWristTemperatureUpdate = decodeLatestUpdate(ofType: .wristTemperature)
@@ -198,21 +158,6 @@ class RestingHeartRateService: ObservableObject {
             print("Decoding of an object with UserDefaults key of \(key) failed with an error: \(error). Removing it from the UserDefaults")
             userDefaults.removeObject(forKey: key)
             return nil
-        }
-    }
-
-    /**
-     - returns true if the heart rate is above the average
-     */
-    func heartRateIsAboveAverage(update: GenericUpdate, average: Double) -> Bool {
-        return update.value / average > threshold
-    }
-
-    func wristTemperatureIsAboveAverage(update: GenericUpdate, average: Double, locale: Locale = .current) -> Bool {
-        if locale.measurementSystem == .us {
-            return update.value - average > 1.8
-        } else {
-            return update.value - average > 1.0
         }
     }
 
@@ -272,62 +217,14 @@ class RestingHeartRateService: ObservableObject {
     }
 
     private func handleWristTemperatureUpdate(update: GenericUpdate) {
-        self.latestWristTemperatureUpdate = .success(update)
-
-        guard let averageWristTemperature = averageWristTemperature else {
-            // No avg HR, the app cannot do the comparison
-            return
-        }
-
-        if isHandlingUpdate {
-            print("Is already handling an update, adding it to the queue")
-            updateQueue.append(update)
-            return
-        }
-
-        isHandlingUpdate = true
-
-        // Check if the date is later than the last saved rate update
-        if let previousUpdate = latestWristTemperatureUpdate, case .success(let res) = previousUpdate {
-            guard update.date > res.date else {
-                // The update is earlier than the latest, so no need to compare
-                // This can be ignored
-                isHandlingUpdate = false
-                handleNextItemFromQueueIfNeeded()
-                return
+        if case .success(let previousUpdate) = latestWristTemperatureUpdate {
+            if update.date > previousUpdate.date {
+                decisionManager.handleUpdate(update: update)
+                self.latestWristTemperatureUpdate = .success(update)
             }
-        }
-
-        // Save the update so its date can be compared to the next updates
-        self.latestWristTemperatureUpdate = .success(update)
-        let trend: Trend
-        let message: String?
-        let isAboveAverageWristTemperature = wristTemperatureIsAboveAverage(update: update, average: averageWristTemperature)
-
-        if isAboveAverageWristTemperature {
-            if !hasPostedAboutRisingNotificationToday(type: .wristTemperature) {
-                trend = .rising
-                message = wristTemperatureNotificationMessage(temperature: update.value, averageTemperature: averageWristTemperature)
-            } else {
-                isHandlingUpdate = false
-                handleNextItemFromQueueIfNeeded()
-                return
-            }
-
-            guard let message = message else { return }
-
-            notificationService.postNotification(
-                title: wristTemperatureNotificationTitle(
-                    temperature: update.value,
-                    averageTemperature: averageWristTemperature),
-                body: message) { result in
-                    self.isHandlingUpdate = false
-                    if case .success = result {
-                        self.saveNotificationPostDate(forTrend: trend, type: .wristTemperature)
-                    }
-                    // If the pending updates queue has more items, process them
-                    self.handleNextItemFromQueueIfNeeded()
-                }
+        } else {
+            decisionManager.handleUpdate(update: update)
+            self.latestWristTemperatureUpdate = .success(update)
         }
     }
 
@@ -335,138 +232,15 @@ class RestingHeartRateService: ObservableObject {
      Decides if a notification needs to be sent about the update. If the update isn't above the average, the update will be ignored.
      */
     private func handleHeartRateUpdate(update: GenericUpdate) {
-        guard let averageHeartRate = averageHeartRate else {
-            // No avg HR, the app cannot do the comparison
-            return
-        }
-
-        /* It's possible that the HKObserverQuery sends multiple callback simultaneously. Posting notifications is asynchronous,
-         which causes the notification sent timestamp to be updated after multiple notifications are sent. To prevent this,
-         `isHandlingUpdate` flag is raised while this function handles the notification. The pending updates are added to the
-         `updateQueue` array.
-         */
-
-        if isHandlingUpdate {
-            print("Is already handling an update, adding it to the queue")
-            updateQueue.append(update)
-            return
-        }
-
-        isHandlingUpdate = true
-
-        // Check if the date is later than the last saved rate update
-        if let previousUpdate = latestRestingHeartRateUpdate, case .success(let res) = previousUpdate {
-            guard update.date > res.date else {
-                // The update is earlier than the latest, so no need to compare
-                // This can be ignored
-                isHandlingUpdate = false
-                handleNextItemFromQueueIfNeeded()
-                return
-            }
-        }
-
-        // Save the update so its date can be compared to the next updates
-        self.latestRestingHeartRateUpdate = .success(update)
-
-        let isAboveAverageRHR = heartRateIsAboveAverage(update: update, average: averageHeartRate)
-
-        // check if the trend is rising or lowering
-
-        var message: String?
-        var trend: Trend?
-        if isAboveAverageRHR {
-            if !hasPostedAboutRisingNotificationToday(type: .restingHeartRate) {
-                trend = .rising
-                message = restingHeartRateNotificationMessage(trend: .rising,
-                                              heartRate: update.value,
-                                              averageHeartRate: averageHeartRate)
+        if case .success(let previousUpdate) = latestRestingHeartRateUpdate {
+            if update.date > previousUpdate.date {
+                decisionManager.handleUpdate(update: update)
+                self.latestRestingHeartRateUpdate = .success(update)
             }
         } else {
-            // RHR has been high, now it's lowered.
-            if !hasPostedAboutLoweredNotificationToday, hasPostedAboutRisingNotificationToday(type: .restingHeartRate) {
-                trend = .lowering
-                message = restingHeartRateNotificationMessage(trend: .lowering,
-                                              heartRate: update.value,
-                                              averageHeartRate: averageHeartRate)
-            }
+            decisionManager.handleUpdate(update: update)
+            self.latestRestingHeartRateUpdate = .success(update)
         }
-
-        guard let trend = trend, let message = message else {
-            isHandlingUpdate = false
-            handleNextItemFromQueueIfNeeded()
-            return
-        }
-
-        notificationService.postNotification(title: restingHeartRateNotificationTitle(trend: trend,
-                                                                                      heartRate: update.value,
-                                                                                      averageHeartRate: averageHeartRate),
-                                             body: message) { result in
-            self.isHandlingUpdate = false
-            if case .success = result {
-                self.saveNotificationPostDate(forTrend: trend, type: .restingHeartRate)
-            }
-            // If the pending updates queue has more items, process them
-            self.handleNextItemFromQueueIfNeeded()
-        }
-    }
-
-    private func handleNextItemFromQueueIfNeeded() {
-        guard !updateQueue.isEmpty else { return }
-
-        print("Handling pending update")
-        let update = updateQueue.removeFirst()
-        handleUpdate(update: update)
-    }
-
-    private func saveNotificationPostDate(forTrend trend: Trend, type: UpdateType) {
-        switch type {
-        case .restingHeartRate:
-            if trend == .rising {
-                latestHighRHRNotificationPostDate = Date()
-            } else if trend == .lowering {
-                latestLoweredRHRNotificationPostDate = Date()
-            }
-        case .wristTemperature: latestWTNotificationPostDate = Date()
-        }
-    }
-
-    func restingHeartRateNotificationTitle(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String {
-        let emoji = colorEmojiForLevel(heartRateLevelForMultiplier(multiplier: heartRate / averageHeartRate))
-        return "\(emoji) \(trend.displayText)"
-    }
-
-    func wristTemperatureNotificationTitle(temperature: Double, averageTemperature: Double) -> String {
-        return String(format: "Your wrist temperature is elevated: %.1f°\(Locale.current.temperatureSymbol)", temperature)
-    }
-
-    func wristTemperatureNotificationMessage(temperature: Double, averageTemperature: Double) -> String {
-        return String(format: "It's %.1f°\(Locale.current.temperatureSymbol) above the average", temperature - averageTemperature)
-    }
-
-    func restingHeartRateNotificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String? {
-        switch trend {
-        case .rising:
-            return heartRateAnalysisText(current: heartRate, average: averageHeartRate) + " " + "You should slow down."
-        case .lowering:
-            return "Your resting heart rate returned back to normal. Well done!"
-        }
-    }
-
-    func hasPostedAboutRisingNotificationToday(type: UpdateType) -> Bool {
-        let date: Date?
-        switch type {
-        case .restingHeartRate: date = latestHighRHRNotificationPostDate
-        case .wristTemperature: date = latestWTNotificationPostDate
-        }
-        guard let date else { return false }
-
-        return calendar.isDateInToday(date)
-    }
-
-    var hasPostedAboutLoweredNotificationToday: Bool {
-        guard let latestLoweredRHRNotificationPostDate = latestLoweredRHRNotificationPostDate else { return false }
-
-        return calendar.isDateInToday(latestLoweredRHRNotificationPostDate)
     }
 
     /**
@@ -587,46 +361,7 @@ class RestingHeartRateService: ObservableObject {
     }
 
     // MARK: - Strings
-
-    func heartRateAnalysisText(current: Double, average: Double) -> String {
-        let difference = current - average
-        let adjective: String
-        let multiplier = (current > average ? current / average : average / current) - 1.0
-
-        if abs(multiplier) > 0.05 {
-            if multiplier > 0.2 {
-                adjective = "way"
-            } else if multiplier > 0.1 {
-                adjective = "noticeably"
-            } else {
-                adjective = "slightly"
-            }
-            if difference > 0 {
-                return "Your resting heart rate is \(adjective) above your average."
-            } else {
-                return "Your resting heart rate is \(adjective) below your average."
-            }
-        } else {
-            return "Your resting heart rate is normal."
-        }
-    }
-
-    func heartRateLevelForMultiplier(multiplier: Double) -> HeartRateLevel {
-        if multiplier > 1.05 {
-            if multiplier > 1.2 {
-                return .wayAboveElevated
-            } else if multiplier > 1.1 {
-                return .noticeablyElevated
-            } else {
-                return .slightlyElevated
-            }
-        } else if multiplier < 0.95 {
-            return .belowAverage
-        } else {
-            return .normal
-        }
-    }
-
+/*
     func rangesForHeartRateLevels(average: Double) -> HeartRateRanges {
         let ranges: [HeartRateLevel: Range<Double>] = [
             .belowAverage: 0..<(average * (1 - thresholdMultiplier)),
@@ -637,6 +372,7 @@ class RestingHeartRateService: ObservableObject {
         ]
         return HeartRateRanges(ranges: ranges)
     }
+ */
 
     // MARK: - Background observer
 
@@ -672,4 +408,20 @@ enum HeartRateLevel {
     case slightlyElevated
     case noticeablyElevated
     case wayAboveElevated
+}
+
+func heartRateLevelForMultiplier(multiplier: Double) -> HeartRateLevel {
+    if multiplier > 1.05 {
+        if multiplier > 1.2 {
+            return .wayAboveElevated
+        } else if multiplier > 1.1 {
+            return .noticeablyElevated
+        } else {
+            return .slightlyElevated
+        }
+    } else if multiplier < 0.95 {
+        return .belowAverage
+    } else {
+        return .normal
+    }
 }

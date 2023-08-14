@@ -22,6 +22,7 @@ extension HeartView {
         @Published private var restingHeartRateService: RestingHeartRateService
         private let calendar: Calendar
         private let notificationCenter = UNUserNotificationCenter.current()
+        private let decisionEngine: DecisionEngine
 
         var shouldReloadContents: Bool
         @Published var viewState: ViewState<GenericUpdate, Double>
@@ -45,11 +46,11 @@ extension HeartView {
             let image: Image
             if let avg = avg, avg != 0, case .success(let update) = rhr {
                 let multiplier = update.value / avg
-                level = restingHeartRateService.heartRateLevelForMultiplier(multiplier: multiplier)
+                level = heartRateLevelForMultiplier(multiplier: multiplier)
                 elevatedRHR = level == .noticeablyElevated || level == .slightlyElevated || level == .wayAboveElevated
             }
             if let avg = avgWrist, avg != 0, case .success(let update) = wristTemperature {
-                elevatedWristTemperature = restingHeartRateService.wristTemperatureIsAboveAverage(update: update, average: avg)
+                elevatedWristTemperature = decisionEngine.wristTemperatureIsAboveAverage(update: update, average: avg)
             }
             if elevatedRHR == nil && elevatedWristTemperature == nil {
                 return nil
@@ -99,7 +100,7 @@ extension HeartView {
             guard let avg = avg, avg != 0, case .success(let update) = rhr else { return nil }
             let multiplier = update.value / avg
 
-            let level = restingHeartRateService.heartRateLevelForMultiplier(multiplier: multiplier)
+            let level = heartRateLevelForMultiplier(multiplier: multiplier)
             return colorForLevel(level)
         }
 
@@ -107,7 +108,7 @@ extension HeartView {
             guard let avg = avgWrist, avg != 0, case .success(let update) = wristTemperature else { return nil }
             let multiplier = update.value / avg
 
-            let level = restingHeartRateService.heartRateLevelForMultiplier(multiplier: multiplier)
+            let level = heartRateLevelForMultiplier(multiplier: multiplier)
             return colorForLevel(level)
         }
 
@@ -165,7 +166,7 @@ extension HeartView {
         var rhrStatusDisplayText: String {
             guard let avg = avg, avg != 0, case .success(let update) = rhr else { return "" }
             let multiplier = update.value / avg
-            let level = restingHeartRateService.heartRateLevelForMultiplier(multiplier: multiplier)
+            let level = heartRateLevelForMultiplier(multiplier: multiplier)
             return adjectiveForLevel(level: level)
         }
 
@@ -208,11 +209,14 @@ extension HeartView {
             heartRateService: RestingHeartRateService = RestingHeartRateService.shared,
             calendar: Calendar = Calendar.current,
             shouldReloadContents: Bool = true,
-            viewState: ViewState<GenericUpdate, Double> = .loading) {
+            viewState: ViewState<GenericUpdate, Double> = .loading,
+            decisionEngine: DecisionEngine = DecisionEngineImplementation()) {
                 self.restingHeartRateService = heartRateService
                 self.calendar = calendar
                 self.shouldReloadContents = shouldReloadContents
                 self.viewState = viewState
+                self.decisionEngine = decisionEngine
+
                 restingHeartRateService.$averageWristTemperaturePublished
                     .sink { [weak self] update in
                         DispatchQueue.main.async {
@@ -246,60 +250,6 @@ extension HeartView {
                     .store(in: &cancellables)
             }
 
-        var heartColor: Color {
-            switch viewState {
-            case .success(let latest, let average):
-                guard calendar.isDateInToday(latest.date) else {
-                    return .gray
-                }
-
-                let current = latest.value
-                let multiplier = current / average - 1.0
-                if multiplier >= 0 {
-                    if multiplier > 0.2 {
-                        return .red
-                    } else if multiplier > 0.1 {
-                        return .orange
-                    } else if multiplier > 0.05 {
-                        return .yellow
-                    } else {
-                        return .green
-                    }
-                } else {
-                    if multiplier < -0.05 {
-                        return .green // over -5 %
-                    } else {
-                        return .green // within +- 5 %
-                    }
-                }
-            default: return .green
-            }
-        }
-
-        var heartImageName: String {
-            switch viewState {
-
-            case .success(let latest, let average):
-                guard calendar.isDateInToday(latest.date) else {
-                    return "heart.text.square"
-                }
-
-                let current = latest.value
-                let multiplier = current / average - 1.0
-                if multiplier >= 0 {
-                    if multiplier > 0.05 {
-                        return "arrow.up.heart.fill"
-                    } else {
-                        return "heart.fill"
-                    }
-                } else {
-                    return "heart.fill"
-                }
-            default:
-                return "heart.fill"
-            }
-        }
-
         func requestLatestRestingHeartRate() {
             restingHeartRateService.queryAverageRestingHeartRate { averageResult in
 
@@ -332,14 +282,6 @@ extension HeartView {
                 return "Yesterday, your resting heart rate was"
             } else { // past
                 return "Earlier, your resting heart rate was"
-            }
-        }
-
-        func heartRateAnalysisText(update: GenericUpdate, average: Double) -> String {
-            if calendar.isDateInToday(update.date) {
-                return restingHeartRateService.heartRateAnalysisText(current: update.value, average: average)
-            } else {
-                return "Today's resting heart rate hasn't been calculated yet."
             }
         }
 
@@ -378,23 +320,6 @@ extension HeartView {
 
         var settingsAppURL: URL {
             return URL(string: UIApplication.openSettingsURLString)!
-        }
-
-        // MARK: - RHR histogram
-        func fetchHistogramData() {
-            restingHeartRateService.fetchRestingHeartRateHistory(startDate: Date().addingTimeInterval(-60*60*24*30*6)) { result in
-                if case .success(let histogram) = result {
-                    DispatchQueue.main.async {
-                        self.histogram = histogram
-                    }
-                }
-            }
-        }
-
-        var heartRateLevels: HeartRateRanges? {
-            guard let averageHeartRate = restingHeartRateService.averageHeartRate else { return nil }
-
-            return restingHeartRateService.rangesForHeartRateLevels(average: averageHeartRate)
         }
     }
     // swiftlint:enable type_body_length

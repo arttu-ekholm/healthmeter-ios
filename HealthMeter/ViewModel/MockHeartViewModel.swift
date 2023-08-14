@@ -15,8 +15,8 @@ class DummyHeartRateService: RestingHeartRateService {
         set { average = newValue }
     }
 
-    override init(userDefaults: UserDefaults = UserDefaults.standard, calendar: Calendar = Calendar.current, notificationService: NotificationService = NotificationService(), healthStore: HKHealthStore = HKHealthStore(), queryProvider: QueryProvider = QueryProvider(), queryParser: QueryParser = QueryParser()) {
-        super.init(userDefaults: userDefaults, calendar: calendar, notificationService: notificationService, healthStore: healthStore, queryProvider: queryProvider, queryParser: queryParser)
+    override init(userDefaults: UserDefaults = UserDefaults.standard, calendar: Calendar = Calendar.current, healthStore: HKHealthStore = HKHealthStore(), queryProvider: QueryProvider = QueryProvider(), queryParser: QueryParser = QueryParser(), decisionManager: DecisionManager = DecisionManager(decisionEngine: DecisionEngineImplementation())) {
+        super.init(userDefaults: userDefaults, calendar: calendar, healthStore: healthStore, queryProvider: queryProvider, queryParser: queryParser)
 
         averageHeartRate = 57.0
     }

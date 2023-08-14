@@ -26,11 +26,11 @@ class MockRestingHeartRateService: RestingHeartRateService {
         }
     }
 
-    override var latestHighRHRNotificationPostDate: Date? {
-        get {
-            return mockLatestHighRHRNotificationPostDate
-        } set {
-            mockLatestHighRHRNotificationPostDate = newValue
-        }
-    }
+//    override var latestHighRHRNotificationPostDate: Date? {
+//        get {
+//            return mockLatestHighRHRNotificationPostDate
+//        } set {
+//            mockLatestHighRHRNotificationPostDate = newValue
+//        }
+//    }
 }

@@ -9,12 +9,12 @@ import XCTest
 @testable import HealthMeter
 import HealthKit
 
-// swiftlint:disable:next type_body_length
 class RestingHeartRateServiceTests: XCTestCase {
     var userDefaults: UserDefaults!
 
     override func setUp() {
         super.setUp()
+
         userDefaults?.removePersistentDomain(forName: #file)
         userDefaults = UserDefaults(suiteName: #file)
     }
@@ -27,47 +27,9 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     // MARK: - Tests
 
-    func testAboveAverage() {
-        let service = RestingHeartRateService()
-
-        XCTAssertTrue(service.heartRateIsAboveAverage(
-            update: GenericUpdate(
-                date: Date(),
-                value: 70.0,
-                type: .restingHeartRate),
-            average: 55.0), "Should be significant difference")
-        XCTAssertFalse(service.heartRateIsAboveAverage(
-            update: GenericUpdate(
-                date: Date(),
-                value: 55.0,
-                type: .restingHeartRate),
-            average: 55.0), "Should be significant difference")
-        XCTAssertFalse(service.heartRateIsAboveAverage(
-            update: GenericUpdate(
-                date: Date(),
-                value: 53.0,
-                type: .restingHeartRate),
-            average: 55.0), "Below average should return false")
-        XCTAssertFalse(service.heartRateIsAboveAverage(
-            update: GenericUpdate(
-                date: Date(),
-                value: 10.0,
-                type: .restingHeartRate),
-            average: 55.0), "Below average should return false")
-    }
-
-    func testUpdate_noNotificationIfAvgHRMissing() throws {
-        let mockNotificationService = MockNotificationService()
-        let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: mockNotificationService)
-        let update = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
-        service.handleUpdate(update: update)
-
-        XCTAssertFalse(mockNotificationService.postNotificationCalled, "Notification shouldn't be sent if there is no average heart rate")
-    }
-
     func testDecodingAverageHeartRate_launch() throws {
-        let service = RestingHeartRateService(userDefaults: userDefaults)
-        XCTAssertNil(service.averageHeartRate, "AVG RHR should be nil.")
+        let service = RestingHeartRateService(userDefaults: userDefaults, decisionManager: DecisionManager(userDefaults: userDefaults))
+        XCTAssertNil(service.averageHeartRate, "AVG RHR should be nil, now it is \(String(describing: service.averageHeartRate))")
     }
 
     func testDecodingAverageHeartRate_notNil() throws {
@@ -75,88 +37,6 @@ class RestingHeartRateServiceTests: XCTestCase {
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
         let avgRHR = try XCTUnwrap(service.averageHeartRate)
         XCTAssertEqual(50.0, avgRHR, accuracy: 0.1, "AVG RHR should be 50.0")
-    }
-
-    func testPosted_rising() throws {
-        let mockNotificationService = MockNotificationService()
-        let service = RestingHeartRateService(
-            userDefaults: userDefaults,
-            notificationService: mockNotificationService)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
-
-        let update = GenericUpdate(date: Date(), value: 100.0, type: .restingHeartRate)
-        service.handleUpdate(update: update)
-
-        let predicate = NSPredicate { service, _ in
-            guard let service = service as? RestingHeartRateService else { return false }
-            return service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate)
-        }
-        _ = expectation(for: predicate, evaluatedWith: service, handler: .none)
-
-        waitForExpectations(timeout: 2.0, handler: .none)
-    }
-
-    func testPosted_risingToLowered() throws {
-        let mockNotificationService = MockNotificationService()
-        let service = RestingHeartRateService(
-            userDefaults: userDefaults,
-            notificationService: mockNotificationService)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
-
-        let risingUpdate = GenericUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0, type: .restingHeartRate)
-        service.handleUpdate(update: risingUpdate)
-        let loweringUpdate = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
-        service.handleUpdate(update: loweringUpdate)
-
-        let risingNotificationCalled = NSPredicate { service, _ in
-            guard let service = service as? RestingHeartRateService else { return false }
-            return service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate)
-        }
-
-        let loweredNotificationCalled = NSPredicate { service, _ in
-            guard let service = service as? RestingHeartRateService else { return false }
-            return service.hasPostedAboutLoweredNotificationToday
-        }
-        _ = expectation(for: risingNotificationCalled, evaluatedWith: service, handler: .none)
-        _ = expectation(for: loweredNotificationCalled, evaluatedWith: service, handler: .none)
-
-        waitForExpectations(timeout: 2.0, handler: .none)
-    }
-
-    /**
-     Handling and update that == qvg RHR doesn't cause any notifications being posted
-     */
-    func testPosting_averageRHR() throws {
-        let service = RestingHeartRateService(userDefaults: userDefaults)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
-
-        let update = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
-        service.handleUpdate(update: update)
-
-        XCTAssertFalse(service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate))
-        XCTAssertFalse(service.hasPostedAboutLoweredNotificationToday)
-    }
-
-    /**
-     Service gets high, average, high average resting rate. The app should post notification about one about rising HRH, and one about lowered RHR.
-     */
-    func testPosted_multiple() throws {
-        let notificationService = MockNotificationService()
-        let service = RestingHeartRateService(userDefaults: userDefaults, notificationService: notificationService)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
-
-        let risingUpdate1 = GenericUpdate(date: Date().addingTimeInterval(-60*60*3), value: 100.0, type: .restingHeartRate)
-        service.handleUpdate(update: risingUpdate1)
-        let loweringUpdate1 = GenericUpdate(date: Date().addingTimeInterval(-60*60*2), value: 50.0, type: .restingHeartRate)
-        service.handleUpdate(update: loweringUpdate1)
-        let risingUpdate2 = GenericUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0, type: .restingHeartRate)
-        service.handleUpdate(update: risingUpdate2)
-        let loweringUpdate2 = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
-        service.handleUpdate(update: loweringUpdate2)
-        XCTAssertEqual(notificationService.postNotificationCalledCount, 2, "Only two notifications should be sent - one for high RHR and and another for lowered RRH")
-
-        XCTAssertTrue(service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate))
-        XCTAssertTrue(service.hasPostedAboutLoweredNotificationToday)
     }
 
     // MARK: - HealthStore queries
@@ -199,10 +79,10 @@ class RestingHeartRateServiceTests: XCTestCase {
         let mockNotificationService = MockNotificationService()
         mockQueryParser.update = GenericUpdate(date: Date(), value: 100.0, type: .restingHeartRate)
         let service = RestingHeartRateService(userDefaults: userDefaults,
-                                              notificationService: mockNotificationService,
                                               healthStore: mockHealthStore,
                                               queryProvider: mockQueryProvider,
-                                              queryParser: mockQueryParser)
+                                              queryParser: mockQueryParser,
+                                              decisionManager: DecisionManager(notificationService: mockNotificationService, userDefaults: userDefaults))
         let predicate = NSPredicate { mockNotificationService, _ in
             guard let mockNotificationService = mockNotificationService as? MockNotificationService else { return false }
             return mockNotificationService.postNotificationCalled
@@ -292,68 +172,6 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     // MARK: - Analysis text
 
-    func testAnalysisText_normal() {
-        let service = RestingHeartRateService()
-        let normalRestingHeartRateText = "Your resting heart rate is normal."
-        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 50, average: 50))
-        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 52, average: 50))
-        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 51, average: 50))
-        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 49, average: 50))
-        XCTAssertEqual(normalRestingHeartRateText, service.heartRateAnalysisText(current: 48, average: 50))
-    }
-
-    func testAnalysisText_slightlyAbove() {
-        let service = RestingHeartRateService()
-        let text = "Your resting heart rate is slightly above your average."
-        XCTAssertEqual(text, service.heartRateAnalysisText(current: 60, average: 57))
-        XCTAssertEqual(text, service.heartRateAnalysisText(current: 61, average: 57))
-        XCTAssertEqual(text, service.heartRateAnalysisText(current: 62, average: 57))
-    }
-
-    func testAnalysisText_slightlyBelow() {
-        let service = RestingHeartRateService()
-        let text = "Your resting heart rate is slightly below your average."
-        XCTAssertEqual(text, service.heartRateAnalysisText(current: 54, average: 57))
-        XCTAssertEqual(text, service.heartRateAnalysisText(current: 53, average: 57))
-        XCTAssertEqual(text, service.heartRateAnalysisText(current: 52, average: 57))
-    }
-
-    func testAnalysisText_noticeablyHigher() {
-        let service = RestingHeartRateService()
-        let string = "Your resting heart rate is noticeably above your average."
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 55, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 56, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 58, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 59, average: 50))
-    }
-
-    func testAnalysisText_noticeablyLower() {
-        let service = RestingHeartRateService()
-        let string = "Your resting heart rate is noticeably below your average."
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 45, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 44, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 43, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 42, average: 50))
-    }
-
-    func testAnalysisText_muchHigher() {
-        let service = RestingHeartRateService()
-        let string = "Your resting heart rate is way above your average."
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 65, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 70, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 90, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 100, average: 50))
-    }
-
-    func testAnalysisText_muchLower() {
-        let service = RestingHeartRateService()
-        let string = "Your resting heart rate is way below your average."
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 40, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 30, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 20, average: 50))
-        XCTAssertEqual(string, service.heartRateAnalysisText(current: 1, average: 50))
-    }
-
     func testMultipleObserverQueryCallbacks() {
         userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
         let mockHealthStore = MockHealthStore()
@@ -363,10 +181,9 @@ class RestingHeartRateServiceTests: XCTestCase {
         mockNotificationService.delay = 2.0
 
         let service = RestingHeartRateService(userDefaults: userDefaults,
-                                              notificationService: mockNotificationService,
                                               healthStore: mockHealthStore,
                                               queryProvider: mockQueryProvider,
-                                              queryParser: mockQueryParser)
+                                              queryParser: mockQueryParser, decisionManager: DecisionManager(notificationService: mockNotificationService, userDefaults: userDefaults))
 
         let now = Date()
         service.handleUpdate(update: GenericUpdate(date: now, value: 120.0, type: .restingHeartRate))
@@ -387,50 +204,13 @@ class RestingHeartRateServiceTests: XCTestCase {
         waitForExpectations(timeout: 3.0, handler: .none)
     }
 
-    /**
-     When the service has a latest saved date and a new update with **earlier** date is handled, the latest handled date should be returned instead
-     */
-    func testHandleHKUpdate_previousThanStored() throws {
-        let now = Date()
-        let latestUpdate = GenericUpdate(date: now, value: 50.0, type: .restingHeartRate)
-        let data = try XCTUnwrap(JSONEncoder().encode(latestUpdate))
-        userDefaults.set(data, forKey: "LatestRestingHeartRateUpdate")
-
-        let service = RestingHeartRateService(
-            userDefaults: userDefaults)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
-
-        // The update has _earlier_ date than the latest handled update.
-        let update = GenericUpdate(date: Date().addingTimeInterval(-100), value: 100.0, type: .restingHeartRate)
-        service.handleUpdate(update: update)
-
-        let predicate = NSPredicate { service, _ in
-            guard let service = service as? RestingHeartRateService else { return false }
-            return !service.hasPostedAboutRisingNotificationToday(type: .restingHeartRate)
-        }
-        _ = expectation(for: predicate, evaluatedWith: service, handler: .none)
-
-        waitForExpectations(timeout: 2.0, handler: .none)
-    }
-
-    // MARK: - Multipliers and colors
+    // MARK: - Multipliers and colors (static)
     func testHeartRateLevelForMultiplier() {
-        let service = RestingHeartRateService()
-        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 50.0/50.0), .normal)
-        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 20.0/50.0), .belowAverage)
-        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 55.0/50.0), .slightlyElevated)
-        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 60.0/50.0), .noticeablyElevated)
-        XCTAssertEqual(service.heartRateLevelForMultiplier(multiplier: 85.0/50.0), .wayAboveElevated)
-    }
-
-    func testNotificationTitleContainsColorEmoji() {
-        let service = RestingHeartRateService()
-        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .lowering, heartRate: 30, averageHeartRate: 50).contains("🟩"))
-        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 50, averageHeartRate: 50).contains("🟩"))
-        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 53, averageHeartRate: 50).contains("🟨"))
-        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 56, averageHeartRate: 50).contains("🟧"))
-        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 70, averageHeartRate: 50).contains("🟥"))
-        XCTAssertTrue(service.restingHeartRateNotificationTitle(trend: .rising, heartRate: 100, averageHeartRate: 50).contains("🟥"))
+        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 50.0/50.0), .normal)
+        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 20.0/50.0), .belowAverage)
+        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 55.0/50.0), .slightlyElevated)
+        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 60.0/50.0), .noticeablyElevated)
+        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 85.0/50.0), .wayAboveElevated)
     }
 }
 

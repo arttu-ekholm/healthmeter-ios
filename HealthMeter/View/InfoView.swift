@@ -69,11 +69,7 @@ struct InfoView: View {
 
                         }
                     }
-                    /*
-                    if viewModel.highRHRIsPostedToday {
-                        Text("You have received a notification about your elevated resting heart rate today.")
-                    }
-                     */
+
                     Divider()
                         .padding(.vertical)
                     Text("Settings")

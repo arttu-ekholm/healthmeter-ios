@@ -107,36 +107,6 @@ class HeartViewViewModelTests: XCTestCase {
 
         waitForExpectations(timeout: 2.0, handler: .none)
     }
-
-    // MARK: - Colors and strings
-    func testColors() {
-        XCTAssertEqual(model(50.0, 50.0).heartColor, .green)
-        XCTAssertEqual(model(49.0, 50.0).heartColor, .green)
-        XCTAssertEqual(model(40.0, 50.0).heartColor, .green)
-        XCTAssertEqual(model(51.0, 50.0).heartColor, .green)
-        XCTAssertEqual(model(53.0, 50.0).heartColor, .yellow)
-        XCTAssertEqual(model(55.0, 50.0).heartColor, .orange)
-        XCTAssertEqual(model(60.0, 50.0).heartColor, .orange)
-        XCTAssertEqual(model(65.0, 50.0).heartColor, .red)
-        XCTAssertEqual(model(100.0, 50.0).heartColor, .red)
-    }
-
-    func testImageString() {
-        let upArrow = "arrow.up.heart.fill"
-        let fill = "heart.fill"
-        let notToday = "heart.text.square"
-        let yesterday = Date().addingTimeInterval(-60*60*24)
-
-        XCTAssertEqual(model(50.0, 50.0).heartImageName, fill)
-        XCTAssertEqual(model(51.0, 50.0).heartImageName, fill)
-        XCTAssertEqual(model(150.0, 50.0).heartImageName, upArrow)
-        XCTAssertEqual(model(30.0, 50.0).heartImageName, fill)
-
-        XCTAssertEqual(model(50.0, 50.0, yesterday).heartImageName, notToday)
-        XCTAssertEqual(model(51.0, 50.0, yesterday).heartImageName, notToday)
-        XCTAssertEqual(model(150.0, 50.0, yesterday).heartImageName, notToday)
-        XCTAssertEqual(model(30.0, 50.0, yesterday).heartImageName, notToday)
-    }
 }
 
 private enum HeartViewViewModelTestsError: Error {

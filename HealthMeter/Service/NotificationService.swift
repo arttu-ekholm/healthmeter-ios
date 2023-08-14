@@ -8,6 +8,9 @@
 import Foundation
 import UIKit
 
+/**
+ Decides what to do with the new updates (whether to post a push notification or not)
+ */
 class NotificationService {
     enum NotificationServiceError: Error {
         case appIsActive
