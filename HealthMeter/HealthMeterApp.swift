@@ -60,7 +60,7 @@ extension HealthMeterApp: WhatsNewCollectionProvider {
                     hapticFeedback: .notification(.success),
                     onDismiss: {
                         RestingHeartRateService.shared.requestAuthorisation { success, error in
-                            if success {
+                            if success, error == nil {
                                 RestingHeartRateService.shared.observeInBackground(type: .wristTemperature)
 
                                 RestingHeartRateService.shared.queryAverageWristTemperature { res in

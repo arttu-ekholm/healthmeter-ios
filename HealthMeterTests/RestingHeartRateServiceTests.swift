@@ -164,7 +164,7 @@ class RestingHeartRateServiceTests: XCTestCase {
     func testObserveInBackground_functionsCalled() {
         let mockHealthStore = MockHealthStore()
         let service = RestingHeartRateService(userDefaults: userDefaults, healthStore: mockHealthStore)
-        service.observeInBackground { _, _ in }
+        service.observeInBackground(type: .restingHeartRate) { _, _ in } // TODO: maybe other types
         XCTAssertTrue(mockHealthStore.executeQueryCalled)
         XCTAssertTrue(mockHealthStore.enableBackgroundDeliveryCalled)
     }
@@ -184,7 +184,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         }
         _ = expectation(for: predicate, evaluatedWith: mockQueryParser, handler: .none)
 
-        service.observeInBackground(completionHandler: { _, _ in })
+        service.observeInBackground(type: .restingHeartRate, completionHandler: { _, _ in }) // TODO: other types
         waitForExpectations(timeout: 2.0, handler: .none)
     }
 
@@ -209,7 +209,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         }
         _ = expectation(for: predicate, evaluatedWith: mockNotificationService, handler: .none)
 
-        service.observeInBackground(completionHandler: { _, _ in })
+        service.observeInBackground(type: .wristTemperature, completionHandler: { _, _ in }) // TODO: other types
         waitForExpectations(timeout: 2.0, handler: .none)
     }
 
@@ -481,9 +481,9 @@ private class MockQueryProvider: QueryProvider {
         return mockQuery
     }
 
-    override func getObserverQuery(updateHandler: @escaping (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void) -> HKObserverQuery {
+    override func getObserverQuery(type: UpdateType, updateHandler: @escaping (HKObserverQuery, @escaping HKObserverQueryCompletionHandler, Error?) -> Void) -> HKObserverQuery {
         getObserverQueryCalled = true
-        let mockObserverQuery = MockObserverQuery(sampleType: self.sampleTypeForRestingHeartRate,
+        let mockObserverQuery = MockObserverQuery(sampleType: self.sampleTypeFor(type),
                                                   predicate: nil,
                                                   updateHandler: updateHandler)
         // This needs to be set here because variable is set to nil on the second init call.

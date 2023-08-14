@@ -35,7 +35,7 @@ struct TutorialView: View {
                 Spacer()
                 ZStack {
                     Divider()
-                    Image(systemName:  "heart.fill")
+                    Image(systemName: "heart.fill")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 28, height: 28)
