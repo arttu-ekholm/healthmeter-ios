@@ -44,7 +44,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 // MARK: - App+WhatsNewCollectionProvider
 
 extension HealthMeterApp: WhatsNewCollectionProvider {
-    /// Declare your WhatsNew instances per version
     var whatsNewCollection: WhatsNewCollection {
         WhatsNew(
             version: "1.3.0",
@@ -59,19 +58,22 @@ extension HealthMeterApp: WhatsNewCollectionProvider {
                     foregroundColor: .white,
                     hapticFeedback: .notification(.success),
                     onDismiss: {
-                        RestingHeartRateService.shared.requestAuthorisation { success, error in
-                            if success, error == nil {
-                                RestingHeartRateService.shared.observeInBackground(type: .wristTemperature)
+                        RestingHeartRateService.shared.getAuthorisationStatusForRestingHeartRate { status in
+                            if status == .shouldRequest {
+                                RestingHeartRateService.shared.requestAuthorisation { success, error in
+                                    if success, error == nil {
+                                        RestingHeartRateService.shared.observeInBackground(type: .wristTemperature)
 
-                                RestingHeartRateService.shared.queryAverageWristTemperature { res in
-                                    RestingHeartRateService.shared.queryLatestMeasurement(type: .wristTemperature) { res in print("WT done \(res)") }
-                                }
-                                RestingHeartRateService.shared.queryAverageRestingHeartRate { res in
-                                    RestingHeartRateService.shared.queryLatestMeasurement(type: .restingHeartRate) { res in print("RHR done \(res)")}
+                                        RestingHeartRateService.shared.queryAverageWristTemperature { res in
+                                            RestingHeartRateService.shared.queryLatestMeasurement(type: .wristTemperature) { res in print("WT done \(res)") }
+                                        }
+                                        RestingHeartRateService.shared.queryAverageRestingHeartRate { res in
+                                            RestingHeartRateService.shared.queryLatestMeasurement(type: .restingHeartRate) { res in print("RHR done \(res)")}
+                                        }
+                                    }
                                 }
                             }
                         }
-
                     }
                 ),
                 // The optional secondary action that is displayed above the primary action
