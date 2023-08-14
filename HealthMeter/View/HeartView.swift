@@ -8,44 +8,6 @@
 import SwiftUI
 
 struct HeartView: View {
-    enum ViewState<T, E> {
-        case loading
-        case success(T, E)
-        case error(Error)
-    }
-
-    enum HeartViewError: LocalizedError {
-        case missingLatestHeartRate
-        case missingAverageHeartRate
-        case missingBoth
-        case other(Error)
-
-        var errorDescription: String? {
-            switch self {
-            case .missingBoth: return "You don't have any resting heart rate data saved to your device."
-            case .missingLatestHeartRate: return "HeartRate couldn't read your latest resting heart rate."
-            case .missingAverageHeartRate: return "You don't have enough resting heart rate data collected. HeartRate app starts to work when your devices have collected enough data."
-            case .other(let error):
-                if let error = error as? LocalizedError {
-                    return error.localizedDescription
-                } else {
-                    return nil
-                }
-            }
-        }
-
-        var recoverySuggestion: String? {
-            switch self {
-            case .missingBoth, .missingAverageHeartRate: return
-                """
-            Please try again when you have collected more resting heart rate data. Go to the Health app and authorise Restful to read your resting heart rate.
-            """
-            case .missingLatestHeartRate:
-                return "Make sure your health devices record your resting heart rate."
-            default: return nil
-            }
-        }
-    }
 
     @StateObject var viewModel: ViewModel
     @Environment(\.scenePhase) var scenePhase
@@ -69,7 +31,7 @@ struct HeartView: View {
                         Circle()
                             .fill(Color(UIColor.systemBackground))
                             .frame(width: 48, height: 48)
-                        Image(systemName: "hand.thumbsup")
+                        disp.image
                             .resizable()
                             .frame(width: 36, height: 36)
                             .foregroundColor(disp.color)
@@ -97,9 +59,15 @@ struct HeartView: View {
                                 .foregroundColor(viewModel.rhrColor)
                                 .bold()
                         }
-                        if viewModel.rhrDisabled {
-                            Text("Failed to fetch measurements")
-                                .foregroundColor(.gray)
+                        if case .failure(let error) = viewModel.rhr {
+                            if case QueryParser.QueryParserError.noLatestValueFound = error {
+                                Text("No measurements found")
+                                    .foregroundColor(.gray)
+                            } else {
+                                Text("Failed to fetch measurements")
+                                    .foregroundColor(.gray)
+                            }
+                            Text("").font(.footnote) // occupies vertical space
                         } else {
                             HStack {
                                 Text("Current")
@@ -144,9 +112,15 @@ struct HeartView: View {
                                 .font(.title2)
                                 .bold()
                         }
-                        if viewModel.wristTemperatureDisabled {
-                            Text("Failed to fetch measurements")
-                                .foregroundColor(.gray)
+                        if case .failure(let error) = viewModel.rhr {
+                            if case QueryParser.QueryParserError.noLatestValueFound = error {
+                                Text("No measurements found")
+                                    .foregroundColor(.gray)
+                            } else {
+                                Text("Failed to fetch measurements")
+                                    .foregroundColor(.gray)
+                            }
+                            Text("").font(.footnote) // occupies vertical space
                         } else {
                             HStack {
                                 Text("Current")
@@ -173,6 +147,7 @@ struct HeartView: View {
                     })
                 }
 
+                /*
                 if viewModel.shouldShowMissingMeasurements {
                     Divider()
                     MissingMeasurementsView(viewModel: viewModel,
@@ -183,6 +158,7 @@ struct HeartView: View {
                         viewModel.markMissingMeasurementsAsShown()
                     }
                 }
+                 */
                 if viewModel.shouldShowDisabledNotificationsAlert {
                     MissingMeasurementsView(viewModel: viewModel,
                                             title: "Notifications disabled",
@@ -282,42 +258,5 @@ private struct DescriptionTextView: View {
             }
         }
         .padding()
-    }
-}
-
-struct HeartView_Previews: PreviewProvider {
-    static var previews: some View {
-        Group {
-            HeartView(
-                viewModel: HeartView.ViewModel(
-                    heartRateService: RestingHeartRateService.shared,
-                    shouldReloadContents: false,
-                    viewState: .success(GenericUpdate(date: Date(), value: 90.0, type: .restingHeartRate), 60.0)))
-            HeartView(
-                viewModel: HeartView.ViewModel(
-                    heartRateService: RestingHeartRateService.shared,
-                    shouldReloadContents: false,
-                    viewState: .success(GenericUpdate(date: Date(), value: 60.0, type: .restingHeartRate), 60.0)))
-            HeartView(
-                viewModel: HeartView.ViewModel(
-                    heartRateService: RestingHeartRateService.shared,
-                    shouldReloadContents: false,
-                    viewState: .error(HeartView.HeartViewError.missingLatestHeartRate)))
-            HeartView(
-                viewModel: HeartView.ViewModel(
-                    heartRateService: RestingHeartRateService.shared,
-                    shouldReloadContents: false,
-                    viewState: .error(HeartView.HeartViewError.missingAverageHeartRate)))
-            HeartView(
-                viewModel: HeartView.ViewModel(
-                    heartRateService: RestingHeartRateService.shared,
-                    shouldReloadContents: false,
-                    viewState: .error(HeartView.HeartViewError.missingBoth)))
-            HeartView(
-                viewModel: HeartView.ViewModel(
-                    heartRateService: RestingHeartRateService.shared,
-                    shouldReloadContents: false,
-                    viewState: .loading))
-        }
     }
 }

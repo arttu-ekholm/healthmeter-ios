@@ -17,7 +17,6 @@ struct AllMeasurementsDisplay {
 }
 
 extension HeartView {
-    // swiftlint:disable type_body_length
     class ViewModel: ObservableObject {
         @Published private var restingHeartRateService: RestingHeartRateService
         private let calendar: Calendar
@@ -25,7 +24,6 @@ extension HeartView {
         private let decisionEngine: DecisionEngine
 
         var shouldReloadContents: Bool
-        @Published var viewState: ViewState<GenericUpdate, Double>
         @Published var notificationsDenied = false
         @Published var animationAmount: CGFloat = 1
         @Published var histogram: RestingHeartRateHistory?
@@ -209,12 +207,10 @@ extension HeartView {
             heartRateService: RestingHeartRateService = RestingHeartRateService.shared,
             calendar: Calendar = Calendar.current,
             shouldReloadContents: Bool = true,
-            viewState: ViewState<GenericUpdate, Double> = .loading,
             decisionEngine: DecisionEngine = DecisionEngineImplementation()) {
                 self.restingHeartRateService = heartRateService
                 self.calendar = calendar
                 self.shouldReloadContents = shouldReloadContents
-                self.viewState = viewState
                 self.decisionEngine = decisionEngine
 
                 restingHeartRateService.$averageWristTemperaturePublished
@@ -251,21 +247,8 @@ extension HeartView {
             }
 
         func requestLatestRestingHeartRate() {
-            restingHeartRateService.queryAverageRestingHeartRate { averageResult in
-
-                self.restingHeartRateService.queryLatestMeasurement(type: .restingHeartRate) { latestResult in
-                    DispatchQueue.main.async {
-                        if case .success(let update) = latestResult, case .success(let average) = averageResult {
-                            self.viewState = .success(update, average)
-                        } else if case .failure = averageResult, case .failure = latestResult {
-                            self.viewState = .error(HeartViewError.missingBoth)
-                        } else if case .failure = averageResult {
-                            self.viewState = .error(HeartViewError.missingLatestHeartRate)
-                        } else if case .failure = latestResult {
-                            self.viewState = .error(HeartViewError.missingLatestHeartRate)
-                        }
-                    }
-                }
+            restingHeartRateService.queryAverageRestingHeartRate { _ in
+                self.restingHeartRateService.queryLatestMeasurement(type: .restingHeartRate) { _ in }
             }
         }
 
@@ -297,22 +280,6 @@ extension HeartView {
             }
         }
 
-        var restingHeartRateIsUpdatedToday: Bool {
-            guard case .success(let update, _) = viewState else {
-                return false
-            }
-
-            return calendar.isDateInToday(update.date)
-        }
-
-        var heartImageShouldAnimate: Bool {
-            if case .success(let latest, _) = viewState, calendar.isDateInToday(latest.date) {
-                return true
-            } else {
-                return false
-            }
-        }
-
         // MARK: - URLs
         var healthAppURL: URL {
             return URL(string: "x-apple-health://")!
@@ -322,5 +289,4 @@ extension HeartView {
             return URL(string: UIApplication.openSettingsURLString)!
         }
     }
-    // swiftlint:enable type_body_length
 }
