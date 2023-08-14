@@ -364,7 +364,6 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         healthStore.execute(query)
     }
 
-
     // MARK: - Background observer
 
     var shouldStopBackgroundQuery: Bool {

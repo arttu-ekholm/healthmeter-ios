@@ -33,6 +33,15 @@ class DecisionManagerTests: XCTestCase {
         XCTAssertFalse(mockNotificationService.postNotificationCalled, "Notification shouldn't be sent if there is no average heart rate")
     }
 
+    func testUpdate_noNotificationIfAvgWTMissing() throws {
+        let mockNotificationService = MockNotificationService()
+        let service = RestingHeartRateService(userDefaults: userDefaults, decisionManager: DecisionManager(notificationService: mockNotificationService))
+        let update = GenericUpdate(date: Date(), value: 37.0, type: .wristTemperature)
+        service.handleUpdate(update: update)
+
+        XCTAssertFalse(mockNotificationService.postNotificationCalled, "Notification shouldn't be sent if there is no average wrist temperature")
+    }
+
     func testPosted_rising() throws {
         let decisionManager = DecisionManager(userDefaults: userDefaults, decisionEngine: DecisionEngineImplementation())
         let service = RestingHeartRateService(
@@ -93,6 +102,18 @@ class DecisionManagerTests: XCTestCase {
         XCTAssertFalse(decisionManager.hasPostedAboutLoweredNotificationToday)
     }
 
+    func testPosting_averageWT() throws {
+        let decisionManager = DecisionManager(userDefaults: userDefaults)
+        let service = RestingHeartRateService(userDefaults: userDefaults, decisionManager: decisionManager)
+        userDefaults.set(37.0, forKey: "AverageWristTemperature")
+
+        let update = GenericUpdate(date: Date(), value: 37.0, type: .wristTemperature)
+        service.handleUpdate(update: update)
+
+        XCTAssertFalse(decisionManager.hasPostedAboutRisingNotificationToday(type: .wristTemperature))
+        XCTAssertFalse(decisionManager.hasPostedAboutLoweredNotificationToday)
+    }
+
     /**
      Service gets high, average, high average resting rate. The app should post notification about one about rising HRH, and one about lowered RHR.
      */
@@ -114,6 +135,25 @@ class DecisionManagerTests: XCTestCase {
 
         XCTAssertTrue(decisionManager.hasPostedAboutRisingNotificationToday(type: .restingHeartRate))
         XCTAssertTrue(decisionManager.hasPostedAboutLoweredNotificationToday)
+    }
+
+    func testPosted_multiple_wt() throws {
+        let notificationService = MockNotificationService()
+        let decisionManager = DecisionManager(notificationService: notificationService, userDefaults: userDefaults)
+        let service = RestingHeartRateService(userDefaults: userDefaults, decisionManager: decisionManager)
+        userDefaults.set(37.0, forKey: "AverageWristTemperature")
+
+        let risingUpdate1 = GenericUpdate(date: Date().addingTimeInterval(-60*60*3), value: 39.0, type: .wristTemperature)
+        service.handleUpdate(update: risingUpdate1)
+        let risingUpdate2 = GenericUpdate(date: Date().addingTimeInterval(-60*60*2), value: 40.0, type: .wristTemperature)
+        service.handleUpdate(update: risingUpdate2)
+        let risingUpdate3 = GenericUpdate(date: Date().addingTimeInterval(-60*60), value: 41.0, type: .wristTemperature)
+        service.handleUpdate(update: risingUpdate3)
+        let loweringUpdate1 = GenericUpdate(date: Date(), value: 36.0, type: .wristTemperature)
+        service.handleUpdate(update: loweringUpdate1)
+        XCTAssertEqual(notificationService.postNotificationCalledCount, 1, "Only one notification should be sent about the wrist temperature")
+
+        XCTAssertTrue(decisionManager.hasPostedAboutRisingNotificationToday(type: .wristTemperature))
     }
 
     /**
