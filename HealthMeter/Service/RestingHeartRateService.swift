@@ -104,15 +104,14 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
             return userDefaults.bool(forKey: backgroundObserverQueryEnabledKey)
         } set {
             userDefaults.set(newValue, forKey: backgroundObserverQueryEnabledKey)
+            observerQueries.forEach { keyValue in
+                print("stopping observer query: \(keyValue.value)")
+                healthStore.stop(keyValue.value)
+            }
+            observerQueries.removeAll()
             if newValue == true {
                 observeInBackground(type: .restingHeartRate)
                 observeInBackground(type: .wristTemperature)
-            } else { // Stop the observer queries
-                observerQueries.forEach { keyValue in
-                    print("stopping observer query: \(keyValue.value)")
-                    healthStore.stop(keyValue.value)
-                }
-                observerQueries.removeAll()
             }
         }
     }
@@ -332,7 +331,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     }
 
     func getAuthorisationStatusForRestingHeartRate(completion: @escaping (HealthKitAuthorisationStatus) -> Void) {
-        let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!])
+        let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!, HKObjectType.quantityType(forIdentifier: .appleSleepingWristTemperature)!])
         healthStore.getRequestStatusForAuthorization(toShare: [], read: rhr) { status, _ in
             switch status {
             case .unnecessary: completion(.unnecessary)
