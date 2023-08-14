@@ -67,7 +67,7 @@ struct HeartView: View {
                     ZStack {
                         Divider()
                         Circle()
-                            .fill(.white)
+                            .fill(Color(UIColor.systemBackground))
                             .frame(width: 48, height: 48)
                         Image(systemName: "hand.thumbsup")
                             .resizable()
@@ -102,12 +102,11 @@ struct HeartView: View {
                                 .foregroundColor(.gray)
                         } else {
                             HStack {
-                                Text("Current:")
+                                Text("Current")
                                 Text(viewModel.restingHeartRateDisplayText)
-
                                     .bold()
                                 Spacer()
-                                Text("Average:")
+                                Text("Average")
                                 Text(viewModel.rhrAverageDisplayText)
                                     .bold()
                             }
@@ -152,7 +151,6 @@ struct HeartView: View {
                             HStack {
                                 Text("Current")
                                 Text(viewModel.wristTemperatureCurrentDisplayText)
-                                    .foregroundColor(viewModel.wristTemperatureColor)
                                     .bold()
                                 Spacer()
 
@@ -174,23 +172,6 @@ struct HeartView: View {
                         }
                     })
                 }
-                /*
-                HStack {
-                    Image(systemName: "bolt.heart")
-                        .font(.title2)
-                        .bold()
-                        .foregroundColor(.gray)
-                        .frame(width: 36)
-                    VStack(alignment: .leading, content: {
-                        Text("Heart rate variability")
-                            .font(.title2)
-                            .bold()
-                            .foregroundColor(.gray)
-                        Text("Unable to fetch measurements.")
-                            .foregroundColor(.gray)
-                    })
-                }
-    */
 
                 if viewModel.shouldShowMissingMeasurements {
                     Divider()
