@@ -118,7 +118,7 @@ struct HeartView: View {
                                 }
                                 Spacer()
                                 if viewModel.avg != nil {
-                                    Text("6 month average")
+                                    Text("2 month average")
                                         .font(.footnote)
                                         .foregroundColor(.secondary)
                                 }
@@ -165,7 +165,7 @@ struct HeartView: View {
                             }
                             Spacer()
                             if viewModel.avgWrist != nil {
-                                Text("6 month average")
+                                Text("2 month average")
                                     .font(.footnote)
                                     .foregroundColor(.secondary)
                             }

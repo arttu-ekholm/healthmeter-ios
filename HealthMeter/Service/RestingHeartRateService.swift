@@ -117,6 +117,10 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         }
     }
 
+    private var averageTimeInterval: TimeInterval {
+        return -60 * 60 * 24 * 60
+    }
+
     init(userDefaults: UserDefaults = UserDefaults.standard,
          calendar: Calendar = Calendar.current,
          healthStore: HKHealthStore = HKHealthStore(),
@@ -163,7 +167,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
 
     func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
         let now = Date()
-        let queryStartDate = now.addingTimeInterval(-60 * 60 * 24 * 60)
+        let queryStartDate = now.addingTimeInterval(averageTimeInterval)
         let query = queryProvider.getAverageRestingHeartRateQuery(queryStartDate: queryStartDate)
 
         query.initialResultsHandler = { query, results, error in
@@ -184,7 +188,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
 
     func queryAverageWristTemperature(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
         let now = Date()
-        let queryStartDate = now.addingTimeInterval(-60 * 60 * 24 * 60)
+        let queryStartDate = now.addingTimeInterval(averageTimeInterval)
         let query = queryProvider.getAverageWristTemperatureQuery(queryStartDate: queryStartDate)
 
         query.initialResultsHandler = { query, results, error in
@@ -360,19 +364,6 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         healthStore.execute(query)
     }
 
-    // MARK: - Strings
-/*
-    func rangesForHeartRateLevels(average: Double) -> HeartRateRanges {
-        let ranges: [HeartRateLevel: Range<Double>] = [
-            .belowAverage: 0..<(average * (1 - thresholdMultiplier)),
-            .normal: (average * (1 - thresholdMultiplier))..<average + (average * thresholdMultiplier),
-            .slightlyElevated: average + (average * thresholdMultiplier)..<average + (average * 2 * thresholdMultiplier),
-            .noticeablyElevated: average + (average * 2 * thresholdMultiplier)..<average + (average * 4 * thresholdMultiplier),
-            .wayAboveElevated: average + (average * 4 * thresholdMultiplier)..<Double.infinity
-        ]
-        return HeartRateRanges(ranges: ranges)
-    }
- */
 
     // MARK: - Background observer
 
