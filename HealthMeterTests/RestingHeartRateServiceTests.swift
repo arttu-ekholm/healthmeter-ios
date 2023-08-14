@@ -164,7 +164,7 @@ class RestingHeartRateServiceTests: XCTestCase {
     func testObserveInBackground_functionsCalled() {
         let mockHealthStore = MockHealthStore()
         let service = RestingHeartRateService(userDefaults: userDefaults, healthStore: mockHealthStore)
-        service.observeInBackground(type: .restingHeartRate) { _, _ in } // TODO: maybe other types
+        service.observeInBackground(type: .restingHeartRate) { _, _ in }
         XCTAssertTrue(mockHealthStore.executeQueryCalled)
         XCTAssertTrue(mockHealthStore.enableBackgroundDeliveryCalled)
     }
@@ -184,7 +184,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         }
         _ = expectation(for: predicate, evaluatedWith: mockQueryParser, handler: .none)
 
-        service.observeInBackground(type: .restingHeartRate, completionHandler: { _, _ in }) // TODO: other types
+        service.observeInBackground(type: .restingHeartRate, completionHandler: { _, _ in })
         waitForExpectations(timeout: 2.0, handler: .none)
     }
 
@@ -209,7 +209,7 @@ class RestingHeartRateServiceTests: XCTestCase {
         }
         _ = expectation(for: predicate, evaluatedWith: mockNotificationService, handler: .none)
 
-        service.observeInBackground(type: .wristTemperature, completionHandler: { _, _ in }) // TODO: other types
+        service.observeInBackground(type: .wristTemperature, completionHandler: { _, _ in })
         waitForExpectations(timeout: 2.0, handler: .none)
     }
 
