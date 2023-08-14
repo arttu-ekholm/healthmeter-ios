@@ -172,7 +172,8 @@ class RestingHeartRateService: ObservableObject {
         self.queryProvider = queryProvider
         self.queryParser = queryParser
 
-        self.latestRestingHeartRateUpdate = decodeLatestRestingHeartRateUpdate()
+        self.latestRestingHeartRateUpdate = decodeLatestUpdate(ofType: .restingHeartRate)
+        self.latestWristTemperatureUpdate = decodeLatestUpdate(ofType: .wristTemperature)
 
         userDefaults.register(defaults: [backgroundObserverQueryEnabledKey: true])
     }
@@ -180,15 +181,23 @@ class RestingHeartRateService: ObservableObject {
     /**
      Decodes the latest RHR update from UserDefaults
      */
-    private func decodeLatestRestingHeartRateUpdate() -> Result<GenericUpdate, Error>? {
-        guard let data = userDefaults.data(forKey: latestRestingHeartRateUpdateKey) else { return nil }
+    private func decodeLatestUpdate(ofType type: UpdateType) -> Result<GenericUpdate, Error>? {
+        let key: String
+        switch type {
+        case .restingHeartRate: key = latestRestingHeartRateUpdateKey
+        case .wristTemperature: key = latestWristTemperatureUpdateKey
+        }
+        guard let data = userDefaults.data(forKey: key) else { return nil }
 
         let decoder = JSONDecoder()
         do {
             let update = try decoder.decode(GenericUpdate.self, from: data)
             return .success(update)
         } catch {
-            return .failure(error)
+            // Remove the object as it might be an incompatible with the earlier version
+            print("Decoding of an object with UserDefaults key of \(key) failed with an error: \(error). Removing it from the UserDefaults")
+            userDefaults.removeObject(forKey: key)
+            return nil
         }
     }
 
