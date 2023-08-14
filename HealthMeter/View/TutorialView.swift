@@ -35,6 +35,9 @@ struct TutorialView: View {
                 Spacer()
                 ZStack {
                     Divider()
+                    Circle()
+                        .fill(Color(UIColor.systemBackground))
+                        .frame(width: 48, height: 48)
                     Image(systemName: "heart.fill")
                         .resizable()
                         .scaledToFit()
