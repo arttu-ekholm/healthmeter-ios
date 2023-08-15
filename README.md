@@ -1,6 +1,6 @@
 # Restful - heart rate monitor
 
-Get a push notification when your resting heart is elevated.
+Get a push notification when your resting heart or wrist temperature level becomes elevated.
 
 ## About
 
