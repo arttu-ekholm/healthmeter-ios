@@ -69,13 +69,23 @@ struct HeartView: View {
                             }
                             Text("").font(.footnote) // occupies vertical space
                         } else {
-                            HStack {
+                            HStack(alignment: .lastTextBaseline, spacing: 4) {
                                 Text("Current")
                                 Text(viewModel.restingHeartRateDisplayText)
+                                    .font(.title3)
+                                    .bold()
+                                Text(viewModel.rhrUnits)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
                                     .bold()
                                 Spacer()
                                 Text("Average")
                                 Text(viewModel.rhrAverageDisplayText)
+                                    .font(.title3)
+                                    .bold()
+                                Text(viewModel.rhrUnits)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
                                     .bold()
                             }
                             HStack {
@@ -122,12 +132,24 @@ struct HeartView: View {
                             }
                             Text("").font(.footnote) // occupies vertical space
                         } else {
-                            HStack {
+                            HStack(alignment: .lastTextBaseline, spacing: 4) {
                                 Text("Current")
                                 Text(viewModel.wristTemperatureCurrentDisplayText)
+                                    .font(.title3)
+                                    .bold()
+                                Text(viewModel.wtUnits)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
                                     .bold()
                                 Spacer()
 
+                                Text(viewModel.wtAverageDisplayText)
+                                    .font(.title3)
+                                    .bold()
+                                Text(viewModel.wtUnits)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .bold()
                                 Text(viewModel.wristTemperatureDiffDisplayText)
                             }
                         }

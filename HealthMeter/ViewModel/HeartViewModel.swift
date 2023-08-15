@@ -49,7 +49,7 @@ extension HeartView {
                 elevatedWristTemperature = decisionEngine.wristTemperatureIsAboveAverage(update: update, average: avg)
             }
             if elevatedRHR == nil && elevatedWristTemperature == nil {
-                return nil
+                return AllMeasurementsDisplay(string: " ", color: .black, imageName: "") // to occupy the vertical space
             } else if elevatedRHR ?? false && elevatedWristTemperature ?? false {
                 return AllMeasurementsDisplay(string: "All fine", color: .green, imageName: "checkmark")
             } else {
@@ -63,9 +63,7 @@ extension HeartView {
                     text = (level == .belowAverage || level == .normal) ? "You're all fine" : "Elevated measurements"
                     imageName = (level == .belowAverage || level == .normal) ? "hand.thumbsup" : "exclamationmark.triangle"
                 } else {
-                    text = "Elevated measurements"
-                    color = .primary
-                    imageName = "exclamationmark.triangle"
+                    return AllMeasurementsDisplay(string: " ", color: .black, imageName: "") // to occupy the vertical space
                 }
 
                 return AllMeasurementsDisplay(string: text, color: color, imageName: imageName)
@@ -134,16 +132,27 @@ extension HeartView {
                 case _ where diff > 1.0: return "high"
                 default: return "normal"
                 }
-            case .failure: return ""
-            case nil: return ""
+            case .failure: return "–"
+            case nil: return "–"
             }
         }
 
         var wristTemperatureCurrentDisplayText: String {
             if case .success(let update) = wristTemperature {
-                return String(format: "%.1f°\(Locale.current.temperatureSymbol)", update.value)
+                return String(format: "%.1f", update.value)
             } else {
-                return ""
+                return "–"
+            }
+        }
+
+        var wtAverageDisplayText: String {
+            switch wristTemperature {
+            case .success(let update):
+                guard let avgWrist else { return "–" }
+                let diff = abs(update.value - avgWrist)
+                return String(format: "%.1f", diff)
+            case .failure: return "–"
+            case nil: return "–"
             }
         }
 
@@ -152,10 +161,9 @@ extension HeartView {
             case .success(let update):
                 guard let avgWrist else { return "" }
                 let aboveBelow = update.value > avgWrist ? "above" : "below"
-                let diff = abs(update.value - avgWrist)
-                return String(format: "%.1f°\(Locale.current.temperatureSymbol) \(aboveBelow) average", diff)
-            case .failure: return ""
-            case nil: return ""
+                return "\(aboveBelow) average"
+            case .failure: return "–"
+            case nil: return "–"
             }
         }
 
@@ -176,15 +184,22 @@ extension HeartView {
         }
 
         var rhrAverageDisplayText: String {
-            guard let avg = avg else { return "" }
-            return String(format: "%.0f bpm", avg)
+            guard let avg = avg else { return "–" }
+            return String(format: "%.0f", avg)
         }
-        
+
+        var rhrUnits: String {
+            "bpm"
+        }
+        var wtUnits: String {
+            "°\(Locale.current.temperatureSymbol)"
+        }
+
         var restingHeartRateDisplayText: String {
             switch rhr {
             case .success(let update):
                 guard avg != nil else { return "" }
-                return String(format: "%.0f bpm", update.value)
+                return String(format: "%.0f", update.value)
             case .failure: return ""
             case nil: return ""
             }
