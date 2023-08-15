@@ -8,7 +8,7 @@ HealthMeter monitors the resting heart rate (RHR) and resting wrist temperature 
 
 ## Requirements
 
-The app requires a HealthKit-capable device and another device that measures and stores resting heart rate (such as Apple Watch or Oura ring). 
+The app requires a HealthKit-capable device and another device that measures and stores resting heart rate (such as Apple Watch).
 
 ## Motivation
 
@@ -21,7 +21,7 @@ I created this project for several reasons:
 
 ## Installation and usage
 
-Clone the project and run `pod install` in the project root. Build & run on an iPhone. With simulator, the app shows an error view telling it can't query the resting heart rate values.   
+Clone the project and hit Build & run on an iPhone device. The app can also be run on a simulator, but the HealthKit records need to be added manually using Health app. 
 
 ## External dependencies
 
