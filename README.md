@@ -1,10 +1,10 @@
-# HealthMeter
+# Restful - heart rate monitor
 
 Get a push notification when your resting heart is elevated.
 
 ## About
 
-HealthMeter monitors the resting heart rate (RHR) and resting wrist temperature from HealthKit and sends a push notification when either measurement is elevated. Everything is done locally on the device and the notifications are local notifications. The app doesn't require or use network connection.
+Restful monitors the resting heart rate (RHR) and resting wrist temperature from HealthKit and sends a push notification when either measurement is elevated. Everything is done locally on the device and the notifications are local notifications. The app doesn't require or use network connection.
 
 ## Requirements
 
