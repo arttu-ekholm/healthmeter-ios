@@ -13,7 +13,7 @@ import Combine
 struct AllMeasurementsDisplay {
     let string: String
     let color: Color
-    let image: Image
+    let imageName: String
 }
 
 extension HeartView {
@@ -25,8 +25,6 @@ extension HeartView {
 
         var shouldReloadContents: Bool
         @Published var notificationsDenied = false
-        @Published var animationAmount: CGFloat = 1
-        @Published var histogram: RestingHeartRateHistory?
 
         @Published var rhr: Result<GenericUpdate, Error>?
         @Published var avg: Double?
@@ -41,7 +39,7 @@ extension HeartView {
             var elevatedWristTemperature: Bool?
             var level: HeartRateLevel?
             let text: String
-            let image: Image
+            let imageName: String
             if let avg = avg, avg != 0, case .success(let update) = rhr {
                 let multiplier = update.value / avg
                 level = heartRateLevelForMultiplier(multiplier: multiplier)
@@ -53,24 +51,24 @@ extension HeartView {
             if elevatedRHR == nil && elevatedWristTemperature == nil {
                 return nil
             } else if elevatedRHR ?? false && elevatedWristTemperature ?? false {
-                return AllMeasurementsDisplay(string: "All fine", color: .green, image: Image(systemName: "checkmark"))
+                return AllMeasurementsDisplay(string: "All fine", color: .green, imageName: "checkmark")
             } else {
                 var color: Color
                 if elevatedWristTemperature ?? false {
                     color = .red
                     text = "Elevated measurements"
-                    image = Image(systemName: "exclamationmark.triangle")
+                    imageName = "exclamationmark.triangle"
                 } else if let level = level {
                     color = colorForLevel(level)
                     text = (level == .belowAverage || level == .normal) ? "You're all fine" : "Elevated measurements"
-                    image = (level == .belowAverage || level == .normal) ? Image(systemName: "hand.thumbsup") : Image(systemName: "exclamationmark.triangle")
+                    imageName = (level == .belowAverage || level == .normal) ? "hand.thumbsup" : "exclamationmark.triangle"
                 } else {
                     text = "Elevated measurements"
                     color = .primary
-                    image = Image(systemName: "exclamationmark.triangle")
+                    imageName = "exclamationmark.triangle"
                 }
 
-                return AllMeasurementsDisplay(string: text, color: color, image: image)
+                return AllMeasurementsDisplay(string: text, color: color, imageName: imageName)
             }
         }
 
@@ -181,21 +179,12 @@ extension HeartView {
             guard let avg = avg else { return "" }
             return String(format: "%.0f bpm", avg)
         }
+        
         var restingHeartRateDisplayText: String {
             switch rhr {
             case .success(let update):
                 guard avg != nil else { return "" }
                 return String(format: "%.0f bpm", update.value)
-            case .failure: return ""
-            case nil: return ""
-            }
-        }
-
-        var wristTemperatureDisplayText: String {
-            switch wristTemperature {
-            case .success(let update):
-                guard avgWrist != nil else { return "" }
-                return String(format: "%.1f\(Locale.current.temperatureSymbol)", update.value)
             case .failure: return ""
             case nil: return ""
             }
@@ -255,16 +244,6 @@ extension HeartView {
         func requestLatestWristTemperature() {
             restingHeartRateService.queryAverageWristTemperature { _ in
                 self.restingHeartRateService.queryLatestMeasurement(type: .wristTemperature) { _ in }
-            }
-        }
-
-        func getLatestRestingHeartRateDisplayString(update: GenericUpdate) -> String {
-            if calendar.isDateInToday(update.date) {
-                return "Your resting heart rate today is"
-            } else if calendar.isDateInYesterday(update.date) {
-                return "Yesterday, your resting heart rate was"
-            } else { // past
-                return "Earlier, your resting heart rate was"
             }
         }
 

@@ -31,7 +31,7 @@ struct HeartView: View {
                         Circle()
                             .fill(Color(UIColor.systemBackground))
                             .frame(width: 48, height: 48)
-                        disp.image
+                        Image(systemName: disp.imageName)
                             .resizable()
                             .frame(width: 36, height: 36)
                             .foregroundColor(disp.color)
