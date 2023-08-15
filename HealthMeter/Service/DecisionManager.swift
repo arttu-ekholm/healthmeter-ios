@@ -317,6 +317,8 @@ class DecisionEngineImplementation: DecisionEngine {
      - returns true if the heart rate is above the average
      */
     func heartRateIsAboveAverage(update: GenericUpdate, average: Double) -> Bool {
+        guard update.type == .restingHeartRate else { return false }
+
         return update.value / average > threshold
     }
 
