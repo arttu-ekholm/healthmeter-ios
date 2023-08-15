@@ -49,7 +49,7 @@ extension HeartView {
                 elevatedWristTemperature = decisionEngine.wristTemperatureIsAboveAverage(update: update, average: avg)
             }
             if elevatedRHR == nil && elevatedWristTemperature == nil {
-                return AllMeasurementsDisplay(string: " ", color: .black, imageName: "") // to occupy the vertical space
+                return AllMeasurementsDisplay(string: " ", color: .secondary, imageName: "exclamationmark.triangle") // to occupy the vertical space
             } else if elevatedRHR ?? false && elevatedWristTemperature ?? false {
                 return AllMeasurementsDisplay(string: "All fine", color: .green, imageName: "checkmark")
             } else {
@@ -132,8 +132,8 @@ extension HeartView {
                 case _ where diff > 1.0: return "high"
                 default: return "normal"
                 }
-            case .failure: return "–"
-            case nil: return "–"
+            case .failure: return ""
+            case nil: return ""
             }
         }
 
