@@ -9,7 +9,7 @@ import Foundation
 import UIKit
 
 /**
- Decides what to do with the new updates (whether to post a push notification or not)
+ Posts push notifications
  */
 class NotificationService {
     enum NotificationServiceError: Error {

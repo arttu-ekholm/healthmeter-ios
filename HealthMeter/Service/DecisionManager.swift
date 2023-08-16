@@ -8,7 +8,7 @@
 import Foundation
 
 /**
- Handles decisions about the health updates
+ Handles decisions about the health updates - whether or not to post a push notification.
  */
 class DecisionManager {
     // Dependencies
@@ -278,7 +278,7 @@ class DecisionManager {
 }
 
 /**
-    Collection of decision that can be shared between the notification decisions and the view model logic.
+    Collection of logical functions that can be shared between the notification decisions and the view model logic. Generally, the fine-tuning of the app should happen by changing the internals of the `DecisionEngine` implementation.
  */
 protocol DecisionEngine {
     func wristTemperatureIsAboveAverage(update: GenericUpdate, average: Double) -> Bool

@@ -23,6 +23,9 @@ enum Trend {
     }
 }
 
+/**
+ Protocol for providing the latest and average values.
+ */
 protocol RestingHeartRateProvider: AnyObject {
     var averageHeartRatePublished: Double? { get }
     var averageWristTemperaturePublished: Double? { get }
@@ -35,6 +38,9 @@ protocol RestingHeartRateProvider: AnyObject {
 }
 
 // swiftlint: disable type_body_length
+/**
+ Handles the fetching and providing the HealthKit queries while being a wrapper over HealthKit without exposing it to the rest of the app.
+ */
 class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     /**
      These are mapped to `HKAuthorizationRequestStatus`
@@ -70,10 +76,13 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     /// Parses the query responses
     private let queryParser: QueryParser
 
+    /// Updates are passed to decisonManager. It decides whether or not a push notification should be sent.
     private let decisionManager: DecisionManager
 
+    /// Background observer queries for each HealthKit update type
     private var observerQueries: [UpdateType: HKObserverQuery] = [:]
 
+    /// Two month average
     private(set) var averageHeartRate: Double? {
         get {
             guard let avg = userDefaults.object(forKey: averageRestingHeartRateKey) else { return nil }
@@ -85,6 +94,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         }
     }
 
+    /// Two month average
     private(set) var averageWristTemperature: Double? {
         get {
             guard let avg = userDefaults.object(forKey: averageWristTemperatureKey) else { return nil }
@@ -116,6 +126,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         }
     }
 
+    /// Two months
     private var averageTimeInterval: TimeInterval {
         return -60 * 60 * 24 * 60
     }
@@ -346,6 +357,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     }
 
     // MARK: - Average resting heart rate data for chart
+
     func fetchRestingHeartRateHistory(startDate: Date, completion: @escaping (Result<RestingHeartRateHistory, Error>) -> Void) {
         let now = Date()
 
