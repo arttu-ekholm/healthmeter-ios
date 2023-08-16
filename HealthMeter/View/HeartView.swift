@@ -200,14 +200,19 @@ struct HeartView: View {
                     viewModel.requestLatestWristTemperature()
                 }
 
-                viewModel.checkNotificationStatus()
+                Task {
+                    await viewModel.checkNotificationStatus()
+                }
+
             }
             .onChange(of: scenePhase) { newPhase in
                 if newPhase == .active, viewModel.shouldReloadContents {
                     viewModel.requestLatestRestingHeartRate()
                     viewModel.requestLatestWristTemperature()
                 }
-                viewModel.checkNotificationStatus()
+                Task {
+                    await viewModel.checkNotificationStatus()
+                }
             }
         }
 
