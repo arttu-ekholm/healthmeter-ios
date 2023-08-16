@@ -18,19 +18,6 @@ class QueryProvider {
         self.calendar = calendar
     }
 
-    /*
-    func getLatestRestingHeartRateQuery(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
-        let sampleType = sampleTypeForRestingHeartRate
-        let sortDescriptor = sortDescriptor
-        let sampleQuery = HKSampleQuery(sampleType: sampleType,
-                                        predicate: nil,
-                                        limit: 1,
-                                        sortDescriptors: [sortDescriptor],
-                                        resultsHandler: resultsHandler)
-        return sampleQuery
-    }
-     */
-
     func getLatestWristTemperature(resultsHandler: @escaping (HKSampleQuery, [HKSample]?, Error?) -> Void) -> HKSampleQuery {
         let sampleType = sampleTypeForWristTemperature
         let sortDescriptor = sortDescriptor

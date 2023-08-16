@@ -314,6 +314,9 @@ class DecisionEngineImplementation: DecisionEngine {
         return 1 + thresholdMultiplier
     }
 
+    /**
+     RHR values above x times `thresholdMultiplier`are considered above average.
+     */
     var thresholdMultiplier: Double {
         return 0.05
     }

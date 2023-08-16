@@ -15,8 +15,6 @@ struct HeartView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 36, content: {
-                Spacer(minLength: 40)
-
                 if let disp = viewModel.allMeasurementsDisplay {
                     HStack {
                         Spacer()
@@ -215,22 +213,6 @@ struct HeartView: View {
                 }
             }
         }
-
-    }
-
-    func heartRateText(restingHeartRateResult: Result<GenericUpdate, Error>?) -> Text? {
-        guard let result = restingHeartRateResult else {
-            return nil
-        }
-
-        switch result {
-        case .success(let update):
-            return Text(String(update.value))
-        case .failure(let error):
-            return Text(error.localizedDescription)
-                .bold()
-                .font(.headline)
-        }
     }
 }
 
@@ -269,21 +251,5 @@ private struct MissingMeasurementsView: View {
             RoundedRectangle(cornerRadius: 12)
                 .stroke(.orange, lineWidth: 1)
         )
-    }
-}
-
-private struct DescriptionTextView: View {
-    let title: String
-    let subtitle: String?
-    var body: some View {
-        VStack(alignment: .center, spacing: 12.0) {
-            Text(title)
-                .bold()
-                .font(.headline)
-            if let subtitle = subtitle {
-                Text(subtitle)
-            }
-        }
-        .padding()
     }
 }

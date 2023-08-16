@@ -12,10 +12,6 @@ import UIKit
  Posts push notifications
  */
 class NotificationService {
-    enum NotificationServiceError: Error {
-        case appIsActive
-    }
-
     private let applicationProxy: ApplicationProxy
     private let notificationCenterProxy: NotificationCenterProxy
 

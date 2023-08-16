@@ -8,6 +8,9 @@
 import SwiftUI
 import Foundation
 
+/**
+ Convenience variables for setting/getting values of UserDefaults`
+ */
 class SettingsStore: ObservableObject {
     static let tutorialShownKey = "tutorialShown"
     let userDefaults: UserDefaults
