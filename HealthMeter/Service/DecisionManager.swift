@@ -59,13 +59,6 @@ class DecisionManager {
     }
 
     private func handleRestingHeartRateUpdate(update: GenericUpdate) {
-        guard let provider = restingHeartRateProvider else { return }
-
-        guard let averageHeartRate = provider.averageHeartRate else {
-            // No avg HR, the app cannot do the comparison
-            return
-        }
-
         /* It's possible that the HKObserverQuery sends multiple callback simultaneously. Posting notifications is asynchronous,
          which causes the notification sent timestamp to be updated after multiple notifications are sent. To prevent this,
          `isHandlingUpdate` flag is raised while this function handles the notification. The pending updates are added to the
@@ -73,23 +66,19 @@ class DecisionManager {
          */
 
         if isHandlingUpdate {
-            print("Is already handling an update, adding it to the queue")
+            print("Is already handling an update, adding the update \(update) to the queue")
             updateQueue.append(update)
             return
         }
 
-        isHandlingUpdate = true
+        guard let provider = restingHeartRateProvider else { return }
 
-        // Check if the date is later than the last saved rate update
-        if let previousUpdate = provider.latestRestingHeartRateUpdate, case .success(let res) = previousUpdate {
-            guard update.date > res.date else {
-                // The update is earlier than the latest, so no need to compare
-                // This can be ignored
-                isHandlingUpdate = false
-                handleNextItemFromQueueIfNeeded()
-                return
-            }
+        guard let averageHeartRate = provider.averageHeartRate else {
+            // No avg HR, the app cannot do the comparison
+            return
         }
+
+        isHandlingUpdate = true
 
         let isAboveAverageRHR = decisionEngine.heartRateIsAboveAverage(update: update, average: averageHeartRate)
 
@@ -134,14 +123,14 @@ class DecisionManager {
     }
 
     private func handleWristTemperatureUpdate(update: GenericUpdate) {
-        guard let provider = restingHeartRateProvider else {
-            print("DecisionManager is missing RestingHeartRateProvider")
+        if isHandlingUpdate {
+            print("Is already handling an update, adding the update \(update) to the queue")
+            updateQueue.append(update)
             return
         }
 
-        if isHandlingUpdate {
-            print("Is already handling an update, adding the update to the queue")
-            updateQueue.append(update)
+        guard let provider = restingHeartRateProvider else {
+            print("DecisionManager is missing RestingHeartRateProvider")
             return
         }
 
