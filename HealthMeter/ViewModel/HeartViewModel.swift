@@ -263,10 +263,12 @@ extension HeartView {
 
         func checkNotificationStatus() async {
             let settings = await notificationCenter.notificationSettings()
-            if case .denied = settings.authorizationStatus {
-                self.notificationsDenied = true
-            } else {
-                self.notificationsDenied = false
+            DispatchQueue.main.async {
+                if case .denied = settings.authorizationStatus {
+                    self.notificationsDenied = true
+                } else {
+                    self.notificationsDenied = false
+                }
             }
         }
 

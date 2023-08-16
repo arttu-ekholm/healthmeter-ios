@@ -22,22 +22,28 @@ class DecisionManager {
     private let latestHighWTNotificationPostDateKey = "LatestHighWTNotificationPostDateKey"
     private let latestLoweredRHRNotificationPostDateKey = "LatestLoweredRHRNotificationPostDate"
 
+    /// Pending updates that aren't handled yet. Used to resolve the issue where there can be multiple simultaneous `RestingHeartRateUpdate`s.
+    private var updateQueue: [GenericUpdate] = []
+    private var currentUpdate: GenericUpdate?
+
     /**
      if `true`, the manager is handling a `RestingHeartRateUpdate`. Set to `true` when handling begins, and to `false`when the function either
      decides to ignore the update, or when the `NotificationCenter` callback tells the notification is handled.
      */
-    private var isHandlingUpdate = false
-
-    /// Pending updates that aren't handled yet. Used to resolve the issue where there can be multiple simultaneous `RestingHeartRateUpdate`s.
-    private var updateQueue: [GenericUpdate] = []
+    private var isHandlingUpdate: Bool {
+        return currentUpdate != nil
+    }
 
     weak var restingHeartRateProvider: RestingHeartRateProvider?
 
     private func handleNextItemFromQueueIfNeeded() {
-        guard !updateQueue.isEmpty else { return }
+        guard !updateQueue.isEmpty else {
+            print("No pending updates")
+            return
+        }
 
-        print("Handling pending update")
         let update = updateQueue.removeFirst()
+        print("Handling pending update \(update)")
         handleUpdate(update: update)
     }
 
@@ -66,19 +72,16 @@ class DecisionManager {
          */
 
         if isHandlingUpdate {
-            print("Is already handling an update, adding the update \(update) to the queue")
             updateQueue.append(update)
             return
         }
 
-        guard let provider = restingHeartRateProvider else { return }
-
-        guard let averageHeartRate = provider.averageHeartRate else {
-            // No avg HR, the app cannot do the comparison
+        guard let provider = restingHeartRateProvider, let averageHeartRate = provider.averageHeartRate else {
+            handleNextItemFromQueueIfNeeded()
             return
         }
 
-        isHandlingUpdate = true
+        self.currentUpdate = update
 
         let isAboveAverageRHR = decisionEngine.heartRateIsAboveAverage(update: update, average: averageHeartRate)
 
@@ -104,7 +107,7 @@ class DecisionManager {
         }
 
         guard let trend = trend, let message = message else {
-            isHandlingUpdate = false
+            self.currentUpdate = nil
             handleNextItemFromQueueIfNeeded()
             return
         }
@@ -113,11 +116,10 @@ class DecisionManager {
                                                                                       heartRate: update.value,
                                                                                       averageHeartRate: averageHeartRate),
                                              body: message) { result in
-            self.isHandlingUpdate = false
+            self.currentUpdate = nil
             if case .success = result {
                 self.saveNotificationPostDate(forTrend: trend, type: .restingHeartRate)
             }
-            // If the pending updates queue has more items, process them
             self.handleNextItemFromQueueIfNeeded()
         }
     }
@@ -129,46 +131,42 @@ class DecisionManager {
             return
         }
 
-        guard let provider = restingHeartRateProvider else {
-            print("DecisionManager is missing RestingHeartRateProvider")
+        guard let provider = restingHeartRateProvider, let averageWristTemperature = provider.averageWristTemperature else {
+            handleNextItemFromQueueIfNeeded()
             return
         }
 
-        guard let averageWristTemperature = provider.averageWristTemperature else {
-            // No avg HR, the app cannot do the comparison
-            return
-        }
-
-        isHandlingUpdate = true
+        currentUpdate = update
 
         let trend: Trend
         let message: String?
         let isAboveAverageWristTemperature = decisionEngine.wristTemperatureIsAboveAverage(update: update, average: averageWristTemperature)
 
-        if isAboveAverageWristTemperature {
-            if !hasPostedAboutRisingNotificationToday(type: .wristTemperature) {
+        if isAboveAverageWristTemperature, !hasPostedAboutRisingNotificationToday(type: .wristTemperature) {
                 trend = .rising
                 message = wristTemperatureNotificationMessage(temperature: update.value, averageTemperature: averageWristTemperature)
-            } else {
-                isHandlingUpdate = false
+
+            guard let message = message else {
+                currentUpdate = nil
                 handleNextItemFromQueueIfNeeded()
                 return
             }
-
-            guard let message = message else { return }
 
             notificationService.postNotification(
                 title: wristTemperatureNotificationTitle(
                     temperature: update.value,
                     averageTemperature: averageWristTemperature),
                 body: message) { result in
-                    self.isHandlingUpdate = false
+                    self.currentUpdate = nil
                     if case .success = result {
                         self.saveNotificationPostDate(forTrend: trend, type: .wristTemperature)
                     }
                     // If the pending updates queue has more items, process them
                     self.handleNextItemFromQueueIfNeeded()
                 }
+        } else {
+            currentUpdate = nil
+            handleNextItemFromQueueIfNeeded()
         }
     }
 
