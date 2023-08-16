@@ -177,8 +177,7 @@ extension HeartView {
         private func adjectiveForLevel(level: HeartRateLevel) -> String {
             switch level {
             case .belowAverage, .normal: return "normal"
-            case .slightlyElevated: return "slightly elevated"
-            case .noticeablyElevated: return "elevated"
+            case .slightlyElevated, .noticeablyElevated: return "elevated"
             case .wayAboveElevated: return "high"
             }
         }
