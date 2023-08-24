@@ -22,6 +22,8 @@ class DecisionManager {
     private let latestHighWTNotificationPostDateKey = "LatestHighWTNotificationPostDateKey"
     private let latestLoweredRHRNotificationPostDateKey = "LatestLoweredRHRNotificationPostDate"
 
+    private let latestHRVNotificationPostDateKey = "LatestHRVNotificationPostDate"
+
     /// Pending updates that aren't handled yet. Used to resolve the issue where there can be multiple simultaneous `RestingHeartRateUpdate`s.
     private var updateQueue: [GenericUpdate] = []
     private var currentUpdate: GenericUpdate?
@@ -61,6 +63,7 @@ class DecisionManager {
         switch update.type {
         case .wristTemperature: handleWristTemperatureUpdate(update: update)
         case .restingHeartRate: handleRestingHeartRateUpdate(update: update)
+        case .hrv: handleHRVUpdate(update: update)
         }
     }
 
@@ -170,11 +173,58 @@ class DecisionManager {
         }
     }
 
+    private func handleHRVUpdate(update: GenericUpdate) {
+        if isHandlingUpdate {
+            print("Is already handling an update, adding the update \(update) to the queue")
+            updateQueue.append(update)
+            return
+        }
+
+        guard let provider = restingHeartRateProvider, let averageHRV = provider.averageHRV else {
+            handleNextItemFromQueueIfNeeded()
+            return
+        }
+
+        currentUpdate = update
+
+        let trend: Trend
+        let message: String?
+        let isAboveAverageWristTemperature = decisionEngine.hrvIsBelowAverage(update: update, average: averageHRV)
+
+        if isAboveAverageWristTemperature, !hasPostedAboutRisingNotificationToday(type: .wristTemperature) {
+                trend = .rising
+                message = hrvNotificationMessage(hrv: update.value, averageHRV: averageHRV)
+
+            guard let message = message else {
+                currentUpdate = nil
+                handleNextItemFromQueueIfNeeded()
+                return
+            }
+
+            notificationService.postNotification(
+                title: wristTemperatureNotificationTitle(
+                    temperature: update.value,
+                    averageTemperature: averageHRV),
+                body: message) { result in
+                    self.currentUpdate = nil
+                    if case .success = result {
+                        self.saveNotificationPostDate(forTrend: trend, type: .hrv)
+                    }
+                    // If the pending updates queue has more items, process them
+                    self.handleNextItemFromQueueIfNeeded()
+                }
+        } else {
+            currentUpdate = nil
+            handleNextItemFromQueueIfNeeded()
+        }
+    }
+
     func hasPostedAboutRisingNotificationToday(type: UpdateType) -> Bool {
         let date: Date?
         switch type {
         case .restingHeartRate: date = latestHighRHRNotificationPostDate
         case .wristTemperature: date = latestWTNotificationPostDate
+        case .hrv: date = latestHRVNotificationPostDate
         }
         guard let date else { return false }
 
@@ -189,6 +239,10 @@ class DecisionManager {
 
     func wristTemperatureNotificationMessage(temperature: Double, averageTemperature: Double) -> String {
         return String(format: "It's %.1f°\(Locale.current.temperatureSymbol) above the average", temperature - averageTemperature)
+    }
+
+    func hrvNotificationMessage(hrv: Double, averageHRV: Double) -> String {
+        return "You might be stressed"
     }
 
     func restingHeartRateNotificationMessage(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String? {
@@ -241,6 +295,7 @@ class DecisionManager {
                 latestLoweredRHRNotificationPostDate = Date()
             }
         case .wristTemperature: latestWTNotificationPostDate = Date()
+        case .hrv: latestHRVNotificationPostDate = Date()
         }
     }
 
@@ -263,6 +318,14 @@ class DecisionManager {
         }
     }
 
+    var latestHRVNotificationPostDate: Date? {
+        get {
+            return userDefaults.object(forKey: latestHRVNotificationPostDateKey) as? Date
+        } set {
+            userDefaults.set(newValue, forKey: latestHRVNotificationPostDateKey)
+        }
+    }
+
     /**
      The date when the last "You lowered your RHR!" notification is posted
      */
@@ -272,52 +335,5 @@ class DecisionManager {
         } set {
             userDefaults.set(newValue, forKey: latestLoweredRHRNotificationPostDateKey)
         }
-    }
-}
-
-/**
-    Collection of logical functions that can be shared between the notification decisions and the view model logic. Generally, the fine-tuning of the app should happen by changing the internals of the `DecisionEngine` implementation.
- */
-protocol DecisionEngine {
-    func wristTemperatureIsAboveAverage(update: GenericUpdate, average: Double) -> Bool
-    func heartRateIsAboveAverage(update: GenericUpdate, average: Double) -> Bool
-}
-
-class DecisionEngineImplementation: DecisionEngine {
-    let locale: Locale
-
-    init (locale: Locale = .current) {
-        self.locale = locale
-    }
-
-    func wristTemperatureIsAboveAverage(update: GenericUpdate, average: Double) -> Bool {
-        guard update.type == .wristTemperature else { return false }
-
-        if locale.measurementSystem == .us {
-            return update.value - average > 1.8
-        } else {
-            return update.value - average > 1.0
-        }
-    }
-
-    /**
-     - returns true if the heart rate is above the average
-     */
-    func heartRateIsAboveAverage(update: GenericUpdate, average: Double) -> Bool {
-        guard update.type == .restingHeartRate else { return false }
-
-        return update.value / average > threshold
-    }
-
-    // If the latest update is this much above the avg. RHR, the notification will be triggered.
-    var threshold: Double {
-        return 1 + thresholdMultiplier
-    }
-
-    /**
-     RHR values above x times `thresholdMultiplier`are considered above average.
-     */
-    var thresholdMultiplier: Double {
-        return 0.05
     }
 }

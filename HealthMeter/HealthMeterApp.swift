@@ -46,12 +46,12 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 extension HealthMeterApp: WhatsNewCollectionProvider {
     var whatsNewCollection: WhatsNewCollection {
         WhatsNew(
-            version: "1.3.0",
+            version: "1.4.0",
             title: "What's new in Restful",
             features: [
-                WhatsNew.Feature(image: .init(systemName: "thermometer.medium", foregroundColor: .accentColor),
-                                 title: "Wrist temperature measurement",
-                                 subtitle: "Apple Watch measures the wrist temperature during your sleep. Get notified if your wrist temperature rises.")],
+                WhatsNew.Feature(image: .init(systemName: "arrow.up.heart", foregroundColor: .accentColor),
+                                 title: "Heart Rate Variability",
+                                 subtitle: "HRV measures your stress levels. Low HRV might be a sign of stress.")],
             primaryAction: WhatsNew.PrimaryAction(
                     title: "Grant access",
                     backgroundColor: .accentColor,
@@ -64,11 +64,10 @@ extension HealthMeterApp: WhatsNewCollectionProvider {
                                     if success, error == nil {
                                         RestingHeartRateService.shared.observeInBackground(type: .wristTemperature)
 
-                                        RestingHeartRateService.shared.queryAverageWristTemperature { res in
-                                            RestingHeartRateService.shared.queryLatestMeasurement(type: .wristTemperature) { res in print("WT done \(res)") }
-                                        }
-                                        RestingHeartRateService.shared.queryAverageRestingHeartRate { res in
-                                            RestingHeartRateService.shared.queryLatestMeasurement(type: .restingHeartRate) { res in print("RHR done \(res)")}
+                                        for type in UpdateType.allCases {
+                                            RestingHeartRateService.shared.queryAverageOfType(type) { _ in
+                                                RestingHeartRateService.shared.queryLatestMeasurement(type: type) { _ in }
+                                            }
                                         }
                                     }
                                 }

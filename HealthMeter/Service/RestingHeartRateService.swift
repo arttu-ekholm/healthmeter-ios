@@ -32,6 +32,7 @@ protocol RestingHeartRateProvider: AnyObject {
 
     var averageWristTemperature: Double? { get }
     var averageHeartRate: Double? { get }
+    var averageHRV: Double? { get }
 
     var latestRestingHeartRateUpdate: Result<GenericUpdate, Error>? { get }
     var latestWristTemperatureUpdate: Result<GenericUpdate, Error>? { get }
@@ -56,15 +57,21 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     private let userDefaults: UserDefaults
     private let averageRestingHeartRateKey = "AverageRestingHeartRate"
     private let averageWristTemperatureKey = "AverageWristTemperature"
+    private let averageRHRKey = "AverageRHR"
+
     private let latestRestingHeartRateUpdateKey = "LatestRestingHeartRateUpdate"
     private let latestWristTemperatureUpdateKey = "LatestWristTemperatureUpdate"
+    private let latestHrvUpdateKey = "LatestHrvUpdate"
+
     private let backgroundObserverQueryEnabledKey = "BackgroundObserverQueryEnabledKey"
 
     @Published private(set) var latestRestingHeartRateUpdate: Result<GenericUpdate, Error>?
     @Published private(set) var latestWristTemperatureUpdate: Result<GenericUpdate, Error>?
+    @Published private(set) var latestHRVUpdate: Result<GenericUpdate, Error>?
 
     @Published private(set) var averageHeartRatePublished: Double?
     @Published private(set) var averageWristTemperaturePublished: Double?
+    @Published private(set) var averageHRVPublished: Double?
 
     // Dependencies
     private let calendar: Calendar
@@ -104,6 +111,21 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
             userDefaults.set(newValue, forKey: averageWristTemperatureKey)
             DispatchQueue.main.async {
                 self.averageWristTemperaturePublished = newValue
+                self.objectWillChange.send()
+            }
+        }
+    }
+
+    /// Two month average
+    private(set) var averageHRV: Double? {
+        get {
+            guard let avg = userDefaults.object(forKey: averageRHRKey) else { return nil }
+            return avg as? Double
+        }
+        set {
+            userDefaults.set(newValue, forKey: averageRHRKey)
+            DispatchQueue.main.async {
+                self.averageHRVPublished = newValue
                 self.objectWillChange.send()
             }
         }
@@ -160,6 +182,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         switch type {
         case .restingHeartRate: key = latestRestingHeartRateUpdateKey
         case .wristTemperature: key = latestWristTemperatureUpdateKey
+        case .hrv: key = latestHrvUpdateKey
         }
         guard let data = userDefaults.data(forKey: key) else { return nil }
 
@@ -175,44 +198,22 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         }
     }
 
-    func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
+    func queryAverageOfType(_ type: UpdateType, callback: @escaping (Result<Double, Error>) -> Void) {
         let now = Date()
         let queryStartDate = now.addingTimeInterval(averageTimeInterval)
-        let query = queryProvider.getAverageRestingHeartRateQuery(queryStartDate: queryStartDate)
+        let query = queryProvider.getAverageOfType(type, queryStartDate: queryStartDate)
 
         query.initialResultsHandler = { query, results, error in
-            self.queryParser.parseAverageRestingHeartRateQueryResults(startDate: queryStartDate,
-                                                                      endDate: now,
-                                                                      query: query,
-                                                                      result: results,
-                                                                      error: error,
-                                                                      callback: { result in
+            self.queryParser.parseAverageResults(type: type, startDate: queryStartDate, endDate: now, query: query, result: results, error: error) { result in
                 if case .success(let value) = result {
-                    self.averageHeartRate = value
+                    switch type {
+                    case .restingHeartRate: self.averageHeartRate = value
+                    case .wristTemperature: self.averageWristTemperature = value
+                    case .hrv: self.averageHRV = value
+                    }
                 }
-                averageRHRCallback(result)
-            })
-        }
-        healthStore.execute(query)
-    }
-
-    func queryAverageWristTemperature(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
-        let now = Date()
-        let queryStartDate = now.addingTimeInterval(averageTimeInterval)
-        let query = queryProvider.getAverageWristTemperatureQuery(queryStartDate: queryStartDate)
-
-        query.initialResultsHandler = { query, results, error in
-            self.queryParser.parseAverageWristTemperatureQueryResults(startDate: queryStartDate,
-                                                                      endDate: now,
-                                                                      query: query,
-                                                                      result: results,
-                                                                      error: error,
-                                                                      callback: { result in
-                if case .success(let value) = result {
-                    self.averageWristTemperature = value
-                }
-                averageRHRCallback(result)
-            })
+                callback(result)
+            }
         }
         healthStore.execute(query)
     }
@@ -221,12 +222,14 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         switch update.type {
         case .restingHeartRate: handleHeartRateUpdate(update: update)
         case .wristTemperature: handleWristTemperatureUpdate(update: update)
+        case .hrv: handleHRVUpdate(update: update)
         }
     }
     func handleUpdateFailure(error: Error, type: UpdateType) {
         switch type {
         case .restingHeartRate: latestRestingHeartRateUpdate = .failure(error)
         case .wristTemperature: latestWristTemperatureUpdate = .failure(error)
+        case .hrv: latestHRVUpdate = .failure(error)
         }
     }
 
@@ -239,6 +242,18 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
         } else {
             decisionManager.handleUpdate(update: update)
             self.latestWristTemperatureUpdate = .success(update)
+        }
+    }
+
+    private func handleHRVUpdate(update: GenericUpdate) {
+        if case .success(let previousUpdate) = latestHRVUpdate {
+            if update.date > previousUpdate.date {
+                decisionManager.handleUpdate(update: update)
+                self.latestHRVUpdate = .success(update)
+            }
+        } else {
+            decisionManager.handleUpdate(update: update)
+            self.latestHRVUpdate = .success(update)
         }
     }
 
@@ -314,6 +329,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
                     switch type {
                     case .restingHeartRate: latestUpdateForType = self.latestRestingHeartRateUpdate
                     case .wristTemperature: latestUpdateForType = self.latestWristTemperatureUpdate
+                    case .hrv: latestUpdateForType = self.latestHRVUpdate
                     }
 
                     if case .success(let update) = result, let latestUpdateForType = latestUpdateForType, case .success(let latestUpdate) = latestUpdateForType {
@@ -335,14 +351,18 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
 
     func requestAuthorisation(completion: @escaping (Bool, Error?) -> Void) {
         let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
-                       HKObjectType.quantityType(forIdentifier: .appleSleepingWristTemperature)!])
+                       HKObjectType.quantityType(forIdentifier: .appleSleepingWristTemperature)!,
+                       HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!])
         healthStore.requestAuthorization(toShare: [], read: rhr) { (success, error) in
             completion(success, error)
         }
     }
 
     func getAuthorisationStatusForRestingHeartRate(completion: @escaping (HealthKitAuthorisationStatus) -> Void) {
-        let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!, HKObjectType.quantityType(forIdentifier: .appleSleepingWristTemperature)!])
+        let rhr = Set([HKObjectType.quantityType(forIdentifier: .restingHeartRate)!,
+                       HKObjectType.quantityType(forIdentifier: .appleSleepingWristTemperature)!,
+                       HKObjectType.quantityType(forIdentifier: .heartRateVariabilitySDNN)!
+                      ])
         healthStore.getRequestStatusForAuthorization(toShare: [], read: rhr) { status, _ in
             switch status {
             case .unnecessary: completion(.unnecessary)
@@ -409,6 +429,22 @@ enum HeartRateLevel {
     case slightlyElevated
     case noticeablyElevated
     case wayAboveElevated
+}
+
+func hrvMultiplier(multiplier: Double) -> HeartRateLevel {
+    if multiplier > 1.2 {
+        if multiplier > 2.0 {
+            return .wayAboveElevated
+        } else if multiplier > 1.5 {
+            return .noticeablyElevated
+        } else {
+            return .slightlyElevated
+        }
+    } else if multiplier < 0.95 {
+        return .belowAverage
+    } else {
+        return .normal
+    }
 }
 
 func heartRateLevelForMultiplier(multiplier: Double) -> HeartRateLevel {

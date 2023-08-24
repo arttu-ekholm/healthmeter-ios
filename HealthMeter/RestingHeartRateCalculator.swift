@@ -16,9 +16,21 @@ class RestingHeartRateCalculator {
         case emptyCollection
     }
 
-    func averageRestingHeartRate(fromStatsCollection statsCollection: HKStatisticsCollection, startDate: Date, endDate: Date) throws -> Double {
+    func average(type: UpdateType, fromStatsCollection statsCollection: HKStatisticsCollection, startDate: Date, endDate: Date) throws -> Double {
         var avgValues = [Double]()
-        let unit = HKUnit(from: "count/min")
+
+        let unit: HKUnit
+        switch type {
+        case .restingHeartRate: unit = HKUnit(from: "count/min")
+        case .hrv: unit = HKUnit.secondUnit(with: .milli)
+        case .wristTemperature:
+            if Locale.current.measurementSystem == .us {
+                unit = HKUnit.degreeFahrenheit()
+            } else {
+                unit = HKUnit.degreeCelsius()
+            }
+        }
+
         statsCollection.enumerateStatistics(from: startDate, to: endDate) { statistics, _ in
             if let quantity = statistics.averageQuantity() {
                 let value = quantity.doubleValue(for: unit)
@@ -28,10 +40,10 @@ class RestingHeartRateCalculator {
 
         guard !avgValues.isEmpty else { throw RestingHeartRateCalculatorError.emptyCollection }
 
-        let avgRestingValue = avgValues.reduce(0.0, { partialResult, next in
+        let avg = avgValues.reduce(0.0, { partialResult, next in
             return partialResult + next
         }) / Double(avgValues.count)
-        return avgRestingValue
+        return avg
     }
 
     func averageWristTemperature(fromStatsCollection statsCollection: HKStatisticsCollection, startDate: Date, endDate: Date, locale: Locale = .current) throws -> Double {
