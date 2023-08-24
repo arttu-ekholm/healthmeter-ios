@@ -12,19 +12,21 @@ class MockRestingHeartRateService: RestingHeartRateService {
     var mockAverageRHRResult: Result<Double, Error>?
     var mockLatestRHRResult: Result<GenericUpdate, Error>?
     var mockAverageWTResult: Result<Double, Error>?
+    var mockAverageHRVResult: Result<Double, Error>?
     var mockLatestWTResult: Result<GenericUpdate, Error>?
+    var mockLatestHRVResult: Result<GenericUpdate, Error>?
     var mockLatestHighRHRNotificationPostDate: Date?
     var handledDebugUpdate: GenericUpdate?
 
-    override func queryAverageRestingHeartRate(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
-        if let result = mockAverageRHRResult {
-            averageRHRCallback(result)
+    override func queryAverageOfType(_ type: UpdateType, callback: @escaping (Result<Double, Error>) -> Void) {
+        let res: Result<Double, Error>?
+        switch type {
+        case .wristTemperature: res = mockAverageWTResult
+        case .restingHeartRate: res = mockAverageRHRResult
+        case .hrv: res = mockAverageHRVResult
         }
-    }
-
-    override func queryAverageWristTemperature(averageRHRCallback: @escaping (Result<Double, Error>) -> Void) {
-        if let result = mockAverageWTResult {
-            averageRHRCallback(result)
+        if let res {
+            callback(res)
         }
     }
 
@@ -33,6 +35,7 @@ class MockRestingHeartRateService: RestingHeartRateService {
         switch type {
         case .restingHeartRate: result = mockLatestRHRResult
         case .wristTemperature: result = mockLatestWTResult
+        case .hrv: result = mockLatestHRVResult
         }
 
         if let result = result {

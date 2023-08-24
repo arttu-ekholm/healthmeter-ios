@@ -161,7 +161,7 @@ class RestingHeartRateServiceTests: XCTestCase {
                                               queryParser: mockQueryParser)
         let expectation = expectation(description: "RHR query should fail if there isn't any results")
 
-        service.queryAverageRestingHeartRate { result in
+        service.queryAverageOfType(.restingHeartRate) { result in
             if case .failure = result {
                 expectation.fulfill()
             }
@@ -271,8 +271,8 @@ private class MockQueryProvider: QueryProvider {
         return mockObserverQuery
     }
 
-    override func getAverageRestingHeartRateQuery(queryStartDate: Date) -> HKStatisticsCollectionQuery {
-        let quantityType = sampleTypeForRestingHeartRate
+    override func getAverageOfType(_ type: UpdateType, queryStartDate: Date) -> HKStatisticsCollectionQuery {
+        let quantityType = sampleTypeFor(type)
         let interval = NSDateComponents()
         interval.month = 6
 

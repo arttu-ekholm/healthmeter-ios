@@ -8,9 +8,10 @@
 import Foundation
 import HealthKit
 
-enum UpdateType: Int, Codable {
+enum UpdateType: Int, Codable, CaseIterable {
     case wristTemperature
     case restingHeartRate
+    case hrv
 }
 
 struct GenericUpdate: Codable, Equatable {
@@ -29,7 +30,8 @@ struct GenericUpdate: Codable, Equatable {
             } else {
                 self.value = sample.quantity.doubleValue(for: HKUnit.degreeCelsius())
             }
-
+        case .hrv:
+            self.value = sample.quantity.doubleValue(for: HKUnit.secondUnit(with: .milli))
         }
         self.type = type
     }
@@ -39,5 +41,4 @@ struct GenericUpdate: Codable, Equatable {
         self.value = value
         self.type = type
     }
-
 }

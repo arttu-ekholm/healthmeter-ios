@@ -93,7 +93,7 @@ struct HeartView: View {
                                         .foregroundColor(.secondary)
                                 }
                                 Spacer()
-                                Text(viewModel.avg != nil ? "2 month average" : "")
+                                Text(viewModel.averageDisplayTextForType(.restingHeartRate))
                                     .font(.footnote)
                                     .foregroundColor(.secondary)
                             }
@@ -155,7 +155,69 @@ struct HeartView: View {
                                         .foregroundColor(.secondary)
                                 }
                                 Spacer()
-                                Text(viewModel.avgWrist != nil ? "2 month average" : "")
+                                Text(viewModel.averageDisplayTextForType(.wristTemperature))
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    })
+                }
+                HStack { // HRV
+                    Image(systemName: "arrow.up.heart")
+                        .font(.title2)
+                        .bold()
+                        .foregroundColor(viewModel.hrvDisabled ? .gray: .secondary)
+                        .frame(width: 36)
+                    VStack(alignment: .leading, content: {
+                        HStack {
+                            Text("Heart rate variability")
+                                .font(.title2)
+                                .bold()
+                                .foregroundColor(viewModel.hrvDisabled ? .gray : .primary)
+                            Spacer()
+                            Text(viewModel.hrvStatusDisplayText)
+                                .foregroundColor(viewModel.hrvColor)
+                                .font(.title2)
+                                .bold()
+                        }
+                        if case .failure(let error) = viewModel.hrv {
+                            if case QueryParser.QueryParserError.noLatestValueFound = error {
+                                Text("No measurements found")
+                                    .foregroundColor(.gray)
+                            } else {
+                                Text("Failed to fetch measurements")
+                                    .foregroundColor(.gray)
+                            }
+                            Text("").font(.footnote) // occupies vertical space
+                        } else {
+                            HStack(alignment: .lastTextBaseline, spacing: 4) {
+                                Text("Current")
+                                Text(viewModel.hrvCurrentDisplayText)
+                                    .font(.title3)
+                                    .bold()
+                                Text(viewModel.hrvUnits)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .bold()
+                                Spacer()
+
+                                Text(viewModel.hrvAverageDisplayText)
+                                    .font(.title3)
+                                    .bold()
+                                Text(viewModel.hrvUnits)
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
+                                    .bold()
+                                Text(viewModel.hrvDiffDisplayText)
+                            }
+                            HStack {
+                                if case .success(let update) = viewModel.hrv {
+                                    Text(update.date.timeAgoDisplay())
+                                        .font(.footnote)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Text(viewModel.averageDisplayTextForType(.hrv))
                                     .font(.footnote)
                                     .foregroundColor(.secondary)
                             }
@@ -190,8 +252,7 @@ struct HeartView: View {
             .padding()
             .onAppear {
                 if viewModel.shouldReloadContents {
-                    viewModel.requestLatestRestingHeartRate()
-                    viewModel.requestLatestWristTemperature()
+                    viewModel.requestLatestMeasurementsOfAllTypes()
                 }
 
                 Task {
@@ -201,8 +262,7 @@ struct HeartView: View {
             }
             .onChange(of: scenePhase) { newPhase in
                 if newPhase == .active, viewModel.shouldReloadContents {
-                    viewModel.requestLatestRestingHeartRate()
-                    viewModel.requestLatestWristTemperature()
+                    viewModel.requestLatestMeasurementsOfAllTypes()
                 }
                 Task {
                     await viewModel.checkNotificationStatus()

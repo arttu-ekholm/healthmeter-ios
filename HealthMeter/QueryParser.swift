@@ -72,12 +72,14 @@ class QueryParser {
         completion(.success(update))
     }
 
-    func parseAverageRestingHeartRateQueryResults(startDate: Date,
-                                                  endDate: Date,
-                                                  query: HKStatisticsCollectionQuery,
-                                                  result: HKStatisticsCollection?,
-                                                  error: Error?,
-                                                  callback: (Result<Double, Error>) -> Void) {
+    func parseAverageResults(type: UpdateType,
+                             startDate: Date,
+                             endDate: Date,
+                             query: HKStatisticsCollectionQuery,
+                             result: HKStatisticsCollection?,
+                             error: Error?,
+                             callback: (Result<Double, Error>) -> Void) {
+
         if let error = error {
             callback(.failure(error))
             return
@@ -89,43 +91,17 @@ class QueryParser {
         }
 
         do {
-            let avgRestingValue = try averageRestingHeartRateCalculator.averageRestingHeartRate(
+            let avg = try averageRestingHeartRateCalculator.average(
+                type: type,
                 fromStatsCollection: statsCollection,
                 startDate: startDate,
                 endDate: endDate)
 
-            callback(.success(avgRestingValue))
+            callback(.success(avg))
         } catch {
             callback(.failure(error))
         }
-    }
 
-    func parseAverageWristTemperatureQueryResults(startDate: Date,
-                                                  endDate: Date,
-                                                  query: HKStatisticsCollectionQuery,
-                                                  result: HKStatisticsCollection?,
-                                                  error: Error?,
-                                                  callback: (Result<Double, Error>) -> Void) {
-        if let error = error {
-            callback(.failure(error))
-            return
-        }
-
-        guard let statsCollection = result else {
-            callback(.failure(QueryParserError.noStatisticsFound))
-            return
-        }
-
-        do {
-            let avgRestingValue = try averageRestingHeartRateCalculator.averageWristTemperature(
-                fromStatsCollection: statsCollection,
-                startDate: startDate,
-                endDate: endDate)
-
-            callback(.success(avgRestingValue))
-        } catch {
-            callback(.failure(error))
-        }
     }
 
     func parseRestingHeartRateHistogram(startDate: Date,
