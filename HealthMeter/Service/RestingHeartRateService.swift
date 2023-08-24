@@ -144,6 +144,7 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
             if newValue == true {
                 observeInBackground(type: .restingHeartRate)
                 observeInBackground(type: .wristTemperature)
+                observeInBackground(type: .hrv)
             }
         }
     }
