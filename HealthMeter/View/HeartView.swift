@@ -39,7 +39,7 @@ struct HeartView: View {
                     Divider()
                 }
 
-                HStack {
+                HStack { // Resting heart rate
                     Image(systemName: "heart")
                         .font(.title2)
                         .bold()
@@ -93,20 +93,18 @@ struct HeartView: View {
                                         .foregroundColor(.secondary)
                                 }
                                 Spacer()
-                                if viewModel.avg != nil {
-                                    Text("2 month average")
-                                        .font(.footnote)
-                                        .foregroundColor(.secondary)
-                                }
+                                Text(viewModel.avg != nil ? "2 month average" : "")
+                                    .font(.footnote)
+                                    .foregroundColor(.secondary)
                             }
                         }
                     })
                 }
-                HStack {
+                HStack { // Wrist temperature
                     Image(systemName: "thermometer.medium")
                         .font(.title2)
                         .bold()
-                        .foregroundColor(viewModel.rhrDisabled ? .gray: .secondary)
+                        .foregroundColor(viewModel.wristTemperatureDisabled ? .gray: .secondary)
                         .frame(width: 36)
                     VStack(alignment: .leading, content: {
                         HStack {
@@ -120,7 +118,7 @@ struct HeartView: View {
                                 .font(.title2)
                                 .bold()
                         }
-                        if case .failure(let error) = viewModel.rhr {
+                        if case .failure(let error) = viewModel.wristTemperature {
                             if case QueryParser.QueryParserError.noLatestValueFound = error {
                                 Text("No measurements found")
                                     .foregroundColor(.gray)
@@ -150,16 +148,14 @@ struct HeartView: View {
                                     .bold()
                                 Text(viewModel.wristTemperatureDiffDisplayText)
                             }
-                        }
-                        HStack {
-                            if case .success(let update) = viewModel.wristTemperature {
-                                Text(update.date.timeAgoDisplay())
-                                    .font(.footnote)
-                                    .foregroundColor(.secondary)
-                            }
-                            Spacer()
-                            if viewModel.avgWrist != nil {
-                                Text("2 month average")
+                            HStack {
+                                if case .success(let update) = viewModel.wristTemperature {
+                                    Text(update.date.timeAgoDisplay())
+                                        .font(.footnote)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Text(viewModel.avgWrist != nil ? "2 month average" : "")
                                     .font(.footnote)
                                     .foregroundColor(.secondary)
                             }
