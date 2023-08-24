@@ -142,9 +142,9 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
             }
             observerQueries.removeAll()
             if newValue == true {
-                observeInBackground(type: .restingHeartRate)
-                observeInBackground(type: .wristTemperature)
-                observeInBackground(type: .hrv)
+                UpdateType.allCases.forEach { type in
+                    observeInBackground(type: type)
+                }
             }
         }
     }
