@@ -189,9 +189,9 @@ class DecisionManager {
 
         let trend: Trend
         let message: String?
-        let isAboveAverageWristTemperature = decisionEngine.hrvIsBelowAverage(update: update, average: averageHRV)
+        let isBelowAverageHRV = decisionEngine.hrvIsBelowAverage(update: update, average: averageHRV)
 
-        if isAboveAverageWristTemperature, !hasPostedAboutRisingNotificationToday(type: .wristTemperature) {
+        if isBelowAverageHRV, !hasPostedAboutRisingNotificationToday(type: .hrv) {
                 trend = .rising
                 message = hrvNotificationMessage(hrv: update.value, averageHRV: averageHRV)
 
@@ -202,7 +202,7 @@ class DecisionManager {
             }
 
             notificationService.postNotification(
-                title: wristTemperatureNotificationTitle(
+                title: hrvNotificationTitle(
                     temperature: update.value,
                     averageTemperature: averageHRV),
                 body: message) { result in
@@ -284,6 +284,10 @@ class DecisionManager {
 
     func wristTemperatureNotificationTitle(temperature: Double, averageTemperature: Double) -> String {
         return String(format: "Your wrist temperature is elevated: %.1f°\(Locale.current.temperatureSymbol)", temperature)
+    }
+
+    func hrvNotificationTitle(temperature: Double, averageTemperature: Double) -> String {
+        return "Your heart rate variable is below your average."
     }
 
     private func saveNotificationPostDate(forTrend trend: Trend, type: UpdateType) {

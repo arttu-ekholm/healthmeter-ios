@@ -111,7 +111,7 @@ extension HeartView {
 
         var hrvColor: Color? {
             guard let avg = avgHrv, avg != 0, case .success(let update) = hrv else { return nil }
-            let multiplier = update.value / avg
+            let multiplier = avg / update.value
 
             let level = hrvMultiplier(multiplier: multiplier)
             return colorForLevel(level)
@@ -158,8 +158,7 @@ extension HeartView {
 
         var hrvStatusDisplayText: String {
             guard let avgHrv = avgHrv, avgHrv != 0, case .success(let update) = hrv else { return "" }
-            let multiplier = update.value / avgHrv
-
+            let multiplier = avgHrv / update.value
             let level = hrvMultiplier(multiplier: multiplier)
             return adjectiveForLevel(level: level, type: .hrv)
         }
@@ -242,7 +241,8 @@ extension HeartView {
                 }
             case .hrv:
                 switch level {
-                case .belowAverage, .normal: return "normal"
+                case .belowAverage: return "great"
+                case .normal: return "normal"
                 case .slightlyElevated, .noticeablyElevated: return "lower"
                 case .wayAboveElevated: return "low"
                 }
