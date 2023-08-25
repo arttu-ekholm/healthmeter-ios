@@ -430,6 +430,15 @@ enum HeartRateLevel {
     case slightlyElevated
     case noticeablyElevated
     case wayAboveElevated
+
+    var numericValue: Int {
+        switch self {
+        case .belowAverage, .normal: return 0
+        case .slightlyElevated: return 1
+        case .noticeablyElevated: return 2
+        case .wayAboveElevated: return 3
+        }
+    }
 }
 
 func hrvMultiplier(multiplier: Double) -> HeartRateLevel {

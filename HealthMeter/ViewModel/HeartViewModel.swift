@@ -36,40 +36,59 @@ extension HeartView {
         @Published private (set) var missingMeasurementsIsDismissed: Bool = false
         @Published private (set) var disabledNotificationsAlertIsDismissed: Bool = false
 
-        var allMeasurementsDisplay: AllMeasurementsDisplay? {
-            var elevatedRHR: Bool?
-            var elevatedWristTemperature: Bool?
-            var level: HeartRateLevel?
-            let text: String
-            let imageName: String
-            if let avg = avg, avg != 0, case .success(let update) = rhr {
-                let multiplier = update.value / avg
-                level = heartRateLevelForMultiplier(multiplier: multiplier)
-                elevatedRHR = level == .noticeablyElevated || level == .slightlyElevated || level == .wayAboveElevated
-            }
-            if let avg = avgWrist, avg != 0, case .success(let update) = wristTemperature {
-                elevatedWristTemperature = decisionEngine.wristTemperatureIsAboveAverage(update: update, average: avg)
-            }
-            if elevatedRHR == nil && elevatedWristTemperature == nil {
-                return AllMeasurementsDisplay(string: " ", color: .secondary, imageName: "exclamationmark.triangle") // to occupy the vertical space
-            } else if elevatedRHR ?? false && elevatedWristTemperature ?? false {
-                return AllMeasurementsDisplay(string: "All fine", color: .green, imageName: "checkmark")
-            } else {
-                var color: Color
-                if elevatedWristTemperature ?? false {
-                    color = .red
-                    text = "Elevated measurements"
-                    imageName = "exclamationmark.triangle"
-                } else if let level = level {
-                    color = colorForLevel(level)
-                    text = (level == .belowAverage || level == .normal) ? "You're all fine" : "Elevated measurements"
-                    imageName = (level == .belowAverage || level == .normal) ? "hand.thumbsup" : "exclamationmark.triangle"
-                } else {
-                    return AllMeasurementsDisplay(string: " ", color: .black, imageName: "") // to occupy the vertical space
-                }
+        private var hrvLevel: HeartRateLevel? {
+            guard let avg = avgHrv, avg != 0, case .success(let update) = hrv else { return nil }
+            let multiplier = avg / update.value
 
-                return AllMeasurementsDisplay(string: text, color: color, imageName: imageName)
+            return hrvMultiplier(multiplier: multiplier)
+        }
+
+        private var rhrLevel: HeartRateLevel? {
+            guard let avg = avg, avg != 0, case .success(let update) = rhr else { return nil }
+            let multiplier = update.value / avg
+
+            return heartRateLevelForMultiplier(multiplier: multiplier)
+        }
+
+        private var wtLevel: HeartRateLevel? {
+            guard let avg = avgWrist, avg != 0, case .success(let update) = wristTemperature else { return nil }
+            let multiplier = update.value / avg
+
+            return heartRateLevelForMultiplier(multiplier: multiplier)
+        }
+
+        var allMeasurementsDisplay: AllMeasurementsDisplay? {
+            var measurementsCount = 0
+            var sum = 0
+            if let hrv = hrvLevel {
+                measurementsCount += 1
+                sum += hrv.numericValue
             }
+            if let rhr = rhrLevel {
+                measurementsCount += 1
+                sum += rhr.numericValue
+            }
+            if let wTemp = wtLevel {
+                measurementsCount += 1
+                sum += wTemp.numericValue
+            }
+
+            guard measurementsCount > 0 else {
+                return AllMeasurementsDisplay(string: " ", color: .black, imageName: "") // to occupy the vertical space
+            }
+
+            let avg = ceil(Double(sum) / Double(measurementsCount)) // round up the result
+            let level: HeartRateLevel
+            switch avg {
+            case 0: level = .normal
+            case 1: level = .slightlyElevated
+            case 2: level = .noticeablyElevated
+            default: level = .wayAboveElevated
+            }
+
+            let text = (level == .belowAverage || level == .normal) ? "You're all fine" : "Elevated measurements"
+            let imageName = (level == .belowAverage || level == .normal) ? "hand.thumbsup" : "exclamationmark.triangle"
+            return AllMeasurementsDisplay(string: text, color: colorForLevel(level), imageName: imageName)
         }
 
         var shouldShowMissingMeasurements: Bool {
