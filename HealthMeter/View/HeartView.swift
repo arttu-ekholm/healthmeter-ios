@@ -201,6 +201,7 @@ struct HeartView: View {
                                     .bold()
                                 Spacer()
 
+                                Text("Average")
                                 Text(viewModel.hrvAverageDisplayText)
                                     .font(.title3)
                                     .bold()
@@ -208,7 +209,6 @@ struct HeartView: View {
                                     .font(.footnote)
                                     .foregroundColor(.secondary)
                                     .bold()
-                                Text(viewModel.hrvDiffDisplayText)
                             }
                             HStack {
                                 if case .success(let update) = viewModel.hrv {

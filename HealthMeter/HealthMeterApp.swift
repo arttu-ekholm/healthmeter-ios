@@ -45,7 +45,6 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 
 extension HealthMeterApp: WhatsNewCollectionProvider {
     var whatsNewCollection: WhatsNewCollection {
-        /*
         WhatsNew(
             version: "1.4.0",
             title: "What's new in Restful",
@@ -82,21 +81,6 @@ extension HealthMeterApp: WhatsNewCollectionProvider {
                     foregroundColor: .accentColor,
                     hapticFeedback: .selection,
                     action: .dismiss
-                )
-        )
-         */
-        WhatsNew(
-            version: "1.4.1",
-            title: "What's new in Restful",
-            features: [
-                WhatsNew.Feature(image: .init(systemName: "wrench.adjustable", foregroundColor: .accentColor),
-                                 title: "Bug fixes",
-                                 subtitle: "Fixed an issue when calculating average resting heart rate variability.")],
-                primaryAction: WhatsNew.PrimaryAction(
-                    title: "Continue",
-                    foregroundColor: .accentColor,
-                    hapticFeedback: .notification(.success),
-                    onDismiss: nil
                 )
         )
     }

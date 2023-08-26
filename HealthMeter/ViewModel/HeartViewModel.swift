@@ -207,8 +207,7 @@ extension HeartView {
             switch hrv {
             case .success(let update):
                 guard let avgHrv else { return "–" }
-                let diff = abs(update.value - avgHrv)
-                return String(format: "%.0f", diff)
+                return String(format: "%.0f", avgHrv)
             case .failure: return "–"
             case nil: return "–"
             }
@@ -220,17 +219,6 @@ extension HeartView {
             case .success(let update):
                 guard let avgWrist else { return "" }
                 let aboveBelow = update.value > avgWrist ? "above" : "below"
-                return "\(aboveBelow) average"
-            case .failure: return "–"
-            case nil: return "–"
-            }
-        }
-
-        var hrvDiffDisplayText: String {
-            switch hrv {
-            case .success(let update):
-                guard let avgHrv else { return "" }
-                let aboveBelow = update.value > avgHrv ? "above" : "below"
                 return "\(aboveBelow) average"
             case .failure: return "–"
             case nil: return "–"
