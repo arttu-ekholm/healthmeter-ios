@@ -113,27 +113,21 @@ extension HeartView {
         }
 
         var rhrColor: Color? {
-            guard let avg = avg, avg != 0, case .success(let update) = rhr else { return nil }
-            let multiplier = update.value / avg
+            guard let rhrLevel else { return nil }
 
-            let level = heartRateLevelForMultiplier(multiplier: multiplier)
-            return colorForLevel(level)
+            return colorForLevel(rhrLevel)
         }
 
         var wristTemperatureColor: Color? {
-            guard let avg = avgWrist, avg != 0, case .success(let update) = wristTemperature else { return nil }
-            let multiplier = update.value / avg
+            guard let wtLevel else { return nil }
 
-            let level = heartRateLevelForMultiplier(multiplier: multiplier)
-            return colorForLevel(level)
+            return colorForLevel(wtLevel)
         }
 
         var hrvColor: Color? {
-            guard let avg = avgHrv, avg != 0, case .success(let update) = hrv else { return nil }
-            let multiplier = avg / update.value
+            guard let hrvLevel else { return nil }
 
-            let level = hrvMultiplier(multiplier: multiplier)
-            return colorForLevel(level)
+            return colorForLevel(hrvLevel)
         }
 
         var rhrDisabled: Bool {
