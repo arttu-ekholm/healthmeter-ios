@@ -40,21 +40,21 @@ extension HeartView {
             guard let avg = avgHrv, avg != 0, case .success(let update) = hrv else { return nil }
             let multiplier = avg / update.value
 
-            return hrvMultiplier(multiplier: multiplier)
+            return HeartRateLevel.hrvMultiplier(multiplier: multiplier)
         }
 
         private var rhrLevel: HeartRateLevel? {
             guard let avg = avg, avg != 0, case .success(let update) = rhr else { return nil }
             let multiplier = update.value / avg
 
-            return heartRateLevelForMultiplier(multiplier: multiplier)
+            return HeartRateLevel.heartRateLevelForMultiplier(multiplier: multiplier)
         }
 
         private var wtLevel: HeartRateLevel? {
             guard let avg = avgWrist, avg != 0, case .success(let update) = wristTemperature else { return nil }
             let multiplier = update.value / avg
 
-            return heartRateLevelForMultiplier(multiplier: multiplier)
+            return HeartRateLevel.heartRateLevelForMultiplier(multiplier: multiplier)
         }
 
         var allMeasurementsDisplay: AllMeasurementsDisplay? {
@@ -172,7 +172,7 @@ extension HeartView {
         var hrvStatusDisplayText: String {
             guard let avgHrv = avgHrv, avgHrv != 0, case .success(let update) = hrv else { return "" }
             let multiplier = avgHrv / update.value
-            let level = hrvMultiplier(multiplier: multiplier)
+            let level = HeartRateLevel.hrvMultiplier(multiplier: multiplier)
             return adjectiveForLevel(level: level, type: .hrv)
         }
 
@@ -240,7 +240,7 @@ extension HeartView {
         var rhrStatusDisplayText: String {
             guard let avg = avg, avg != 0, case .success(let update) = rhr else { return "" }
             let multiplier = update.value / avg
-            let level = heartRateLevelForMultiplier(multiplier: multiplier)
+            let level = HeartRateLevel.heartRateLevelForMultiplier(multiplier: multiplier)
             return adjectiveForLevel(level: level, type: .restingHeartRate)
         }
 

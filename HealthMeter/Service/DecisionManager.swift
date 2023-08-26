@@ -278,7 +278,7 @@ class DecisionManager {
     }
 
     func restingHeartRateNotificationTitle(trend: Trend, heartRate: Double, averageHeartRate: Double) -> String {
-        let emoji = colorEmojiForLevel(heartRateLevelForMultiplier(multiplier: heartRate / averageHeartRate))
+        let emoji = colorEmojiForLevel(HeartRateLevel.heartRateLevelForMultiplier(multiplier: heartRate / averageHeartRate))
         return "\(emoji) \(trend.displayText)"
     }
 

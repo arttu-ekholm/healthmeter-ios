@@ -206,11 +206,11 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     // MARK: - Multipliers and colors (static)
     func testHeartRateLevelForMultiplier() {
-        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 50.0/50.0), .normal)
-        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 20.0/50.0), .belowAverage)
-        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 55.0/50.0), .slightlyElevated)
-        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 60.0/50.0), .noticeablyElevated)
-        XCTAssertEqual(heartRateLevelForMultiplier(multiplier: 85.0/50.0), .wayAboveElevated)
+        XCTAssertEqual(HeartRateLevel.heartRateLevelForMultiplier(multiplier: 50.0/50.0), .normal)
+        XCTAssertEqual(HeartRateLevel.heartRateLevelForMultiplier(multiplier: 20.0/50.0), .belowAverage)
+        XCTAssertEqual(HeartRateLevel.heartRateLevelForMultiplier(multiplier: 55.0/50.0), .slightlyElevated)
+        XCTAssertEqual(HeartRateLevel.heartRateLevelForMultiplier(multiplier: 60.0/50.0), .noticeablyElevated)
+        XCTAssertEqual(HeartRateLevel.heartRateLevelForMultiplier(multiplier: 85.0/50.0), .wayAboveElevated)
     }
 }
 
