@@ -12,6 +12,14 @@ enum UpdateType: Int, Codable, CaseIterable {
     case wristTemperature
     case restingHeartRate
     case hrv
+
+    var name: String {
+        switch self {
+        case .wristTemperature: return "wristTemperature"
+        case .restingHeartRate: return "restingHeartRate"
+        case .hrv: return "heartRateVariable"
+        }
+    }
 }
 
 struct GenericUpdate: Codable, Equatable {

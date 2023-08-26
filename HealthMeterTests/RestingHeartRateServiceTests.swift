@@ -34,7 +34,7 @@ class RestingHeartRateServiceTests: XCTestCase {
 
     func testDecodingAverageHeartRate_notNil() throws {
         let service = RestingHeartRateService(userDefaults: userDefaults)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        userDefaults.set(50.0, forKey: "average_\(UpdateType.restingHeartRate)_key")
         let avgRHR = try XCTUnwrap(service.averageHeartRate)
         XCTAssertEqual(50.0, avgRHR, accuracy: 0.1, "AVG RHR should be 50.0")
     }
@@ -72,7 +72,7 @@ class RestingHeartRateServiceTests: XCTestCase {
      Test observeInBackground -> High RHR -> handleUpdate -> notification is posted pipeline works
      */
     func testObserveInBackground_successfulUpdateHandled() {
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        userDefaults.set(50.0, forKey: "average_\(UpdateType.restingHeartRate)_key")
         let mockHealthStore = MockHealthStore()
         let mockQueryProvider = MockQueryProvider()
         let mockQueryParser = MockQueryParser()
@@ -173,7 +173,7 @@ class RestingHeartRateServiceTests: XCTestCase {
     // MARK: - Analysis text
 
     func testMultipleObserverQueryCallbacks() {
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        userDefaults.set(50.0, forKey: "average_\(UpdateType.restingHeartRate)_key")
         let mockHealthStore = MockHealthStore()
         let mockQueryProvider = MockQueryProvider()
         let mockQueryParser = MockQueryParser()

@@ -55,9 +55,6 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
 
     // UserDefaults and its keys
     private let userDefaults: UserDefaults
-    private let averageRestingHeartRateKey = "AverageRestingHeartRate"
-    private let averageWristTemperatureKey = "AverageWristTemperature"
-    private let averageRHRKey = "AverageRHR"
 
     private let latestRestingHeartRateUpdateKey = "LatestRestingHeartRateUpdate"
     private let latestWristTemperatureUpdateKey = "LatestWristTemperatureUpdate"
@@ -92,11 +89,11 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     /// Two month average
     private(set) var averageHeartRate: Double? {
         get {
-            guard let avg = userDefaults.object(forKey: averageRestingHeartRateKey) else { return nil }
+            guard let avg = userDefaults.object(forKey: userDefaultsKeyForUpdateType(type: .restingHeartRate)) else { return nil }
             return avg as? Double
         }
         set {
-            userDefaults.set(newValue, forKey: averageRestingHeartRateKey)
+            userDefaults.set(newValue, forKey: userDefaultsKeyForUpdateType(type: .restingHeartRate))
             averageHeartRatePublished = newValue
         }
     }
@@ -104,11 +101,11 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     /// Two month average
     private(set) var averageWristTemperature: Double? {
         get {
-            guard let avg = userDefaults.object(forKey: averageWristTemperatureKey) else { return nil }
+            guard let avg = userDefaults.object(forKey: userDefaultsKeyForUpdateType(type: .wristTemperature)) else { return nil }
             return avg as? Double
         }
         set {
-            userDefaults.set(newValue, forKey: averageWristTemperatureKey)
+            userDefaults.set(newValue, forKey: userDefaultsKeyForUpdateType(type: .wristTemperature))
             DispatchQueue.main.async {
                 self.averageWristTemperaturePublished = newValue
                 self.objectWillChange.send()
@@ -119,11 +116,11 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
     /// Two month average
     private(set) var averageHRV: Double? {
         get {
-            guard let avg = userDefaults.object(forKey: averageRHRKey) else { return nil }
+            guard let avg = userDefaults.object(forKey: userDefaultsKeyForUpdateType(type: .hrv)) else { return nil }
             return avg as? Double
         }
         set {
-            userDefaults.set(newValue, forKey: averageRHRKey)
+            userDefaults.set(newValue, forKey: userDefaultsKeyForUpdateType(type: .hrv))
             DispatchQueue.main.async {
                 self.averageHRVPublished = newValue
                 self.objectWillChange.send()
@@ -394,6 +391,11 @@ class RestingHeartRateService: ObservableObject, RestingHeartRateProvider {
             })
         }
         healthStore.execute(query)
+    }
+
+    // MARK: - UserDefaults handling
+    func userDefaultsKeyForUpdateType(type: UpdateType) -> String {
+        return "average_\(type.name)_key"
     }
 
     // MARK: - Background observer

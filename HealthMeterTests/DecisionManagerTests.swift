@@ -47,7 +47,7 @@ class DecisionManagerTests: XCTestCase {
         let service = RestingHeartRateService(
             userDefaults: userDefaults,
             decisionManager: decisionManager)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        userDefaults.set(50.0, forKey: "average_\(UpdateType.restingHeartRate)_key")
 
         let update = GenericUpdate(date: Date(), value: 100.0, type: .restingHeartRate)
         service.handleUpdate(update: update)
@@ -65,7 +65,7 @@ class DecisionManagerTests: XCTestCase {
         let mockNotificationService = MockNotificationService()
         let decisionManager = DecisionManager(notificationService: mockNotificationService, userDefaults: userDefaults)
         let service = RestingHeartRateService(userDefaults: userDefaults, decisionManager: decisionManager)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        userDefaults.set(50.0, forKey: "average_\(UpdateType.restingHeartRate)_key")
 
         let risingUpdate = GenericUpdate(date: Date().addingTimeInterval(-60*60), value: 100.0, type: .restingHeartRate)
         service.handleUpdate(update: risingUpdate)
@@ -93,7 +93,7 @@ class DecisionManagerTests: XCTestCase {
     func testPosting_averageRHR() throws {
         let decisionManager = DecisionManager(userDefaults: userDefaults)
         let service = RestingHeartRateService(userDefaults: userDefaults, decisionManager: decisionManager)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        userDefaults.set(50.0, forKey: "average_\(UpdateType.restingHeartRate)_key")
 
         let update = GenericUpdate(date: Date(), value: 50.0, type: .restingHeartRate)
         service.handleUpdate(update: update)
@@ -121,7 +121,7 @@ class DecisionManagerTests: XCTestCase {
         let notificationService = MockNotificationService()
         let decisionManager = DecisionManager(notificationService: notificationService, userDefaults: userDefaults)
         let service = RestingHeartRateService(userDefaults: userDefaults, decisionManager: decisionManager)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        userDefaults.set(50.0, forKey: "average_\(UpdateType.restingHeartRate)_key")
 
         let risingUpdate1 = GenericUpdate(date: Date().addingTimeInterval(-60*60*3), value: 100.0, type: .restingHeartRate)
         service.handleUpdate(update: risingUpdate1)
@@ -141,7 +141,7 @@ class DecisionManagerTests: XCTestCase {
         let notificationService = MockNotificationService()
         let decisionManager = DecisionManager(notificationService: notificationService, userDefaults: userDefaults)
         let service = RestingHeartRateService(userDefaults: userDefaults, decisionManager: decisionManager)
-        userDefaults.set(37.0, forKey: "AverageWristTemperature")
+        userDefaults.set(37.0, forKey: "average_\(UpdateType.wristTemperature)_key")
 
         let risingUpdate1 = GenericUpdate(date: Date().addingTimeInterval(-60*60*3), value: 39.0, type: .wristTemperature)
         service.handleUpdate(update: risingUpdate1)
@@ -168,7 +168,7 @@ class DecisionManagerTests: XCTestCase {
         let decisionManager = DecisionManager(userDefaults: userDefaults)
         let service = RestingHeartRateService(
             userDefaults: userDefaults, decisionManager: decisionManager)
-        userDefaults.set(50.0, forKey: "AverageRestingHeartRate")
+        userDefaults.set(50.0, forKey: "average_\(UpdateType.restingHeartRate)_key")
 
         // The update has _earlier_ date than the latest handled update.
         let update = GenericUpdate(date: Date().addingTimeInterval(-100), value: 100.0, type: .restingHeartRate)
