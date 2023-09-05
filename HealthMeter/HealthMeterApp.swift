@@ -32,8 +32,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
         heartRateService.getAuthorisationStatusForRestingHeartRate { status in
             if status == .unnecessary {
                 if heartRateService.backgroundObserverQueryEnabled {
-                    heartRateService.observeInBackground(type: .restingHeartRate)
-                    heartRateService.observeInBackground(type: .wristTemperature)
+                    for type in UpdateType.allCases {
+                        heartRateService.observeInBackground(type: type)
+                    }
                 }
             }
         }
@@ -62,7 +63,7 @@ extension HealthMeterApp: WhatsNewCollectionProvider {
                             if status == .shouldRequest {
                                 RestingHeartRateService.shared.requestAuthorisation { success, error in
                                     if success, error == nil {
-                                        RestingHeartRateService.shared.observeInBackground(type: .wristTemperature)
+                                        RestingHeartRateService.shared.observeInBackground(type: .hrv)
 
                                         for type in UpdateType.allCases {
                                             RestingHeartRateService.shared.queryAverageOfType(type) { _ in
